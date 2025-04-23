@@ -5,34 +5,34 @@ import Link from 'next/link';
 
 const Hero = () => {
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-r from-indigo-50 to-blue-50 pt-28">
+    <section className="py-20 bg-gradient-to-r from-indigo-500 to-blue-500 text-white">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-10 md:mb-0">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Your AI Study <span className="text-indigo-600">Partner</span> for Academic Success
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+              Your AI Study <span className="text-yellow-300">Partner</span> for Academic Success
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-lg">
+            <p className="text-xl mb-8 max-w-lg">
               SchedulEd creates personalized study plans tailored to your learning style, time availability, and knowledge level.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link 
                 href="#waitlist" 
-                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all"
+                className="px-6 py-3 bg-yellow-400 text-gray-900 font-medium rounded-lg hover:bg-yellow-300 shadow-md hover:shadow-lg transition-all text-center"
               >
                 Join the Waitlist
                 <i className="fas fa-arrow-right ml-2"></i>
               </Link>
               <Link 
                 href="#how-it-works" 
-                className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all"
+                className="px-6 py-3 border-2 border-white text-white font-medium rounded-lg hover:bg-white hover:text-blue-600 transition-all text-center"
               >
                 Learn More
               </Link>
             </div>
           </div>
           <div className="md:w-1/2">
-            <div className="relative bg-white rounded-xl shadow-xl p-6 max-w-md mx-auto">
+            <div className="bg-white text-gray-800 rounded-xl shadow-2xl p-6 max-w-md mx-auto transform rotate-2 transition-transform hover:rotate-0">
               <div className="text-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">Data Science Study Plan</h2>
                 <p className="text-sm text-gray-500">Personalized for your learning style</p>
@@ -70,16 +70,16 @@ const Hero = () => {
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                     <span className="text-sm text-gray-600">Progress: 25% complete</span>
                   </div>
-                  <button className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                  <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                     View full plan →
                   </button>
                 </div>
               </div>
               
               {/* Floating badge */}
-              <div className="absolute -bottom-4 -right-4 bg-indigo-100 p-3 rounded-lg shadow-md">
+              <div className="absolute -bottom-4 -right-4 bg-blue-100 p-3 rounded-lg shadow-md">
                 <div className="flex items-center space-x-2">
-                  <div className="p-1 bg-indigo-600 rounded-full text-white">
+                  <div className="p-1 bg-blue-600 rounded-full text-white">
                     <i className="fas fa-brain text-sm"></i>
                   </div>
                   <p className="text-xs font-medium text-gray-800">AI-Powered</p>
