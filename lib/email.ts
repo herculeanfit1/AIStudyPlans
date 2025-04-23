@@ -3,8 +3,8 @@ import { getWaitlistConfirmationTemplate, getPasswordResetTemplate } from './ema
 
 // Initialize Resend with API key
 const resendApiKey = process.env.RESEND_API_KEY;
-const fromEmail = process.env.EMAIL_FROM || 'notifications@scheduled.ai';
-const replyToEmail = process.env.EMAIL_REPLY_TO || 'support@scheduled.ai';
+const fromEmail = process.env.EMAIL_FROM || 'Lindsey <lindsey@aistudyplans.com>';
+const replyToEmail = process.env.EMAIL_REPLY_TO || 'support@aistudyplans.com';
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 // Check if API key is provided

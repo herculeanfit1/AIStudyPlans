@@ -1,18 +1,26 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Hero from '@/components/Hero';
+import Features from '@/components/Features';
+import Stats from '@/components/Stats';
+import HowItWorksCards from '@/components/HowItWorksCards';
+import Pricing from '@/components/Pricing';
+import FAQ from '@/components/FAQ';
+import Testimonials from '@/components/Testimonials';
+import CTASection from '@/components/CTASection';
+import Waitlist from '@/components/Waitlist';
+import Footer from '@/components/Footer';
 
 export default function Home() {
-  const router = useRouter();
-  
-  useEffect(() => {
-    router.push('/index.html');
-  }, [router]);
-  
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p>Redirecting to landing page...</p>
-    </div>
+    <main>
+      <Hero />
+      <Stats />
+      <Features />
+      <HowItWorksCards />
+      <Pricing />
+      <Testimonials />
+      <FAQ />
+      <Waitlist />
+      <Footer />
+    </main>
   );
 } 
