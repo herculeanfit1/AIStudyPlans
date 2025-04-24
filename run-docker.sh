@@ -8,8 +8,17 @@
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+
+echo -e "${BLUE}AIStudyPlans Docker Development Environment${NC}"
+
+# Check if docker and docker-compose are installed
+if ! command -v docker &> /dev/null || ! command -v docker-compose &> /dev/null; then
+    echo -e "${RED}Error: Docker and docker-compose are required to run this script.${NC}"
+    exit 1
+fi
 
 # Function to check if .env.local exists
 check_env_file() {
@@ -18,10 +27,7 @@ check_env_file() {
     echo "Creating a template .env.local file..."
     
     cat > .env.local << EOL
-# SchedulEd application environment variables
-# This file should not be committed to version control
-
-# Resend API key for email service
+# Resend API Configuration
 RESEND_API_KEY=your_actual_resend_api_key_here
 
 # Email Configuration
@@ -35,6 +41,8 @@ EOL
     echo -e "${YELLOW}Please edit .env.local and add your RESEND_API_KEY before continuing.${NC}"
     echo -e "Press Enter to continue or Ctrl+C to cancel..."
     read
+  else
+    echo -e "${GREEN}Found .env.local file.${NC}"
   fi
 }
 
@@ -43,8 +51,7 @@ start_dev() {
   echo -e "${GREEN}Starting development environment...${NC}"
   check_env_file
   docker-compose down
-  docker-compose build --no-cache
-  docker-compose up
+  docker-compose up --build
 }
 
 # Function to stop the environment
@@ -67,42 +74,65 @@ test_email() {
     exit 1
   fi
   
+  check_env_file
   echo -e "${GREEN}Testing email with address: $1${NC}"
-  docker-compose run --rm web node test-resend.js "$1"
+  
+  # Run directly instead of in Docker for testing
+  node test-resend.js "$1"
 }
 
-# Parse arguments
-case "$1" in
-  start)
-    start_dev
-    ;;
-  stop)
-    stop_dev
-    ;;
-  restart)
-    stop_dev
-    start_dev
-    ;;
-  test)
-    run_tests
-    ;;
-  email)
-    test_email "$2"
-    ;;
-  *)
-    echo -e "${GREEN}SchedulEd Docker Development Environment${NC}"
-    echo ""
-    echo "Usage: ./run-docker.sh [command]"
-    echo ""
+# Function to run e2e tests
+run_e2e() {
+    echo -e "${YELLOW}Running end-to-end tests...${NC}"
+    docker-compose up --build e2e-tests
+}
+
+# Function to run lighthouse tests
+run_lighthouse() {
+    echo -e "${YELLOW}Running Lighthouse tests...${NC}"
+    docker-compose up --build lighthouse
+}
+
+# Function to show usage
+show_usage() {
+    echo "Usage: $0 [command]"
     echo "Commands:"
-    echo "  start   - Start the development environment"
-    echo "  stop    - Stop the development environment"
-    echo "  restart - Restart the development environment"
-    echo "  test    - Run tests"
-    echo "  email   - Test email system (requires email address)"
-    echo ""
+    echo "  start     - Start the development environment"
+    echo "  stop      - Stop the development environment"
+    echo "  restart   - Restart the development environment"
+    echo "  test      - Run unit tests"
+    echo "  e2e       - Run end-to-end tests"
+    echo "  lighthouse - Run Lighthouse performance tests"
     echo "Examples:"
-    echo "  ./run-docker.sh start"
-    echo "  ./run-docker.sh email your-email@example.com"
-    ;;
+    echo "  $0 start"
+    echo "  $0 test"
+}
+
+# Main script logic
+case "$1" in
+    start)
+        start_dev
+        ;;
+    stop)
+        stop_dev
+        ;;
+    restart)
+        stop_dev
+        start_dev
+        ;;
+    test)
+        run_tests
+        ;;
+    e2e)
+        run_e2e
+        ;;
+    lighthouse)
+        run_lighthouse
+        ;;
+    email)
+        test_email "$2"
+        ;;
+    *)
+        show_usage
+        ;;
 esac 

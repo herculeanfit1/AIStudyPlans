@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AIStudyPlans Landing Page
+
+A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan generator. This landing page is built with Next.js 14 and Tailwind CSS, showcasing modern web development techniques and best practices.
+
+## Key Features
+
+- 🚀 Modern, responsive design optimized for all devices
+- ✨ Subtle animations and interactive UI elements
+- 🔍 SEO-friendly architecture
+- 🧪 Comprehensive testing infrastructure (unit tests, E2E tests, performance tests)
+- 🐳 Containerized development and testing environment
+
+## Tech Stack
+
+- **Framework**: [Next.js 14](https://nextjs.org/) with App Router
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Testing**:
+  - [Jest](https://jestjs.io/) and [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for unit tests
+  - [Playwright](https://playwright.dev/) for end-to-end testing
+  - [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) for performance testing
+- **Containerization**: Docker & Docker Compose
 
 ## Getting Started
 
-First, run the development server:
+### Local Development
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/AIStudyPlans.git
+   cd AIStudyPlans
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+### Using Docker
+
+We provide a convenient Docker development environment:
+
+1. Start the development environment:
+   ```bash
+   ./run-docker.sh start
+   ```
+
+2. Access the site at [http://localhost:3001](http://localhost:3001)
+
+3. To stop the development environment:
+   ```bash
+   ./run-docker.sh stop
+   ```
+
+## Testing
+
+### Running Unit Tests
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Local
+npm run test
+
+# With Docker
+./run-docker.sh test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Running E2E Tests
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Local
+npm run test:e2e
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# With Docker
+./run-docker.sh e2e
+```
 
-## Learn More
+### Running Performance Tests
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# With Docker
+./run-docker.sh lighthouse
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+├── app/                  # Next.js App Router structure
+│   ├── components/       # React components
+│   ├── globals.css       # Global styles
+│   ├── layout.tsx        # Root layout
+│   └── page.tsx          # Homepage
+├── e2e/                  # End-to-end tests
+├── __tests__/            # Unit tests
+├── public/               # Static assets
+├── docker-compose.yml    # Docker Compose configuration
+├── Dockerfile.dev        # Development Dockerfile
+├── Dockerfile.test       # Testing Dockerfile
+└── run-docker.sh         # Helper script for Docker operations
+```
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This landing page is designed to be deployed to platforms like Vercel, Netlify, or any other static site hosting service.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Build for production
+npm run build
+
+# Preview the production build
+npm run start
+```
+
+## License
+
+[MIT](LICENSE)

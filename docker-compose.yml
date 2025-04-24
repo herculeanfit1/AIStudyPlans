@@ -23,4 +23,43 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 30s 
+      start_period: 30s
+      
+  unit-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - NEXT_TELEMETRY_DISABLED=1
+      - CI=true
+    command: npm run test
+    depends_on:
+      - web
+      
+  e2e-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - NEXT_TELEMETRY_DISABLED=1
+      - CI=true
+    command: npm run test:e2e
+    depends_on:
+      - web
+      
+  lighthouse:
+    image: patrickhulce/lhci-client
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: lhci autorun
+    depends_on:
+      - web 

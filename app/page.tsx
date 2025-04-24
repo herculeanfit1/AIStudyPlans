@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import Pricing from './components/Pricing';
+import WaitlistForm from './components/WaitlistForm';
 import Footer from './components/Footer';
 
 export default function Home() {
@@ -129,13 +130,15 @@ export default function Home() {
             Join thousands of students already using AIStudyPlans to achieve their academic goals.
           </p>
           <a 
-            href="#" 
+            href="#waitlist" 
             className="bg-white text-indigo-600 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition-colors inline-block"
           >
             Get Started Today
           </a>
         </div>
       </section>
+      
+      <WaitlistForm />
       
       <Footer />
     </main>

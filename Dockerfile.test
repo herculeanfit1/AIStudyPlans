@@ -1,0 +1,26 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Set environment variables
+ENV NODE_ENV=test
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Install dependencies (including dev dependencies)
+RUN npm ci
+
+# Install additional test tools
+RUN apk add --no-cache chromium
+ENV CHROMIUM_PATH=/usr/bin/chromium-browser
+
+# Copy application files
+COPY . .
+
+# Install Playwright browsers
+RUN npx playwright install --with-deps chromium
+
+# Run tests by default
+CMD ["npm", "run", "test"] 

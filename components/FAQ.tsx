@@ -1,97 +1,81 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 
-interface FAQItemProps {
-  question: string;
-  answer: string;
-}
-
-const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="border-b border-gray-200 py-5">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full justify-between items-center text-left"
-      >
-        <h3 className="text-lg font-medium text-gray-900">{question}</h3>
-        <span className="ml-6 flex-shrink-0">
-          <i className={`fa-solid ${isOpen ? 'fa-minus' : 'fa-plus'} text-blue-600`}></i>
-        </span>
-      </button>
-      
-      {isOpen && (
-        <div className="mt-3 pr-12">
-          <p className="text-gray-600 leading-relaxed">{answer}</p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-interface FAQProps {
-  className?: string;
-}
-
-const FAQ: React.FC<FAQProps> = ({ className = '' }) => {
-  const faqItems: FAQItemProps[] = [
+export default function FAQ() {
+  const faqs = [
     {
-      question: "How does the AI-powered study plan generator work?",
-      answer: "Our platform uses advanced AI algorithms to analyze your learning goals, schedule, and preferences. It then creates a personalized study plan optimized for your needs, suggesting the most effective study times, topics to focus on, and learning methods tailored to your unique learning style."
+      question: "How does SchedulEd create personalized study plans?",
+      answer: "SchedulEd uses advanced AI algorithms to analyze your learning style, available study time, current knowledge level, and goals. It then creates a customized study plan that optimizes your learning efficiency and adapts as you progress."
     },
     {
-      question: "Can I customize my study plan after it's generated?",
-      answer: "Absolutely! While our AI creates an optimized initial plan, you have full control to adjust it. You can modify study sessions, change topics, adjust time allocations, or completely restructure your plan. The system will even provide suggestions to maintain effectiveness as you make changes."
+      question: "Is SchedulEd suitable for all subjects?",
+      answer: "Yes! SchedulEd works with a wide range of subjects from mathematics and sciences to humanities, languages, and professional certifications. Our platform is designed to be flexible and adaptable to different learning goals."
     },
     {
-      question: "Is this platform suitable for all subjects and education levels?",
-      answer: "Yes, our platform supports learners across all education levels from high school to postgraduate studies. It works for virtually any subject, including STEM fields, humanities, languages, test preparation, and professional certifications. The AI adapts its approach based on the specific requirements of your subject and level."
+      question: "How much does SchedulEd cost?",
+      answer: "We offer a free basic tier with limited features. Our premium plans start at $9.99/month with additional tiers for advanced features. Check our pricing page for detailed information on what each plan includes."
     },
     {
-      question: "How do you track my progress and adapt the plan?",
-      answer: "As you complete study sessions and exercises, you provide simple feedback on your comprehension and confidence. Our AI analyzes this data along with your completion patterns to automatically adjust your plan, reinforcing challenging areas and optimizing your study schedule for better retention and understanding."
+      question: "Can I use SchedulEd for group study or as a teacher?",
+      answer: "We're developing special features for educators and study groups. Currently, our platform is optimized for individual use, but we plan to release collaborative features in the near future."
     },
     {
-      question: "What if I fall behind on my study schedule?",
-      answer: "Life happens! If you miss sessions or fall behind, our system automatically recalibrates your plan. It redistributes topics intelligently, prioritizes critical concepts, and adjusts the schedule to help you catch up without becoming overwhelmed. You can also manually trigger a plan adjustment anytime."
-    },
-    {
-      question: "Can I use this platform with my existing study materials?",
-      answer: "Definitely. You can upload or link to your existing textbooks, notes, online courses, and other study resources. Our system will incorporate these materials into your plan and even suggest when and how to use each resource most effectively in your learning journey."
+      question: "How does SchedulEd protect my privacy?",
+      answer: "We take data privacy very seriously. All personal information is encrypted, and we never sell your data to third parties. For students under 18, we have additional safeguards in place, including parental consent requirements and limited data collection."
     }
   ];
+  
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  
+  const toggleFAQ = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
 
   return (
-    <div className={`py-16 ${className}`}>
+    <section id="faq" className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Find answers to common questions about our AI study planning platform.
+            Find answers to common questions about SchedulEd
           </p>
         </div>
         
         <div className="max-w-3xl mx-auto">
-          {faqItems.map((item, index) => (
-            <FAQItem 
-              key={index} 
-              question={item.question} 
-              answer={item.answer} 
-            />
+          {faqs.map((faq, index) => (
+            <div 
+              key={index}
+              className="mb-4 border-b border-gray-200 pb-4 last:border-b-0 last:pb-0"
+            >
+              <button
+                className="flex justify-between items-center w-full text-left font-medium text-gray-900 py-3 focus:outline-none"
+                onClick={() => toggleFAQ(index)}
+              >
+                <span className="text-lg">{faq.question}</span>
+                <span className="text-indigo-600">
+                  <i className={`fas ${openIndex === index ? 'fa-minus' : 'fa-plus'}`}></i>
+                </span>
+              </button>
+              <div 
+                className={`overflow-hidden transition-all duration-300 ${
+                  openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <p className="py-3 text-gray-600">
+                  {faq.answer}
+                </p>
+              </div>
+            </div>
           ))}
         </div>
         
-        <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">Still have questions?</p>
-          <a href="#" className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-            Contact Support
-          </a>
+        <div className="text-center mt-12">
+          <p className="text-gray-600">
+            Still have questions? <a href="#" className="text-indigo-600 font-medium hover:underline">Contact our support team</a>
+          </p>
         </div>
       </div>
-    </div>
+    </section>
   );
-};
-
-export default FAQ; 
+} 

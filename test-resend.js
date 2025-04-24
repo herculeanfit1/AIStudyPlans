@@ -15,6 +15,10 @@ const resendApiKey = process.env.RESEND_API_KEY;
 const fromEmail = 'lindsey@aistudyplans.com';
 const toEmail = process.argv[2]; // Get email from command line argument
 
+console.log('Environment variables loaded:');
+console.log('- RESEND_API_KEY:', resendApiKey ? `${resendApiKey.substring(0, 5)}...${resendApiKey.substring(resendApiKey.length - 5)}` : 'Not set');
+console.log('- EMAIL_FROM:', process.env.EMAIL_FROM || 'Not set (using default)');
+
 if (!resendApiKey) {
   console.error('RESEND_API_KEY is not defined in your .env.local file');
   process.exit(1);
@@ -31,7 +35,6 @@ const resend = new Resend(resendApiKey);
 // Send a test email
 async function sendTestEmail() {
   console.log('Testing Resend email service:');
-  console.log(`- API Key: ${resendApiKey.slice(0, 5)}...${resendApiKey.slice(-5)}`);
   console.log(`- From Address: Lindsey <${fromEmail}> (AIStudyPlans.com domain)`);
   console.log(`- To Address: ${toEmail}`);
   

@@ -30,20 +30,20 @@ export async function POST(request: NextRequest) {
     if (process.env.RESEND_API_KEY) {
       try {
         await resend.emails.send({
-          from: 'Lindsey <lindsey@aistudyplans.com>',
+          from: process.env.EMAIL_FROM || 'AIStudyPlans <noreply@aistudyplans.com>',
           to: email,
-          subject: 'Welcome to the SchedulEd Waitlist!',
+          subject: 'Welcome to the AIStudyPlans Waitlist!',
           html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #4f46e5;">Welcome to SchedulEd!</h1>
+              <h1 style="color: #4f46e5;">Welcome to AIStudyPlans!</h1>
               <p>Hello ${name},</p>
-              <p>Thank you for joining the SchedulEd waitlist. We're excited to have you on board!</p>
+              <p>Thank you for joining the AIStudyPlans waitlist. We're excited to have you on board!</p>
               <p>We're working hard to build the best AI-powered study plan generator for students. You'll be among the first to know when we launch.</p>
               <p>Stay tuned,</p>
-              <p>The SchedulEd Team</p>
+              <p>The AIStudyPlans Team</p>
             </div>
           `,
-          reply_to: 'support@aistudyplans.com'
+          reply_to: process.env.EMAIL_REPLY_TO || 'support@aistudyplans.com'
         });
       } catch (emailError) {
         console.error('Error sending confirmation email:', emailError);

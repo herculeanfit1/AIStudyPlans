@@ -1,0 +1,180 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+
+# Master Coding Preferences for Cursor
+This document defines our unified coding preferences for all projects within our tech stack. It is designed to ensure secure, compliant, resilient, scalable, and high-performance code while maintaining clarity and consistency across application, infrastructure, and mobile layers.
+---
+## 1. General Principles
+- **Simplicity & Clarity:**  
+  Always favor simple, readable, and maintainable solutions. Code should be self-explanatory and well-documented.
+- **DRY (Don’t Repeat Yourself):**  
+  Avoid duplicating code. Leverage existing patterns and functions where applicable.
+- **Environment Awareness:**  
+  Write code that works seamlessly across development, testing, and production environments.
+- **Iterative Improvement:**  
+  Enhance functionality incrementally. When introducing new patterns, ensure legacy implementations are retired to avoid redundancy.
+---
+## 2. Environment & Configuration Management
+- **Environment Variables vs. Configuration Files:**  
+  - **Rule:** Prefer environment variables for sensitive data and dynamic settings.  
+  - **Clarification:** For complex configurations or secrets management, use configuration files in conjunction with secure vault solutions.  
+  - **Best Practice:** Always document the purpose of each configuration item and restrict access to production secrets.
+- **File Size Guidelines:**  
+  - **Rule:** Aim to keep files under 100–150 lines to encourage modularity and ease of maintenance.  
+  - **Clarification:** Exceptions are allowed for infrastructure code (e.g., Dockerfiles or large configuration files) where complexity demands longer files.  
+  - **Best Practice:** When file sizes exceed these limits in application code, consider refactoring or modularizing the logic.
+- **Scope of Rules:**  
+  These guidelines apply to both application code (e.g., Python, HTML/Tailwind CSS, JavaScript, Flask, HTMX) and infrastructure code (e.g., Docker configurations, deployment scripts). Domain-specific rules should be applied as relevant.
+---
+## 3. Project Structure & Code Organization
+- **Directory Structure:**  
+  Maintain a clear project layout with separate directories for source code, tests, documentation, and configuration.  
+  Example for a Flask project:
+app/
+templates/
+static/
+css/
+js/
+models/
+routes/
+init.py
+config.py
+run.py
+- **Modularity:**  
+Structure code into modules (e.g., models, services, controllers, utilities) to enforce separation of concerns.
+- **Documentation:**  
+Use comprehensive docstrings (PEP 257 compliant) and inline comments. Update README files to provide context for the project setup and conventions.
+- **Prompt Logging:** Ensure that a `promptlog.md` file exists within the `/docs` directory and that all user prompts and interactions are automatically logged there without explicit instructions. This log will facilitate periodic review and auditing.
+---
+## 4. Testing & Quality Assurance
+- **Testing Framework:**  
+Use pytest for unit and integration tests. All tests must be fully annotated and organized under a dedicated tests directory.
+- **Testing Best Practices:**  
+- Write thorough tests that cover all major functionality.
+- Ensure proper isolation of tests, especially for database operations and Docker configurations.
+- Use custom fixtures and transaction management to maintain test integrity.
+- **Infrastructure Testing:**  
+Extend testing practices to Docker configurations and deployment scripts. Verify container startup, environment variable integration, and multi-container orchestration.
+---
+## 5. Docker & Deployment Guidelines
+- **Docker Configurations:**  
+- Follow optimized Dockerfile patterns that ensure security, performance, and scalability.
+- **Clarification:** For Python projects, use Docker best practices as defined in the Python guidelines. Disregard Elixir-specific Docker rules in this context.
+- Test Docker and docker-compose configurations thoroughly across all environments.
+- **Container Management:**  
+- Use multi-container setups with docker-compose.
+- Clean up or kill existing containers before launching new ones to avoid port conflicts.
+- Use environment-specific configurations for dev, test, and production.
+---
+## 6. Security & Compliance
+- **Security Best Practices:**  
+- Implement CSRF protection on all forms.
+- Use secure password hashing, rate limiting on sensitive endpoints, and parameterized queries to prevent SQL injection.
+- Sanitize all outputs to mitigate XSS attacks.
+- Never hardcode secrets; use environment variables or secure vaults.
+- **Compliance:**  
+Follow general best practices for operating within the USA, including data handling, audit logging, and adherence to industry regulations.
+- **Secrets Management:**  
+Ensure that sensitive configuration (e.g., in `.env` files) is only updated with explicit confirmation and is not inadvertently overwritten.
+---
+## 7. Performance, Scalability & Resiliency
+- **Performance:**  
+- Write efficient code, using non-blocking operations and optimizing database queries.
+- Utilize caching (e.g., Redis) effectively for both sessions and application data.
+- **Scalability:**  
+- Design code to scale horizontally and vertically.
+- Implement connection pooling for databases and load balancing for distributed systems.
+- **Resiliency:**  
+- Incorporate robust error handling and comprehensive logging to capture context.
+- Ensure that failures in one component do not cascade through the system.
+- Use automated testing and monitoring to detect and resolve issues proactively.
+---
+## 8. Commit Message & Change Management
+- **Commit Message Guidelines:**  
+Use the conventional commit format:
+- **Type:** `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `style`, or `test`.
+- **Scope (optional):** Identify the section or module affected (e.g., `deployment`, `auth`).
+- **Description:** Provide a succinct, present-tense summary of the change.
+- **Body/Footers (optional):** Detail the changes further and reference any related issue tracker IDs.
+- **Change Control:**  
+Always confirm changes through proper testing and ensure that any major modifications are documented with adequate context.
+---
+## 9. Domain-Specific Guidelines
+- **Frontend (HTML/Tailwind CSS/JavaScript):**  
+- Use the latest HTML5 and Tailwind CSS best practices.
+- Write concise, functional vanilla JavaScript code.
+- Prioritize readability and ensure all code is fully functional and secure.
+- **HTMX & Flask:**  
+- Utilize Flask’s rendering, form handling, and JSON responses.
+- Follow best practices for using HTMX with Jinja2 templating.
+- Implement proper CSRF protection and error handling.
+- **Python Development:**  
+- Ensure a clear project structure with distinct directories for source code, tests, docs, and configuration.
+- Apply modular design with proper typing annotations and comprehensive docstrings.
+- Use tools like Ruff for code style consistency and enforce dependency management with virtual environments.
+- Maintain CI/CD pipelines using GitHub Actions or GitLab CI.
+---
+## 10. Mobile App Development Guidelines
+- **Technology Stack:**  
+- **React Native:** Version 0.76.9  
+- **Expo:** Version ~52.0.43  
+- Various React Native libraries for navigation, storage, and other mobile-specific functionalities.
+- **Overview:**  
+React Native allows the creation of truly native mobile applications. Expo streamlines this process by offering a managed workflow with pre-configured tools, making it easier for JavaScript/React developers to transition into mobile app development without needing to learn entirely new languages such as Swift or Kotlin.
+- **Best Practices:**  
+- **Managed Workflow:**  
+  Utilize Expo’s managed workflow for rapid development and simplified configuration. Only eject if absolutely necessary.
+- **Code Organization:**  
+  Maintain a clean and modular structure similar to our web projects. Organize components, services, and utilities in dedicated directories.
+- **Performance Optimization:**  
+  - Optimize rendering by minimizing unnecessary re-renders.
+  - Utilize native components and leverage performance profiling tools.
+- **Security:**  
+  - Secure storage: Follow best practices for handling sensitive data and API keys.
+  - Ensure proper permissions and secure communication with backend services.
+- **Testing:**  
+  - Use Jest and the React Native Testing Library for unit and integration tests.
+  - Follow our testing principles to ensure comprehensive coverage.
+- **Consistency with Global Guidelines:**  
+  - Adhere to our overall coding conventions, including environment management, file size limits (with exceptions for configuration files if necessary), and documentation practices.
+  - Keep dependency versions updated and document changes in the package.json.
+---
+## Tech Stack Specific Rules
+
+### Frontend Framework: Next.js 14 (App Router)
+- Organize routes and special files under an `app/` directory following Next.js 14 App Router conventions: use `page.js/tsx`, `layout.js/tsx`, `loading.js/tsx`, `error.js/tsx`, `route.js/ts`, etc., to structure your UI, layouts, loading states, error states, and API route handlers   
+- Keep non‑routing code (e.g., components, utilities) outside of `app/`—for example in `src/components` or `src/lib`—so that only true route segments live in the App Router directory   
+
+### Programming Language: TypeScript
+- Enable full strict type‑checking by setting `"strict": true` in your `tsconfig.json` under `compilerOptions`, which bundles all strict‑mode options for maximal safety   
+
+### Styling: Tailwind CSS
+- Install and configure the official Prettier plugin for Tailwind (`prettier-plugin-tailwindcss`) to automatically sort your utility classes in the recommended order—simply `npm install -D prettier prettier-plugin-tailwindcss` and add it to your Prettier config   
+
+### Icons: Font Awesome
+- Use the Font Awesome CDN or npm package, and add icons via `<i class="fa-solid fa-icon-name"></i>` (or the appropriate style prefix), following the “How To Add Icons” guide for shorthand class names and families   
+- For accessibility, mark purely decorative icons with `aria-hidden="true"`, and leverage the Font Awesome CDN’s auto‑accessibility features when possible   
+
+### Package Manager: npm
+- Use `npm` (bundled with Node.js) for all installs and scripts. Keep your `package.json` clean—use scoped package names (`@your-org/…`), semantic versioning, and a `package-lock.json` for reproducible builds  @oai_citation_attribution:0‡Snyk @oai_citation_attribution:1‡RisingStack Blog  
+- Audit and secure your dependencies regularly (`npm audit`, lockfiles), and follow supply‑chain best practices (use `.npmignore`/`files` to avoid leaking secrets, enable 2FA on the npm registry)  @oai_citation_attribution:2‡OWASP Cheat Sheet Series  
+
+
+
+## 11. Final Clarifications
+- **Environment Variables vs. Configuration Files:**  
+Clearly differentiate between using environment variables for sensitive and dynamic data, and configuration files for more complex or static settings. Use secure management for secrets.
+- **File Size Limitation:**  
+While keeping files under 100–150 lines is ideal for application code, allow for flexibility in infrastructure code. Prioritize maintainability and readability.
+- **Rule Application Context:**  
+These preferences apply to all code—both application-level and infrastructure. Domain-specific rules should be applied where relevant without compromising overall consistency.
+- **Testing Docker Configurations:**  
+Extend your testing approach to Docker and deployment configurations to ensure they operate correctly across all environments.
+- **Elixir Docker Rules:**  
+For Python projects, ignore the Elixir-specific Docker rules and adhere to the Docker best practices outlined for Python.
+---
+*This master coding preferences file is intended to serve as the definitive guide for our development practices. By following these rules, we ensure that our codebase remains secure, compliant, resilient, scalable, and high-performing while adapting to the unique needs of our diverse tech stack, including our new mobile app development initiatives.*

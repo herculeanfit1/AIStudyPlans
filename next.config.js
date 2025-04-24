@@ -1,9 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable output standalone for Docker
-  output: 'standalone',
+  reactStrictMode: true,
+  swcMinify: true,
   images: {
-    domains: ['randomuser.me'],
+    domains: ['images.unsplash.com'],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/app',
+        destination: 'https://app.aistudyplans.com',
+        permanent: false,
+      },
+    ];
   },
 };
 

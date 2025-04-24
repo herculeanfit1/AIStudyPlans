@@ -1,0 +1,116 @@
+name: Secure Backup
+
+on:
+  schedule:
+    # Run at 9AM Central (14:00-15:00 UTC) and 9PM Central (02:00-03:00 UTC)
+    - cron: '0 14 * * *'
+    - cron: '0 2 * * *'
+  # Allow manual triggering
+  workflow_dispatch:
+
+env:
+  BACKUP_REPO: "herculeanfit1/AIStudyPlans-Backups"
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup GPG
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" > /tmp/private.key
+          gpg --batch --import /tmp/private.key
+          rm /tmp/private.key
+      
+      - name: Create Backup
+        run: |
+          # Generate timestamp for backup identification
+          TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+          
+          # Create archive of project files
+          tar -czf backup-$TIMESTAMP.tar.gz .
+          
+          # Encrypt the backup
+          gpg --batch --yes --trust-model always --encrypt --recipient "${{ secrets.GPG_RECIPIENT }}" backup-$TIMESTAMP.tar.gz
+          
+          # Remove unencrypted backup
+          rm backup-$TIMESTAMP.tar.gz
+      
+      - name: Verify Backup Integrity
+        run: |
+          # List the encrypted file to verify it exists
+          ls -la backup-${{ env.TIMESTAMP }}.tar.gz.gpg
+          
+          # Check file size to ensure it's not empty
+          if [ $(stat -c%s backup-${{ env.TIMESTAMP }}.tar.gz.gpg) -lt 1000 ]; then
+            echo "Backup file too small, encryption may have failed"
+            exit 1
+          fi
+      
+      - name: Push to Backup Repository
+        run: |
+          # Setup Git with token authentication
+          git config --global url."https://x-access-token:${{ secrets.BACKUP_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          
+          # Clone backup repository (or create if it doesn't exist)
+          git clone https://github.com/${{ env.BACKUP_REPO }}.git backup-repo || (
+            mkdir -p backup-repo
+            cd backup-repo
+            git init
+            git remote add origin https://github.com/${{ env.BACKUP_REPO }}.git
+            git branch -M main
+            git config --local user.email "backup@aistudyplans.com"
+            git config --local user.name "Backup System"
+            echo "# AIStudyPlans Backup Repository" > README.md
+            git add README.md
+            git commit -m "Initial commit"
+            git push -u origin main
+            cd ..
+          )
+          
+          # Create backup branch
+          cd backup-repo
+          git checkout -b backup-${{ env.TIMESTAMP }}
+          
+          # Copy the backup file
+          cp ../backup-${{ env.TIMESTAMP }}.tar.gz.gpg .
+          
+          # Update log
+          echo "Backup created: $(date)" >> backup_log.txt
+          
+          # Commit and push
+          git add backup-${{ env.TIMESTAMP }}.tar.gz.gpg backup_log.txt
+          git config --local user.email "backup@aistudyplans.com"
+          git config --local user.name "Backup System"
+          git commit -m "Backup: ${{ env.TIMESTAMP }}"
+          git push origin backup-${{ env.TIMESTAMP }}
+      
+      - name: Cleanup Old Backups
+        run: |
+          cd backup-repo
+          
+          # Get list of backup branches
+          git fetch origin
+          BRANCHES=$(git branch -r | grep origin/backup- | sed 's/origin\///')
+          
+          # Get 30 days ago date in seconds
+          CUTOFF_DATE=$(date -d "30 days ago" +%s)
+          
+          # Check each branch and delete if older than cutoff
+          for BRANCH in $BRANCHES; do
+            # Extract date from branch name (format: backup-YYYY-MM-DD-HHMMSS)
+            BRANCH_DATE=$(echo $BRANCH | cut -d'-' -f2,3,4)
+            # Convert to seconds
+            BRANCH_SECONDS=$(date -d "$BRANCH_DATE" +%s 2>/dev/null || echo 0)
+            
+            if [ $BRANCH_SECONDS -lt $CUTOFF_DATE ]; then
+              echo "Deleting old backup branch: $BRANCH"
+              git push origin --delete $BRANCH
+            fi
+          done 

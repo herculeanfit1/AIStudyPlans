@@ -2,35 +2,32 @@
 
 import React from 'react';
 
-const Stats = () => {
+export default function Stats() {
   return (
-    <section className="py-12 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+    <section className="bg-white py-16">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white/20 backdrop-blur-sm p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform">
-            <div className="text-center">
-              <h3 className="text-4xl font-bold mb-2">10,000+</h3>
-              <p className="text-lg text-white/80">Students Using Our Platform</p>
-            </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="text-center">
+            <div className="text-4xl font-bold text-indigo-600 mb-2">94%</div>
+            <div className="text-gray-600">Student Success Rate</div>
           </div>
           
-          <div className="bg-white/20 backdrop-blur-sm p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform">
-            <div className="text-center">
-              <h3 className="text-4xl font-bold mb-2">94%</h3>
-              <p className="text-lg text-white/80">Report Grade Improvement</p>
-            </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-indigo-600 mb-2">5,000+</div>
+            <div className="text-gray-600">Active Students</div>
           </div>
           
-          <div className="bg-white/20 backdrop-blur-sm p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform">
-            <div className="text-center">
-              <h3 className="text-4xl font-bold mb-2">25+</h3>
-              <p className="text-lg text-white/80">Subjects Covered</p>
-            </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-indigo-600 mb-2">35%</div>
+            <div className="text-gray-600">Grade Improvement</div>
+          </div>
+          
+          <div className="text-center">
+            <div className="text-4xl font-bold text-indigo-600 mb-2">2.5x</div>
+            <div className="text-gray-600">Study Efficiency</div>
           </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default Stats; 
+} 

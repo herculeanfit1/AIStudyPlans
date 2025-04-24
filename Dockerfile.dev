@@ -2,23 +2,19 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json ./
-
 # Install dependencies
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Install additional dev tools
-RUN apk add --no-cache wget curl
-
-# Expose port
-EXPOSE 3000
+# Copy application files
+COPY . .
 
 # Set environment variables
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
-ENV NODE_ENV development
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Start development server
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Run development server
 CMD ["npm", "run", "dev"] 
