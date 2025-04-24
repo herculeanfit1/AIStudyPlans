@@ -2,19 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Simple reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 :root {
-  --primary: #4f46e5;
-  --primary-dark: #4338ca;
-  --primary-light: #eef2ff;
-  --secondary: #0ea5e9;
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 248, 250, 255;
+  --background-end-rgb: 255, 255, 255;
+  --primary: 79, 70, 229; /* indigo-600 */
+  --primary-light: 224, 231, 255; /* indigo-100 */
+  --primary-dark: 67, 56, 202; /* indigo-700 */
+  --primary-hover: #4f46e5;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --accent: #8b5cf6;
+  --link: #4361ee;
+  --link-hover: #3730a3;
+  --bg-light: #f9fafb;
+  --border-color: #e5e7eb;
 }
 
 html {
@@ -22,70 +31,164 @@ html {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  color: var(--gray-800);
-  line-height: 1.5;
-  padding-top: 4rem; /* Space for fixed header */
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: rgb(var(--foreground-rgb));
+  line-height: 1.6;
+  background: linear-gradient(
+      to bottom,
+      rgb(var(--background-start-rgb)),
+      rgb(var(--background-end-rgb))
+    )
+    fixed;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 0.5em;
+}
+
+p {
+  margin-bottom: 1rem;
 }
 
 .container {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
 }
 
-/* Animation classes */
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.list-bullet li {
+  position: relative;
+  padding-left: 1rem;
 }
 
-.animate-float-slow {
-  animation: float 6s ease-in-out infinite;
+.list-bullet li::before {
+  content: "•";
+  color: var(--accent);
+  position: absolute;
+  left: 0;
+  font-weight: bold;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
+.study-plan {
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.study-plan:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.week-item {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.week-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.hours-tag {
+  font-size: 0.875rem;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.brain-icon {
+  color: var(--accent);
+  font-size: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+@layer base {
+  h1 {
+    @apply text-4xl font-bold md:text-5xl;
   }
-  50% {
-    transform: translateY(-10px);
+  h2 {
+    @apply text-3xl font-bold md:text-4xl;
   }
-}
-
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
+  h3 {
+    @apply text-2xl font-bold;
   }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+  h4 {
+    @apply text-xl font-semibold;
   }
-}
-
-.animation-delay-200 {
-  animation-delay: 0.2s;
-}
-
-.animation-delay-400 {
-  animation-delay: 0.4s;
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors;
+    @apply bg-indigo-600 text-white px-6 py-3 rounded-md font-medium 
+           hover:bg-indigo-700 transition-colors duration-300
+           transform hover:scale-105 shadow-md;
   }
-  
+
   .btn-secondary {
-    @apply bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-50 transition-colors;
+    @apply border border-gray-300 text-gray-700 px-6 py-3 rounded-md font-medium 
+           hover:bg-gray-50 transition-colors duration-300;
   }
-  
-  .section-title {
-    @apply text-3xl md:text-4xl font-bold text-gray-900 mb-4;
+
+  .section-padding {
+    @apply py-16 md:py-24;
   }
-  
-  .section-subtitle {
-    @apply text-lg text-gray-600 max-w-3xl mx-auto;
+
+  .container-padding {
+    @apply px-4 md:px-8;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-lg p-6 transition-all duration-300 hover:shadow-xl;
+  }
+
+  .card-hover {
+    @apply transform transition-transform duration-300 hover:-translate-y-2;
+  }
+
+  /* Features */
+  .feature-icon {
+    @apply w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mb-4;
+  }
+
+  /* Pricing */
+  .pricing-tier {
+    @apply bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl;
+  }
+
+  .pricing-tier.popular {
+    @apply ring-2 ring-indigo-600 relative transform scale-105;
+  }
+
+  .pricing-header {
+    @apply p-6 border-b border-gray-100;
+  }
+
+  .pricing-features {
+    @apply p-6 space-y-4;
+  }
+
+  .pricing-cta {
+    @apply p-6 bg-gray-50;
   }
 } 

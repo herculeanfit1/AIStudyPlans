@@ -1,144 +1,143 @@
-import Hero from '@/components/Hero';
-import Features from '@/components/Features';
-import Stats from '@/components/Stats';
-import HowItWorksCards from '@/components/HowItWorksCards';
-import Pricing from '@/components/Pricing';
-import FAQ from '@/components/FAQ';
-import Testimonials from '@/components/Testimonials';
-import CTASection from '@/components/CTASection';
-import Waitlist from '@/components/Waitlist';
-import Footer from '@/components/Footer';
+'use client';
+
+import { useEffect } from 'react';
+import Header from './components/Header';
+import Hero from './components/Hero';
+import Features from './components/Features';
+import Pricing from './components/Pricing';
+import Footer from './components/Footer';
 
 export default function Home() {
+  useEffect(() => {
+    // Add smooth scrolling for anchor links
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+      
+      if (link && link.hash && link.hash.startsWith('#') && link.href.includes(window.location.pathname)) {
+        e.preventDefault();
+        const targetElement = document.querySelector(link.hash);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.getBoundingClientRect().top + window.scrollY - 100,
+            behavior: 'smooth'
+          });
+          
+          // Update URL without causing a page reload
+          history.pushState(null, '', link.hash);
+        }
+      }
+    };
+    
+    document.addEventListener('click', handleAnchorClick);
+    
+    return () => {
+      document.removeEventListener('click', handleAnchorClick);
+    };
+  }, []);
+  
   return (
-    <main style={{ fontFamily: 'Arial, sans-serif' }}>
-      <div style={{ 
-        padding: '50px 20px', 
-        background: 'linear-gradient(to right, #4f46e5, #3b82f6)',
-        color: 'white',
-        textAlign: 'center'
-      }}>
-        <h1 style={{ fontSize: '3rem', fontWeight: 'bold', marginBottom: '20px' }}>
-          Your AI Study <span style={{ color: '#fde047' }}>Partner</span> for Academic Success
-        </h1>
-        <p style={{ fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto 30px' }}>
-          SchedulEd creates personalized study plans tailored to your learning style, time availability, and knowledge level.
-        </p>
-        <div>
-          <a href="#waitlist" style={{ 
-            display: 'inline-block',
-            background: '#fde047', 
-            color: '#1f2937', 
-            padding: '12px 24px', 
-            borderRadius: '8px',
-            fontWeight: 'bold',
-            textDecoration: 'none',
-            margin: '10px'
-          }}>
-            Join the Waitlist
-          </a>
-          <a href="#how-it-works" style={{ 
-            display: 'inline-block',
-            border: '2px solid white', 
-            color: 'white', 
-            padding: '12px 24px', 
-            borderRadius: '8px',
-            fontWeight: 'bold',
-            textDecoration: 'none',
-            margin: '10px'
-          }}>
-            Learn More
-          </a>
-        </div>
-      </div>
+    <main className="min-h-screen flex flex-col">
+      <Header />
+      <Hero />
       
-      <div id="stats" style={{ 
-        padding: '40px 20px', 
-        background: 'linear-gradient(to right, #7e22ce, #4f46e5)',
-        color: 'white',
-        textAlign: 'center'
-      }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ 
-            flex: '1 1 300px', 
-            background: 'rgba(255, 255, 255, 0.2)', 
-            padding: '20px', 
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}>
-            <h3 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '10px' }}>10,000+</h3>
-            <p>Students Using Our Platform</p>
-          </div>
-          
-          <div style={{ 
-            flex: '1 1 300px', 
-            background: 'rgba(255, 255, 255, 0.2)', 
-            padding: '20px', 
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}>
-            <h3 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '10px' }}>94%</h3>
-            <p>Report Grade Improvement</p>
-          </div>
-          
-          <div style={{ 
-            flex: '1 1 300px', 
-            background: 'rgba(255, 255, 255, 0.2)', 
-            padding: '20px', 
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}>
-            <h3 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '10px' }}>25+</h3>
-            <p>Subjects Covered</p>
+      {/* Stats Section */}
+      <section className="py-12 bg-indigo-50">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <p className="text-4xl font-bold text-indigo-600">2,000+</p>
+              <p className="text-gray-600">Active Users</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-indigo-600">15,000+</p>
+              <p className="text-gray-600">Study Plans Created</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-indigo-600">93%</p>
+              <p className="text-gray-600">Improved Grades</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-indigo-600">4.8/5</p>
+              <p className="text-gray-600">Average Rating</p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
       
-      <div id="how-it-works" style={{ padding: '40px 20px', textAlign: 'center', background: 'white' }}>
-        <h2 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '20px', color: '#1f2937' }}>
-          How It Works
-        </h2>
-        <p style={{ maxWidth: '800px', margin: '0 auto 40px', color: '#4b5563' }}>
-          Get started with our AI-powered study plans in just a few simple steps
-        </p>
-      </div>
+      <Features />
       
-      <div id="waitlist" style={{ padding: '40px 20px', textAlign: 'center', background: '#eef2ff' }}>
-        <h2 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '20px', color: '#1f2937' }}>
-          Join Our Waitlist
-        </h2>
-        <p style={{ maxWidth: '800px', margin: '0 auto 40px', color: '#4b5563' }}>
-          Be the first to know when we launch
-        </p>
-        <form style={{ maxWidth: '500px', margin: '0 auto' }}>
-          <input 
-            type="email" 
-            placeholder="Enter your email address" 
-            style={{ 
-              width: '100%', 
-              padding: '12px', 
-              borderRadius: '8px', 
-              border: '1px solid #d1d5db',
-              marginBottom: '16px' 
-            }} 
-          />
-          <button 
-            type="submit" 
-            style={{ 
-              width: '100%', 
-              padding: '12px 24px', 
-              borderRadius: '8px', 
-              background: '#4f46e5', 
-              color: 'white', 
-              fontWeight: 'bold', 
-              border: 'none', 
-              cursor: 'pointer' 
-            }}
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-16 md:py-24 bg-indigo-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">How AIStudyPlans Works</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              A simple 4-step process to revolutionize your study routine
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-4 gap-8">
+            {[
+              {
+                step: 1,
+                title: "Create Your Profile",
+                description: "Tell us about your learning style, schedule, and current knowledge level.",
+                icon: "fa-user-pen"
+              },
+              {
+                step: 2,
+                title: "Select Your Subjects",
+                description: "Choose what you want to learn and set specific goals for each subject.",
+                icon: "fa-book-open"
+              },
+              {
+                step: 3,
+                title: "Get Your Plan",
+                description: "Our AI generates a personalized study plan optimized for your success.",
+                icon: "fa-brain"
+              },
+              {
+                step: 4,
+                title: "Track & Improve",
+                description: "Follow your plan and watch as our AI adapts to your progress.",
+                icon: "fa-chart-line"
+              }
+            ].map((item) => (
+              <div key={item.step} className="text-center card">
+                <div className="w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
+                  {item.step}
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4">{item.title}</h3>
+                <p className="text-gray-600">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      
+      <Pricing />
+      
+      {/* CTA Section */}
+      <section className="py-16 md:py-24 bg-indigo-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Transform Your Learning Experience?</h2>
+          <p className="text-xl text-indigo-100 mb-10 max-w-3xl mx-auto">
+            Join thousands of students already using AIStudyPlans to achieve their academic goals.
+          </p>
+          <a 
+            href="#" 
+            className="bg-white text-indigo-600 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition-colors inline-block"
           >
-            Join the Waitlist
-          </button>
-        </form>
-      </div>
+            Get Started Today
+          </a>
+        </div>
+      </section>
+      
+      <Footer />
     </main>
   );
 } 
