@@ -12,15 +12,12 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex-grow">
-        <div className="p-8">
-          <h1 className="text-2xl font-bold">AIStudyPlans</h1>
-          <p className="mt-4 mb-10">Your AI Study Partner for Academic Success</p>
-        </div>
+      <main className="flex-grow">
+        <Hero />
         <Features />
         <Pricing />
         <WaitlistForm />
-      </div>
+      </main>
       <Footer />
     </div>
   );

@@ -12,12 +12,14 @@ require('dotenv').config({ path: '.env.local' });
 
 // Get API key and email from env
 const resendApiKey = process.env.RESEND_API_KEY;
-const fromEmail = 'lindsey@aistudyplans.com';
+const fromEmail = process.env.EMAIL_FROM || 'lindsey@aistudyplans.com';
 const toEmail = process.argv[2]; // Get email from command line argument
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 console.log('Environment variables loaded:');
 console.log('- RESEND_API_KEY:', resendApiKey ? `${resendApiKey.substring(0, 5)}...${resendApiKey.substring(resendApiKey.length - 5)}` : 'Not set');
 console.log('- EMAIL_FROM:', process.env.EMAIL_FROM || 'Not set (using default)');
+console.log('- NEXT_PUBLIC_APP_URL:', appUrl);
 
 if (!resendApiKey) {
   console.error('RESEND_API_KEY is not defined in your .env.local file');
@@ -35,24 +37,31 @@ const resend = new Resend(resendApiKey);
 // Send a test email
 async function sendTestEmail() {
   console.log('Testing Resend email service:');
-  console.log(`- From Address: Lindsey <${fromEmail}> (AIStudyPlans.com domain)`);
+  console.log(`- From Address: ${fromEmail}`);
   console.log(`- To Address: ${toEmail}`);
   
   try {
     const { data, error } = await resend.emails.send({
-      from: `Lindsey <${fromEmail}>`,
+      from: `SchedulEd <${fromEmail}>`,
       to: toEmail,
-      subject: 'AIStudyPlans.com - Resend Test',
+      subject: 'SchedulEd - Resend Test',
       html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4f46e5;">AIStudyPlans.com Email Test</h1>
-        <p>This is a test email to verify that the AIStudyPlans.com domain is correctly configured with Resend.</p>
-        <p>Your Resend API key is working correctly, and emails are being sent from your verified domain.</p>
+        <img src="${appUrl}/SchedulEd_new_logo.png" alt="SchedulEd Logo" style="max-width: 150px; height: auto; margin-bottom: 20px;" />
+        <h1 style="color: #4f46e5;">SchedulEd Email Test</h1>
+        <p>This is a test email to verify that the SchedulEd email system is correctly configured with Resend.</p>
+        <p>Your Resend API key is working correctly, and emails are being sent from your configured address.</p>
         <p>Sent at: ${new Date().toLocaleString()}</p>
       </div>
       `,
-      text: `AIStudyPlans.com Email Test\n\nThis is a test email to verify that the AIStudyPlans.com domain is correctly configured with Resend.\n\nYour Resend API key is working correctly, and emails are being sent from your verified domain.\n\nSent at: ${new Date().toLocaleString()}`,
-      reply_to: 'support@aistudyplans.com',
+      text: `SchedulEd Email Test
+
+This is a test email to verify that the SchedulEd email system is correctly configured with Resend.
+
+Your Resend API key is working correctly, and emails are being sent from your configured address.
+
+Sent at: ${new Date().toLocaleString()}`,
+      reply_to: process.env.EMAIL_REPLY_TO || 'support@aistudyplans.com',
     });
 
     if (error) {

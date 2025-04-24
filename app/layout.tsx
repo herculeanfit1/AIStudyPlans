@@ -5,8 +5,8 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'AIStudyPlans | AI-Powered Study Planning',
-  description: 'Generate personalized study plans with AI that adapts to your learning style, schedule, and goals.',
+  title: 'SchedulEd - Smart Academic Planning for Students',
+  description: 'SchedulEd helps students plan their academic journey with AI-powered tools for course selection, scheduling, and degree planning.',
 };
 
 export const viewport = {

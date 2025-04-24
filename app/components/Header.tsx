@@ -14,7 +14,14 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold text-indigo-600">AIStudyPlans</span>
+              <Image 
+                src="/SchedulEd_new_logo.png"
+                alt="SchedulEd Logo"
+                width={150}
+                height={40}
+                className="h-auto"
+                priority
+              />
             </Link>
           </div>
 
@@ -39,7 +46,7 @@ export default function Header() {
               Pricing
             </Link>
             <Link 
-              href="https://app.aistudyplans.com" 
+              href="https://app.scheduled.ai" 
               className="bg-indigo-600 text-white px-5 py-2 rounded-md hover:bg-indigo-700 transition-colors"
               target="_blank"
               rel="noopener noreferrer"
@@ -86,7 +93,7 @@ export default function Header() {
                 Pricing
               </Link>
               <Link 
-                href="https://app.aistudyplans.com" 
+                href="https://app.scheduled.ai" 
                 className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors inline-block w-full text-center"
                 target="_blank"
                 rel="noopener noreferrer"

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SchedulEd Waitlist Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background-color: #4f46e5;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .logo {
+      max-width: 180px;
+      height: auto;
+      margin: 0 auto;
+      display: block;
+    }
+    main {
+      flex: 1;
+      padding: 2rem;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      color: #4f46e5;
+      margin-top: 0;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    input {
+      border: 1px solid #ddd;
+    }
+    button {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    button:hover {
+      background-color: #4338ca;
+    }
+    .notification {
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+    .success {
+      background-color: #ecfdf5;
+      color: #047857;
+    }
+    .error {
+      background-color: #fef2f2;
+      color: #b91c1c;
+    }
+    .api-response {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-top: 1rem;
+      overflow-x: auto;
+    }
+    pre {
+      margin: 0;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/SchedulEd_new_logo.png" alt="SchedulEd Logo" class="logo">
+  </header>
+  
+  <main>
+    <div class="card">
+      <h2>Test Waitlist Signup</h2>
+      <p>Use this form to test the waitlist API endpoint without running the full Next.js app.</p>
+      
+      <div id="notification" class="notification" style="display: none;"></div>
+      
+      <form id="waitlistForm">
+        <div>
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" placeholder="Your name" required>
+        </div>
+        
+        <div>
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+        
+        <div>
+          <label for="apiUrl">API URL</label>
+          <input type="text" id="apiUrl" name="apiUrl" value="http://localhost:3000/api/waitlist" required>
+        </div>
+        
+        <button type="submit" id="submitButton">Submit Waitlist Form</button>
+      </form>
+      
+      <div id="apiResponse" class="api-response" style="display: none;">
+        <h3>API Response:</h3>
+        <pre id="responseData"></pre>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>Instructions</h2>
+      <ol>
+        <li>Make sure your Next.js app is running at the URL specified above</li>
+        <li>Enter a name and email to test the waitlist signup</li>
+        <li>Check the API response below and your console for details</li>
+        <li>Verify that the confirmation email was sent (check your email or server logs)</li>
+      </ol>
+      <p>Remember to set up the <code>RESEND_API_KEY</code> in your <code>.env.local</code> file to test email functionality.</p>
+    </div>
+  </main>
+  
+  <script>
+    document.getElementById('waitlistForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const notification = document.getElementById('notification');
+      const submitButton = document.getElementById('submitButton');
+      const apiResponse = document.getElementById('apiResponse');
+      const responseData = document.getElementById('responseData');
+      
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const apiUrl = document.getElementById('apiUrl').value;
+      
+      // Reset UI
+      notification.style.display = 'none';
+      apiResponse.style.display = 'none';
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+      
+      try {
+        console.log(`Submitting to: ${apiUrl}`);
+        console.log(`Data: ${JSON.stringify({ name, email })}`);
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name, email }),
+        });
+        
+        const data = await response.json();
+        
+        // Display API response
+        responseData.textContent = JSON.stringify(data, null, 2);
+        apiResponse.style.display = 'block';
+        
+        if (response.ok) {
+          notification.className = 'notification success';
+          notification.textContent = 'Waitlist form submitted successfully! Check your email.';
+        } else {
+          notification.className = 'notification error';
+          notification.textContent = data.error || 'Failed to submit the waitlist form.';
+        }
+        
+        notification.style.display = 'block';
+      } catch (error) {
+        console.error('Error:', error);
+        notification.className = 'notification error';
+        notification.textContent = `Error: ${error.message}. Make sure your API server is running.`;
+        notification.style.display = 'block';
+        
+        responseData.textContent = `Error: ${error.message}`;
+        apiResponse.style.display = 'block';
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Submit Waitlist Form';
+      }
+    });
+  </script>
+</body>
+</html> 

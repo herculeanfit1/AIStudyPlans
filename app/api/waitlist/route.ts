@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import { sendWaitlistConfirmationEmail } from '@/lib/email';
 
-// Initialize Resend with your API key
-const resend = new Resend(process.env.RESEND_API_KEY);
-
+/**
+ * API route handler for waitlist signups
+ * 
+ * Accepts POST requests with name and email in JSON body
+ * Validates input and sends confirmation email using the templates
+ */
 export async function POST(request: NextRequest) {
   try {
+    console.log('Waitlist API route called');
+    
     const { name, email } = await request.json();
+    console.log(`Received waitlist request for: ${name} (${email})`);
 
     // Validate the request data
     if (!name || !email) {
+      console.error('Missing required fields: name or email');
       return NextResponse.json(
         { error: 'Name and email are required' },
         { status: 400 }
@@ -17,6 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!email.match(/^\S+@\S+\.\S+$/)) {
+      console.error(`Invalid email format: ${email}`);
       return NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 }
@@ -26,33 +34,24 @@ export async function POST(request: NextRequest) {
     // In a real application, you would store this in a database
     console.log(`New waitlist signup: ${name} (${email})`);
 
-    // Send confirmation email (if Resend API key is configured)
-    if (process.env.RESEND_API_KEY) {
-      try {
-        await resend.emails.send({
-          from: process.env.EMAIL_FROM || 'AIStudyPlans <noreply@aistudyplans.com>',
-          to: email,
-          subject: 'Welcome to the AIStudyPlans Waitlist!',
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #4f46e5;">Welcome to AIStudyPlans!</h1>
-              <p>Hello ${name},</p>
-              <p>Thank you for joining the AIStudyPlans waitlist. We're excited to have you on board!</p>
-              <p>We're working hard to build the best AI-powered study plan generator for students. You'll be among the first to know when we launch.</p>
-              <p>Stay tuned,</p>
-              <p>The AIStudyPlans Team</p>
-            </div>
-          `,
-          reply_to: process.env.EMAIL_REPLY_TO || 'support@aistudyplans.com'
-        });
-      } catch (emailError) {
-        console.error('Error sending confirmation email:', emailError);
-        // Don't return an error response here, we still want to consider the signup successful
-      }
+    // Send confirmation email using the template
+    try {
+      console.log('Sending waitlist confirmation email...');
+      const result = await sendWaitlistConfirmationEmail(email);
+      console.log('Email sent successfully, ID:', result?.messageId);
+    } catch (emailError: any) {
+      console.error('Error sending waitlist confirmation email:', emailError?.message || emailError);
+      // Note: We don't fail the API call if email sending fails
+      // The user is still added to the waitlist
     }
 
     return NextResponse.json(
-      { success: true, message: 'Successfully joined the waitlist' },
+      { 
+        success: true, 
+        message: 'Successfully joined the waitlist',
+        name,
+        email
+      },
       { status: 200 }
     );
   } catch (error) {
