@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-bold text-white mb-4">AIStudyPlans</h3>
+            <h3 className="text-lg font-bold text-white mb-4">SchedulEd</h3>
             <p className="mb-4">
               AI-powered study plan generator creating personalized learning paths tailored to individual learning styles.
             </p>
@@ -58,10 +58,10 @@ export default function Footer() {
         </div>
         
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; {currentYear} AIStudyPlans. All rights reserved.</p>
+          <p>&copy; {currentYear} SchedulEd. All rights reserved.</p>
           <p className="mt-2 text-sm">
             <Link 
-              href="https://app.aistudyplans.com" 
+              href="https://app.scheduled.ai" 
               className="text-indigo-400 hover:text-indigo-300 transition"
               target="_blank"
               rel="noopener noreferrer"

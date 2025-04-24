@@ -24,6 +24,7 @@
   --link-hover: #3730a3;
   --bg-light: #f9fafb;
   --border-color: #e5e7eb;
+  --animation-duration: 0.8s;
 }
 
 html {
@@ -121,6 +122,58 @@ p {
   color: var(--accent);
   font-size: 1.25rem;
   margin-right: 0.5rem;
+}
+
+/* Animation classes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--animation-duration) ease forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--animation-duration) ease forwards;
+}
+
+/* Animation delay classes */
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-400 {
+  animation-delay: 400ms;
+}
+
+.delay-500 {
+  animation-delay: 500ms;
+}
+
+/* Initial state for animation elements */
+.waitlist-animate {
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 @layer base {

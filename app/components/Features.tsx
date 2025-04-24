@@ -76,9 +76,9 @@ export default function Features() {
     <section id="features" className="py-16 md:py-24 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Why Choose AIStudyPlans?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Why Choose SchedulEd?</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Our AI-powered platform goes beyond simple scheduling to create a truly personalized learning experience.
+            Our AI-powered platform offers everything you need to maximize your study efficiency.
           </p>
         </div>
         

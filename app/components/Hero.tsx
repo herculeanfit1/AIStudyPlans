@@ -6,10 +6,25 @@ import Image from 'next/image';
 
 export default function Hero() {
   const [isVisible, setIsVisible] = useState(false);
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const waitlistSection = document.getElementById('waitlist');
+    if (waitlistSection) {
+      waitlistSection.scrollIntoView({ behavior: 'smooth' });
+      // Find the email input in the waitlist section and set its value
+      const waitlistEmailInput = waitlistSection.querySelector('input[type="email"]') as HTMLInputElement;
+      if (waitlistEmailInput) {
+        waitlistEmailInput.value = email;
+        waitlistEmailInput.focus();
+      }
+    }
+  };
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 to-blue-100 py-20 md:py-28">
@@ -32,7 +47,7 @@ export default function Hero() {
             
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
               <Link 
-                href="https://app.aistudyplans.com" 
+                href="https://app.scheduled.ai" 
                 className="btn-primary text-center"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -55,7 +70,7 @@ export default function Hero() {
                   </div>
                 ))}
               </div>
-              <span>Join 2,000+ students already using AIStudyPlans</span>
+              <span>Join 2,000+ students already using SchedulEd</span>
             </div>
           </div>
           
@@ -100,7 +115,7 @@ export default function Hero() {
                   <span className="text-sm text-gray-500">Progress: 25% complete</span>
                 </div>
                 <Link 
-                  href="https://app.aistudyplans.com" 
+                  href="https://app.scheduled.ai" 
                   className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
                   target="_blank"
                   rel="noopener noreferrer"

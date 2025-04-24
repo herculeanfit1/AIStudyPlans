@@ -1,50 +1,117 @@
-# SchedulEd Documentation
+# AIStudyPlans Documentation
 
-This directory contains documentation for the SchedulEd application.
+Welcome to the AIStudyPlans (SchedulEd) documentation. This repository contains comprehensive documentation for the AIStudyPlans application, a Next.js-based platform for generating AI-powered study plans.
 
-## Table of Contents
+## Documentation Overview
 
-- [Environment Variables](./env-example.md) - Configuration settings for the application
-- [Email Service](./email-service.md) - Documentation for the email service using Resend
+This documentation is organized into several sections, each focusing on a specific aspect of the application:
 
-## Setup Instructions
+1. [**Codebase Documentation**](./CODEBASE.md) - Overall codebase structure and architecture
+2. [**API Documentation**](./API.md) - Details about API endpoints and usage
+3. [**Email Service Documentation**](./EMAIL.md) - Email configuration, templates, and utilities
+4. [**Components Documentation**](./COMPONENTS.md) - Frontend components and their usage
+5. [**Project Status**](./project-status.md) - Current implementation status and roadmap
+6. [**TODO List**](./TODO.md) - Current development tasks and progress
 
-To set up the SchedulEd application:
+## Getting Started
 
-1. Clone the repository
+If you're new to the project, we recommend starting with the following documents:
+
+1. Start with the [Codebase Documentation](./CODEBASE.md) to understand the overall structure
+2. Review the [Project Status](./project-status.md) to learn about the current state of development
+3. Explore the [Components Documentation](./COMPONENTS.md) to understand the frontend UI
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 18 or higher
+- npm 9 or higher
+- A Resend API key for email functionality
+
+### Setup Instructions
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/AIStudyPlans.git
+   cd AIStudyPlans
+   ```
+
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Copy the environment variables from [env-example.md](./env-example.md) to a `.env.local` file
+
+3. Create a `.env.local` file with the following environment variables:
+   ```
+   RESEND_API_KEY=your_resend_api_key
+   EMAIL_FROM=Lindsey <lindsey@aistudyplans.com>
+   EMAIL_REPLY_TO=support@aistudyplans.com
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
+
 4. Start the development server:
    ```bash
    npm run dev
    ```
 
-## Resend Email Service
+5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-SchedulEd uses Resend for sending emails. To set up:
+### Using Docker
 
-1. Sign up for a [Resend](https://resend.com) account
-2. Create an API key
-3. Add the API key to your `.env.local` file
-4. See [email-service.md](./email-service.md) for more details on using the email service
+Alternatively, you can use Docker for development:
 
-## Application Structure
+```bash
+./run-docker.sh start
+```
 
-The application uses Next.js 14 with the App Router:
+This will start the application in a Docker container, and you can access it at [http://localhost:3001](http://localhost:3001).
 
-- `app/` - Next.js App Router pages and API routes
-- `components/` - Reusable React components
+## Testing
+
+The application includes a testing infrastructure:
+
+1. **Unit Tests**:
+   ```bash
+   npm run test
+   ```
+
+2. **End-to-End Tests**:
+   ```bash
+   npm run test:e2e
+   ```
+
+## Email Testing
+
+To test the email functionality:
+
+1. Ensure you have a valid Resend API key in your `.env.local` file
+2. Run the test script:
+   ```bash
+   node test-resend.js your-email@example.com
+   ```
+
+## Project Structure Highlights
+
+- `app/` - Next.js 14 App Router directory
+- `app/api/` - API routes
+- `app/components/` - Client-side components
 - `lib/` - Utility functions and services
+- `docs/` - Documentation files
 - `public/` - Static assets
 
-## Email Templates
+## Future Development
 
-The email templates are defined in `lib/email-templates.ts`. They include:
+The application is currently in the initial development phase. Key features planned for future implementation include:
 
-1. Waitlist confirmation emails
-2. Password reset emails
+1. User authentication system
+2. Database integration for storing user data
+3. AI-powered study plan generation
+4. Study plan management and tracking
+5. Dashboard functionality
 
-See [email-service.md](./email-service.md) for more details. 
+For a complete list of planned tasks, see the [TODO List](./TODO.md).
+
+## Contact
+
+For questions about the documentation or the project, please contact the development team at support@aistudyplans.com. 

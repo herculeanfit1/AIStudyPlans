@@ -52,7 +52,7 @@ function PricingTier({ name, price, period, description, features, buttonText, h
       
       <div className="pricing-cta">
         <Link 
-          href="https://app.aistudyplans.com" 
+          href="https://app.scheduled.ai" 
           className={`block text-center py-3 px-6 rounded-md font-medium transition-colors w-full ${
             highlighted 
               ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
@@ -76,21 +76,21 @@ export default function Pricing() {
       name: "Basic",
       price: annual ? "Free" : "Free",
       period: "",
-      description: "Perfect for getting started with personalized study plans.",
+      description: "Perfect for getting started with study plan outlines.",
       features: [
-        { title: "3 Active Study Plans", included: true },
-        { title: "Basic Analytics", included: true },
-        { title: "Standard Scheduling", included: true },
+        { title: "3 Study Plan Outlines", included: true },
+        { title: "Basic Templates", included: true },
         { title: "Community Support", included: true },
-        { title: "Resource Recommendations", included: false },
+        { title: "Detailed Plan Content", included: false },
+        { title: "Analytics", included: false },
+        { title: "Scheduling Features", included: false },
         { title: "AI-Powered Adaptations", included: false },
-        { title: "Priority Support", included: false },
       ],
       buttonText: "Try It Free"
     },
     {
       name: "Pro",
-      price: annual ? "$9.99" : "$12.99",
+      price: annual ? "$8" : "$10",
       period: annual ? "/month, billed annually" : "/month",
       description: "Advanced features for serious students.",
       features: [
@@ -107,7 +107,7 @@ export default function Pricing() {
     },
     {
       name: "Premium",
-      price: annual ? "$19.99" : "$24.99",
+      price: annual ? "$11" : "$14",
       period: annual ? "/month, billed annually" : "/month",
       description: "The ultimate learning experience for maximum results.",
       features: [
@@ -120,6 +120,22 @@ export default function Pricing() {
         { title: "1-on-1 Study Coach Sessions", included: true },
       ],
       buttonText: "Get Premium"
+    },
+    {
+      name: "Enterprise / Education",
+      price: "Contact Sales",
+      period: "",
+      description: "Custom solutions for institutions and organizations.",
+      features: [
+        { title: "Unlimited Users & Study Plans", included: true },
+        { title: "Centralized Administration", included: true },
+        { title: "Custom Integration Options", included: true },
+        { title: "Dedicated Account Manager", included: true },
+        { title: "White-Label Options", included: true },
+        { title: "Custom Analytics & Reporting", included: true },
+        { title: "Bulk User Management", included: true },
+      ],
+      buttonText: "Contact Sales"
     }
   ];
 
@@ -154,7 +170,7 @@ export default function Pricing() {
           )}
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
           {tiers.map((tier, index) => (
             <PricingTier 
               key={index} 

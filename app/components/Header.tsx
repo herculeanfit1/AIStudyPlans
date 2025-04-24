@@ -9,7 +9,7 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-2.5">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center">
@@ -17,8 +17,8 @@ export default function Header() {
               <Image 
                 src="/SchedulEd_new_logo.png"
                 alt="SchedulEd Logo"
-                width={150}
-                height={40}
+                width={250}
+                height={67}
                 className="h-auto"
                 priority
               />
@@ -28,16 +28,16 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link 
-              href="#features" 
-              className="text-gray-700 hover:text-indigo-600 transition-colors"
-            >
-              Features
-            </Link>
-            <Link 
               href="#how-it-works" 
               className="text-gray-700 hover:text-indigo-600 transition-colors"
             >
               How It Works
+            </Link>
+            <Link 
+              href="#features" 
+              className="text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              Features
             </Link>
             <Link 
               href="#pricing" 
@@ -72,18 +72,18 @@ export default function Header() {
           <div className="md:hidden pt-4 pb-2 border-t mt-4">
             <nav className="flex flex-col space-y-4">
               <Link 
-                href="#features" 
-                className="text-gray-700 hover:text-indigo-600 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Features
-              </Link>
-              <Link 
                 href="#how-it-works" 
                 className="text-gray-700 hover:text-indigo-600 transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 How It Works
+              </Link>
+              <Link 
+                href="#features" 
+                className="text-gray-700 hover:text-indigo-600 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Features
               </Link>
               <Link 
                 href="#pricing" 
