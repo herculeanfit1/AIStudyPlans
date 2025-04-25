@@ -46,17 +46,9 @@ export default function Hero() {
             </p>
             
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Link 
-                href="https://app.scheduled.ai" 
-                className="btn-primary text-center"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Launch App
-              </Link>
               <a 
                 href="#features" 
-                className="btn-secondary text-center"
+                className="bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border-2 border-indigo-300 dark:border-indigo-700 hover:bg-indigo-200 dark:hover:bg-indigo-800 px-6 py-3 rounded-md font-medium transition-colors duration-300 text-center"
               >
                 Learn More
               </a>
@@ -115,7 +107,7 @@ export default function Hero() {
                   <span className="text-sm text-gray-500">Progress: 25% complete</span>
                 </div>
                 <Link 
-                  href="https://app.scheduled.ai" 
+                  href="https://app.aistudyplans.com" 
                   className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
                   target="_blank"
                   rel="noopener noreferrer"

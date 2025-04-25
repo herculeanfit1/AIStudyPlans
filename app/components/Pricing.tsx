@@ -49,21 +49,6 @@ function PricingTier({ name, price, period, description, features, buttonText, h
           ))}
         </ul>
       </div>
-      
-      <div className="pricing-cta">
-        <Link 
-          href="https://app.scheduled.ai" 
-          className={`block text-center py-3 px-6 rounded-md font-medium transition-colors w-full ${
-            highlighted 
-              ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
-              : 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-800'
-          }`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {buttonText}
-        </Link>
-      </div>
     </div>
   );
 }
@@ -186,7 +171,6 @@ export default function Pricing() {
         </div>
         
         <div className="text-center mt-16">
-          <p className="text-gray-600 mb-4">All plans include a 14-day money-back guarantee</p>
           <p className="text-gray-500">
             Need a custom plan for your institution? 
             <a href="#" className="text-indigo-600 hover:text-indigo-800 ml-1 font-medium">

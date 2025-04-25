@@ -61,14 +61,6 @@ export default function Header() {
               Pricing
             </Link>
             <ThemeToggle />
-            <Link 
-              href="https://app.aistudyplans.com" 
-              className="bg-indigo-600 text-white px-5 py-2 rounded-md hover:bg-indigo-700 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Launch App
-            </Link>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -108,15 +100,6 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Pricing
-              </Link>
-              <Link 
-                href="https://app.aistudyplans.com" 
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors inline-block w-full text-center"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Launch App
               </Link>
             </nav>
           </div>
