@@ -61,8 +61,8 @@ export default function Footer() {
           <p>&copy; {currentYear} SchedulEd. All rights reserved.</p>
           <p className="mt-2 text-sm">
             <Link 
-              href="https://app.scheduled.ai" 
-              className="text-indigo-400 hover:text-indigo-300 transition"
+              href="https://app.aistudyplans.com" 
+              className="w-full px-5 py-3 text-center text-base font-medium text-white bg-gray-900 border border-transparent rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-white sm:w-auto"
               target="_blank"
               rel="noopener noreferrer"
             >

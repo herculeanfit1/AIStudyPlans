@@ -19,7 +19,7 @@
 - [x] Implement responsive header with navigation
 - [x] Create modern landing page with sections for features, pricing, etc.
 - [x] Set up waitlist form with email confirmation
-- [ ] Review directory structure (consider moving from scheduledapp/ subfolder to root)
+- [x] Review directory structure (consider moving from scheduledapp/ subfolder to root)
 - [x] Create comprehensive documentation for codebase
   - [x] Created CODEBASE.md for overall architecture
   - [x] Created API.md for API endpoints
@@ -38,18 +38,125 @@
 - [x] Create Footer with links and social media
 - [x] Implement mobile-responsive navigation
 - [x] Add animations and transitions for better engagement
-- [ ] Implement dark mode support
+- [x] Implement dark mode support
 - [ ] Add testimonials section
 - [x] Create FAQ section with accordion functionality
+
+## UI Enhancements (In Progress)
+
+- [x] Hero Animation Upgrade
+  - [x] Add particle effects in the background using Particles.js
+  - [x] Implement subtle parallax scrolling for background elements
+  - [x] Implement a 3D animated study plan using Three.js
+- [x] Dark Mode Toggle
+  - [x] Add a theme switcher with system preference detection
+  - [x] Create custom dark/light mode animations for transitions
+- [x] Micro-interactions
+  - [x] Add hover effects for all interactive elements
+  - [x] Implement scroll-triggered animations using Framer Motion's useInView hook
+  - [x] Add loading state animations for all interactive elements
 
 ## Deployment & Infrastructure
 
 - [x] Set up Next.js development environment
-- [ ] Configure proper build process
+- [x] Configure proper build process
 - [ ] Set up Vercel or similar deployment
 - [ ] Configure domain with proper DNS settings
 - [ ] Set up monitoring and analytics
 - [ ] Implement proper error handling and logging
+- [x] Create production Docker configuration
+- [x] Set up Nginx configuration for production
+- [x] Configure SSL with Let's Encrypt
+- [x] Create production deployment checklist
+- [ ] Implement the following deployment steps:
+
+### 1. Environment Configuration
+- [ ] Create a secure `.env.production` file with the following variables:
+  - `NODE_ENV=production`
+  - `NEXT_TELEMETRY_DISABLED=1`
+  - `RESEND_API_KEY=<production_api_key>`
+  - `EMAIL_FROM=noreply@aistudyplans.com`
+  - `EMAIL_REPLY_TO=support@aistudyplans.com`
+  - `NEXT_PUBLIC_APP_URL=https://aistudyplans.com`
+- [ ] Ensure environment variables are securely stored and not committed to the repository
+- [ ] Validate environment variables during the build process
+
+### 2. Domain Setup
+- [ ] Configure DNS settings for `aistudyplans.com`:
+  - A record pointing to the production server IP
+  - CNAME for www subdomain
+  - MX records for proper email delivery
+  - TXT records for SPF and DKIM to improve email deliverability
+- [ ] Set up DNS CAA records for enhanced SSL security
+
+### 3. Server Setup
+- [ ] Provision a production server with adequate resources:
+  - Minimum 2GB RAM, 2 vCPUs for initial deployment
+  - 20GB SSD storage
+  - Ubuntu 22.04 LTS or similar stable OS
+- [ ] Configure server security:
+  - Set up SSH key-based authentication
+  - Configure firewall (UFW) to allow only necessary ports (80, 443, 22)
+  - Install fail2ban for brute force protection
+  - Set up automatic security updates
+- [ ] Install Docker and Docker Compose:
+  - Follow official installation guides
+  - Configure Docker daemon with appropriate limits
+  - Set up Docker to start on boot
+
+### 4. SSL Certificate Setup
+- [ ] Create directories for Let's Encrypt certificates
+
+### 5. Azure Static Web Apps Deployment
+- [ ] Configure Next.js for hybrid Azure Static Web Apps deployment:
+  - [ ] Update `next.config.js` to include `output: "standalone"` for improved Azure compatibility
+  - [ ] Configure appropriate caching strategies for static and dynamic content
+- [ ] Set up GitHub Actions CI/CD workflow:
+  - [ ] Create `.github/workflows/azure-static-web-apps.yml` using the `Azure/static-web-apps-deploy@v1` action
+  - [ ] Implement build caching with `actions/cache` for `node_modules` and `.next` directories
+  - [ ] Configure workflow to support pull request preview environments
+- [ ] Manage environment variables:
+  - [ ] Set up application settings via Azure portal
+  - [ ] Configure API-specific environment variables using `az staticwebapp appsettings set`
+  - [ ] Store secrets in GitHub Actions Secrets for build-time access
+  - [ ] Configure GitHub Secrets for CI/CD:
+    - [ ] Add `AZURE_STATIC_WEB_APPS_API_TOKEN` (from Azure)
+    - [ ] Add `RESEND_API_KEY` for email service
+    - [ ] Add `EMAIL_FROM` with verified domain
+    - [ ] Add `EMAIL_REPLY_TO` for support emails
+    - [ ] Add `NEXT_PUBLIC_APP_URL` for site URL
+  - [ ] Create GitHub workflow file `.github/workflows/azure-static-web-apps.yml`:
+    - [ ] Set up Node.js environment with appropriate version
+    - [ ] Configure caching for dependencies and build outputs
+    - [ ] Use `Azure/static-web-apps-deploy@v1` action
+    - [ ] Pass environment variables from secrets to the build process
+  - [ ] Configure Azure Static Web Apps runtime settings:
+    - [ ] Set environment variables in Azure Portal Configuration section
+    - [ ] Alternatively use Azure CLI command: `az staticwebapp appsettings set`
+    - [ ] Ensure all variables are properly set for both build-time and runtime
+  - [ ] Create `staticwebapp.config.json` with proper routes and headers
+  - [ ] Update `next.config.js` to include `output: "standalone"`
+- [ ] Configure custom domain and SSL:
+  - [ ] Add custom domain in Azure Static Web Apps portal
+  - [ ] Create CNAME record pointing to Azure-provided endpoint
+  - [ ] Validate domain ownership and configure free SSL certificate
+- [ ] Implement monitoring and analytics:
+  - [ ] Set up Application Insights for frontend and API monitoring
+  - [ ] Add instrumentation code for client-side performance tracking
+  - [ ] Configure alerts for critical errors and performance thresholds
+- [ ] Enhance security configuration:
+  - [ ] Apply custom security headers via `staticwebapp.config.json`
+  - [ ] Configure CORS policies for API routes
+  - [ ] Set up Azure WAF or Front Door for DDoS protection (optional)
+  - [ ] Implement private endpoints for backend functions if needed
+- [ ] Optimize for scaling and performance:
+  - [ ] Configure dedicated App Service plan for backend functions
+  - [ ] Implement auto-scaling rules based on load patterns
+  - [ ] Set up resource naming conventions and organize resources appropriately
+- [ ] Add additional support services:
+  - [ ] Configure Azure Storage for static assets (if needed)
+  - [ ] Set up Azure Logging account for centralized logs
+  - [ ] Implement cost management tags and budget alerts
 
 ## Future Enhancements
 
@@ -60,4 +167,35 @@
 - [ ] Add progress tracking 
 - [ ] Implement dashboard for registered users
 - [ ] Add study plan templates
-- [ ] Create resource recommendation engine 
+- [ ] Create resource recommendation engine
+- [ ] Interactive Study Plan Demo
+  - [ ] Create a simplified version of the study plan generator
+  - [ ] Allow users to input a subject and get a sample plan
+  - [ ] Include a "Get Full Plan" CTA
+- [ ] Personalization Quiz
+  - [ ] Add a short quiz to identify user learning style
+  - [ ] Show personalized recommendations based on results
+  - [ ] End with customized CTA
+- [ ] Progress Tracker Preview
+  - [ ] Add interactive visual showing how the app tracks progress
+  - [ ] Include animated charts or graphs
+  - [ ] Demonstrate goal completion satisfaction
+- [ ] Enhanced Social Proof & Trust Signals
+  - [ ] Create an animated testimonial carousel
+  - [ ] Add live waitlist counter
+  - [ ] Display trust badges from educational institutions
+- [ ] Advanced Call-to-Action Strategy
+  - [ ] Implement tiered CTA approach (primary, secondary, tertiary)
+  - [ ] Add floating action button that follows scroll
+  - [ ] Create early access incentives
+- [ ] Next.js 15 Upgrade Plan
+  - [ ] Create test branch for Next.js 15 migration
+  - [ ] Use @next/codemod CLI to automate migration process
+  - [ ] Update async request APIs (cookies, headers, params)
+  - [ ] Adjust caching strategy for uncached-by-default behavior
+  - [ ] Test with React 19
+  - [ ] Implement stable Turbopack for faster development
+  - [ ] Utilize TypeScript config with next.config.ts
+  - [ ] Enhance form handling with new <Form> component
+  - [ ] Add client instrumentation hooks for analytics
+  - [ ] Leverage enhanced security for Server Actions
