@@ -16,5 +16,5 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Run development server
+# Use development mode instead of build
 CMD ["npm", "run", "dev"] 

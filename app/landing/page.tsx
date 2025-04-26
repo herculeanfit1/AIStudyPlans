@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 import Image from 'next/image';
-import Header from '../../components/Header';
-import WaitlistForm from '../../components/WaitlistForm';
+import Header from '../components/Header';
+import WaitlistForm from '../components/WaitlistForm';
 import { initSmoothScroll } from '../../lib/smoothScroll';
 
 export default function LandingPage() {

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Robot Head - rounded square -->
+  <rect x="20" y="10" width="60" height="70" rx="10" ry="10" fill="#4f46e5" />
+  
+  <!-- Eyes -->
+  <circle cx="40" cy="35" r="8" fill="white" />
+  <circle cx="60" cy="35" r="8" fill="white" />
+  <circle cx="40" cy="35" r="4" fill="#3730a3" />
+  <circle cx="60" cy="35" r="4" fill="#3730a3" />
+  
+  <!-- Mouth -->
+  <rect x="35" y="55" width="30" height="10" rx="5" ry="5" fill="white" />
+  
+  <!-- Antenna -->
+  <line x1="50" y1="10" x2="50" y2="0" stroke="#4f46e5" stroke-width="4" />
+  <circle cx="50" cy="0" r="4" fill="#4f46e5" />
+</svg> 

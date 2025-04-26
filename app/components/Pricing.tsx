@@ -75,7 +75,7 @@ export default function Pricing() {
     },
     {
       name: "Pro",
-      price: annual ? "$8" : "$10",
+      price: annual ? "$6" : "$8",
       period: annual ? "/month, billed annually" : "/month",
       description: "Advanced features for serious students.",
       features: [
@@ -92,7 +92,7 @@ export default function Pricing() {
     },
     {
       name: "Premium",
-      price: annual ? "$11" : "$14",
+      price: annual ? "$8" : "$11",
       period: annual ? "/month, billed annually" : "/month",
       description: "The ultimate learning experience for maximum results.",
       features: [

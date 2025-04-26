@@ -14,7 +14,7 @@ export default function FAQ() {
     },
     {
       question: "How much does SchedulEd cost?",
-      answer: "We offer a free basic tier with limited features. Our premium plans start at $8/month with additional tiers for advanced features. Check our pricing section for detailed information on what each plan includes."
+      answer: "We offer a free basic tier with limited features. Our premium plans start at $6/month (billed annually) with additional tiers for advanced features. Check our pricing section for detailed information on what each plan includes."
     },
     {
       question: "Can I use SchedulEd for group study or as a teacher?",

@@ -45,15 +45,15 @@ test.describe('Landing Page', () => {
     await expect(page.getByText('Most Popular')).toBeVisible();
     
     // Default should be annual pricing
-    await expect(page.getByText('$9.99')).toBeVisible();
-    await expect(page.getByText('$19.99')).toBeVisible();
+    await expect(page.getByText('$6')).toBeVisible();
+    await expect(page.getByText('$8')).toBeVisible();
     
     // Toggle to monthly pricing
     await page.locator('input[type="checkbox"]').check();
     
     // Check monthly pricing is displayed
-    await expect(page.getByText('$12.99')).toBeVisible();
-    await expect(page.getByText('$24.99')).toBeVisible();
+    await expect(page.getByText('$8')).toBeVisible();
+    await expect(page.getByText('$11')).toBeVisible();
   });
   
   test('should display footer with links', async ({ page }) => {

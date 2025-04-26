@@ -1,105 +1,81 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-interface Feature {
-  title: string;
-  description: string;
-  icon: string;
-}
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
+import AnimatedFeature from './AnimatedFeature';
 
 export default function Features() {
-  const [animateFeatures, setAnimateFeatures] = useState<boolean[]>([]);
-  
-  const features: Feature[] = [
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  const features = [
     {
-      title: "Personalized Learning Paths",
-      description: "Study plans tailored to your learning style, time availability, and current knowledge level.",
-      icon: "fa-brain"
+      icon: <i className="fas fa-brain text-indigo-600 dark:text-indigo-400 text-2xl"></i>,
+      title: "AI-Powered Plans",
+      description: "Our AI algorithm creates personalized study plans based on your learning style, goals, and schedule."
     },
     {
-      title: "Smart Scheduling",
-      description: "Optimize your study time with intelligently scheduled sessions that match your peak productivity hours.",
-      icon: "fa-calendar-alt"
+      icon: <i className="fas fa-clock text-indigo-600 dark:text-indigo-400 text-2xl"></i>,
+      title: "Time Optimization",
+      description: "Maximize your study efficiency with scientifically-proven time management techniques."
     },
     {
+      icon: <i className="fas fa-chart-line text-indigo-600 dark:text-indigo-400 text-2xl"></i>,
       title: "Progress Tracking",
-      description: "Monitor your learning journey with detailed analytics to stay motivated and focused.",
-      icon: "fa-chart-line"
+      description: "Monitor your improvement with detailed analytics and adjustable goals."
     },
     {
-      title: "Curated Resources",
-      description: "Access high-quality educational materials specifically chosen to match your learning style.",
-      icon: "fa-book-open"
+      icon: <i className="fas fa-puzzle-piece text-indigo-600 dark:text-indigo-400 text-2xl"></i>,
+      title: "Adaptive Learning",
+      description: "Your plan evolves based on your performance, focusing more time on challenging areas."
     },
     {
+      icon: <i className="fas fa-bell text-indigo-600 dark:text-indigo-400 text-2xl"></i>,
       title: "Smart Reminders",
-      description: "Never miss a study session with timely reminders and calendar integration.",
-      icon: "fa-bell"
+      description: "Stay on track with personalized notifications and study session reminders."
     },
     {
-      title: "AI Adaptation",
-      description: "Your study plan continuously improves as the AI learns from your progress and feedback.",
-      icon: "fa-gears"
+      icon: <i className="fas fa-users text-indigo-600 dark:text-indigo-400 text-2xl"></i>,
+      title: "Collaborative Study",
+      description: "Connect with peers studying similar subjects for group sessions and knowledge sharing."
     }
   ];
 
-  useEffect(() => {
-    // Initialize all features as not animated
-    setAnimateFeatures(new Array(features.length).fill(false));
-    
-    // Set up intersection observer
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const index = parseInt(entry.target.getAttribute('data-index') || '0', 10);
-          setAnimateFeatures((prev) => {
-            const newState = [...prev];
-            newState[index] = true;
-            return newState;
-          });
-        }
-      });
-    }, { threshold: 0.1 });
-    
-    // Observe feature elements
-    document.querySelectorAll('.feature-card').forEach((el) => {
-      observer.observe(el);
-    });
-    
-    return () => {
-      observer.disconnect();
-    };
-  }, [features.length]);
-
   return (
-    <section id="features" className="py-16 md:py-24 bg-white">
+    <section id="features" className="py-20 bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Why Choose SchedulEd?</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Our AI-powered platform offers everything you need to maximize your study efficiency.
+        <motion.div 
+          className="text-center max-w-3xl mx-auto mb-16"
+          ref={ref}
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.span 
+            className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm uppercase tracking-wider"
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            The SchedulEd Difference
+          </motion.span>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mt-2 mb-4">Features Designed for Student Success</h2>
+          <p className="text-xl text-gray-600 dark:text-gray-300">
+            Our platform combines cutting-edge AI with proven study techniques to help you achieve academic excellence.
           </p>
-        </div>
+        </motion.div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {features.map((feature, index) => (
-            <div 
+            <AnimatedFeature
               key={index}
-              data-index={index}
-              className={`feature-card card card-hover transform transition-all duration-700 ${
-                animateFeatures[index] 
-                  ? 'translate-y-0 opacity-100' 
-                  : 'translate-y-8 opacity-0'
-              }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              <div className="feature-icon">
-                <i className={`fas ${feature.icon} text-2xl`} aria-hidden="true"></i>
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-4">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
-            </div>
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              index={index}
+            />
           ))}
         </div>
       </div>

@@ -116,6 +116,41 @@ npm run build
 npm run start
 ```
 
+## Azure Static Web Apps Deployment
+
+This landing page is configured for deployment to Azure Static Web Apps using GitHub Actions.
+
+### Required GitHub Secrets
+
+The following GitHub secrets should be configured in your repository for successful deployment:
+
+- `AZURE_STATIC_WEB_APPS_API_TOKEN`: Token from Azure Static Web Apps
+- `RESEND_API_KEY`: API key for the Resend email service
+- `EMAIL_FROM`: Email address used for sending notifications
+- `EMAIL_REPLY_TO`: Reply-to email address for notifications
+- `NEXT_PUBLIC_APP_URL`: The production URL of your application
+
+### How to Deploy
+
+1. Create an Azure Static Web App in the Azure Portal
+2. Get the deployment token and add it as a GitHub secret
+3. Push to the main branch to trigger automatic deployment
+
+### Custom Domain Setup
+
+1. Configure your custom domain in the Azure Static Web Apps portal
+2. Create the necessary DNS records:
+   - For apex domain: A records pointing to Azure's IP
+   - For www subdomain: CNAME record pointing to your Azure app hostname
+
+### Troubleshooting Deployment
+
+If you encounter issues with deployment:
+
+1. Check GitHub Actions logs for detailed error information
+2. Verify that all required secrets are correctly configured
+3. Ensure that your Next.js application builds successfully locally
+
 ## License
 
 [MIT](LICENSE)

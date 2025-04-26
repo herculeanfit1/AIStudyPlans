@@ -3,10 +3,12 @@
 ## Overview
 SchedulEd is an AI-powered study plan generator that creates personalized learning paths tailored to individual learning styles. The platform uses advanced algorithms to generate step-by-step study plans based on subject matter, time availability, learning style preferences, and current knowledge level. Users can create accounts to save their personalized study plans, track progress, and access additional features.
 
-The current implementation focuses on:
+The current implementation includes:
 - A modern, responsive landing page built with Next.js 14 (App Router)
 - Waitlist collection for early access to the platform
 - Email integration with Resend for confirmation emails
+- Dark/light mode theming with Next.js theme provider
+- Responsive particle background effects
 - Clear presentation of features, pricing, and value proposition
 - Mobile-responsive design with proper navigation
 
@@ -17,36 +19,132 @@ Key capabilities include:
 - Advanced customization options for resource types, study environments, and learning preferences
 - Responsive, modern interface optimized for all devices
 - Content curation system for recommending high-quality educational resources
-- Modular architecture with clear separation of concerns (controller, service, model layers)
+- Modular architecture with clear separation of concerns
 - Containerized deployment with Docker for consistent development and production environments
 
 ## Current Implementation
 
 ### 1. Landing Page Components
-- Modern hero section with clear value proposition
+- Modern hero section with clear value proposition and particle background
 - Feature showcase highlighting key platform capabilities
 - Pricing tiers with toggle between monthly and annual billing
 - Waitlist form for early access registration
-- Navigation header with responsive mobile menu
-- Footer with links to important sections and social media
+- Navigation header with responsive mobile menu and dark/light mode toggle
+- Footer with links to important sections
+- FAQ section with common questions and answers
+- "How It Works" section explaining the platform process
+- Responsive and animated UI elements
 
 ### 2. Email Integration
 - Resend API integration for reliable email delivery
 - Waitlist confirmation emails
 - Environment-variable based configuration
 - Comprehensive error handling
-- Email templates with consistent branding
+- Testing utilities for email functionality (test-resend.js, email-cli.js)
 
 ### 3. API Routes
-- Waitlist submission endpoint with data validation
+- Waitlist submission endpoint with data validation (/api/waitlist)
 - Error handling and appropriate status codes
-- Logging for monitoring submissions
+- Secure handling of user information
 
 ### 4. UI/UX Design
 - Responsive design for all devices (mobile, tablet, desktop)
 - Modern UI with consistent color scheme and typography
-- Accessibility considerations in component design
+- Dark and light mode theme support
 - Interactive elements with appropriate hover/focus states
+- Animated components for improved user experience
+- Particle effects background for visual appeal
+
+### 5. Technical Infrastructure
+- Next.js 14 with App Router architecture
+- TypeScript for type safety
+- Tailwind CSS for styling
+- Docker containerization for development and production
+- Comprehensive testing setup with Jest and Playwright
+- CI/CD setup with GitHub Actions
+
+### 6. Theme Implementation
+- Dark/light mode toggle with system preference detection
+- Theme persistence with local storage
+- Smooth transitions between themes
+- Proper component hydration to prevent flickering
+
+## Deployment Architecture
+
+### Docker Containerization
+- Production-ready Dockerfile with multi-stage build
+- Development Dockerfile (Dockerfile.dev) for local development
+- Testing Dockerfile (Dockerfile.test) for CI/CD
+- Docker Compose configuration for running the complete stack
+- Environment variable management for secure configuration
+- Health checks for container monitoring
+- Optimized Docker image with proper caching
+
+### Development Workflow
+- Comprehensive testing infrastructure (unit, e2e)
+- Linting and code quality tools
+- Development server with hot reloading
+- Environment-specific configurations
+
+### Hosting Infrastructure
+- Containerized deployment ready for any container hosting platform
+- Optimized for horizontal scaling
+- Environment variable configuration
+- Health check endpoints
+
+## Future Enhancements
+- Backend implementation for study plan generation
+- User authentication system
+- Database integration for storing user data and study plans
+- Advanced AI algorithms for plan personalization
+- Mobile application development
+- Admin dashboard for content management
+- Analytics dashboard for user insights
+- Enhanced recommendation engine
+- Integration with third-party educational resources
+
+## Success Metrics
+- User engagement (measured by website analytics)
+- Waitlist registrations
+- Email open and click-through rates
+- User satisfaction (measured through feedback forms)
+- System performance metrics
+- Error rates
+- Feature adoption rates
+- User retention and growth
+
+## Dependencies
+- Next.js 14+
+- React 18+
+- TypeScript 5+
+- Tailwind CSS 3+
+- next-themes for theming
+- Resend for email
+- react-tsparticles for visual effects
+- Docker for containerization
+- Jest and React Testing Library for testing
+- Playwright for end-to-end testing
+
+## Production Deployment Readiness
+
+### Current Status
+- Landing page implementation complete
+- Waitlist functionality operational
+- Email integration functioning
+- Docker containerization ready
+- Testing infrastructure in place
+
+### Pre-Production Checklist
+- Set up proper environment variables for production
+- Configure production domain and DNS settings
+- Set up proper SSL certificates
+- Implement monitoring and logging solutions
+- Create backup and disaster recovery plans
+- Perform security audit and penetration testing
+- Optimize for performance and SEO
+- Configure proper caching strategies
+- Set up analytics tracking
+- Prepare documentation for maintenance and operations
 
 ## Core Features
 

@@ -44,19 +44,19 @@ export default function Dashboard() {
               <div className="space-y-4">
                 <StudyPlanCard 
                   title="Data Science Fundamentals"
-                  subject="Computer Science"
-                  progress={65}
-                  dueDate="April 30, 2023"
-                  tasks={16}
-                  completedTasks={10}
+                  description="Learn the core concepts of data science with Python"
+                  duration="8 weeks"
+                  difficulty="intermediate"
+                  subjectArea="programming"
+                  completionPercentage={65}
                 />
                 <StudyPlanCard 
                   title="Advanced Machine Learning"
-                  subject="AI"
-                  progress={30}
-                  dueDate="May 15, 2023" 
-                  tasks={12}
-                  completedTasks={4}
+                  description="Explore cutting-edge machine learning algorithms and techniques"
+                  duration="12 weeks"
+                  difficulty="advanced"
+                  subjectArea="programming"
+                  completionPercentage={30}
                 />
               </div>
             </div>

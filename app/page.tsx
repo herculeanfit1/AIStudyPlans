@@ -9,10 +9,14 @@ import Pricing from './components/Pricing';
 import FAQ from './components/FAQ';
 import WaitlistForm from './components/WaitlistForm';
 import Footer from './components/Footer';
+import { ThemeToggle } from './components/ThemeToggle';
+import ParticlesBackground from './components/ParticlesBackground';
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen theme-transition">
+      <ParticlesBackground />
+      <ThemeToggle />
       <Header />
       <main className="flex-grow">
         <Hero />

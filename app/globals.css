@@ -25,6 +25,31 @@
   --bg-light: #f9fafb;
   --border-color: #e5e7eb;
   --animation-duration: 0.8s;
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --input-bg: #ffffff;
+  --input-border: #e5e7eb;
+}
+
+[data-theme='dark'] {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 10, 10, 20;
+  --background-end-rgb: 20, 20, 30;
+  --primary: 122, 113, 252; /* lighter indigo for dark mode */
+  --primary-light: 40, 40, 70; /* darker indigo-100 for dark mode */
+  --primary-dark: 99, 90, 231; /* lighter indigo-700 for dark mode */
+  --primary-hover: #6d62ff;
+  --text-primary: #f3f4f6;
+  --text-secondary: #d1d5db;
+  --accent: #a78bfa;
+  --link: #818cf8;
+  --link-hover: #a5b4fc;
+  --bg-light: #111827;
+  --border-color: #374151;
+  --card-bg: #1f2937;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-bg: #111827;
+  --input-border: #374151;
 }
 
 html {
@@ -87,8 +112,8 @@ p {
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   padding: 1.5rem;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background-color: var(--card-bg);
+  box-shadow: var(--card-shadow);
   transition: all 0.3s ease;
 }
 
@@ -111,8 +136,8 @@ p {
 
 .hours-tag {
   font-size: 0.875rem;
-  background-color: var(--primary-light);
-  color: var(--primary);
+  background-color: rgb(var(--primary-light));
+  color: rgb(var(--primary));
   padding: 0.25rem 0.5rem;
   border-radius: 9999px;
   font-weight: 500;
@@ -176,6 +201,11 @@ p {
   transform: translateY(20px);
 }
 
+/* Theme switch animation */
+.theme-transition {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
 @layer base {
   h1 {
     @apply text-4xl font-bold md:text-5xl;
@@ -195,12 +225,12 @@ p {
   .btn-primary {
     @apply bg-indigo-600 text-white px-6 py-3 rounded-md font-medium 
            hover:bg-indigo-700 transition-colors duration-300
-           transform hover:scale-105 shadow-md;
+           transform hover:scale-105 shadow-md dark:bg-indigo-700 dark:hover:bg-indigo-600;
   }
 
   .btn-secondary {
-    @apply border border-gray-300 text-gray-700 px-6 py-3 rounded-md font-medium 
-           hover:bg-gray-50 transition-colors duration-300;
+    @apply border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-md font-medium 
+           hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-300;
   }
 
   .section-padding {
@@ -212,7 +242,7 @@ p {
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-lg p-6 transition-all duration-300 hover:shadow-xl;
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-all duration-300 hover:shadow-xl;
   }
 
   .card-hover {
@@ -221,20 +251,20 @@ p {
 
   /* Features */
   .feature-icon {
-    @apply w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mb-4;
+    @apply w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 mb-4;
   }
 
   /* Pricing */
   .pricing-tier {
-    @apply bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl;
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl;
   }
 
   .pricing-tier.popular {
-    @apply ring-2 ring-indigo-600 relative transform scale-105;
+    @apply ring-2 ring-indigo-600 dark:ring-indigo-400 relative transform scale-105;
   }
 
   .pricing-header {
-    @apply p-6 border-b border-gray-100;
+    @apply p-6 border-b border-gray-100 dark:border-gray-700;
   }
 
   .pricing-features {
@@ -242,6 +272,13 @@ p {
   }
 
   .pricing-cta {
-    @apply p-6 bg-gray-50;
+    @apply p-6 bg-gray-50 dark:bg-gray-900;
+  }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    @apply fixed bottom-5 right-5 z-50 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg cursor-pointer 
+           hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 border border-gray-200 dark:border-gray-600
+           flex items-center justify-center;
   }
 } 

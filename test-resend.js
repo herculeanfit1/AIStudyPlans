@@ -42,9 +42,9 @@ async function sendTestEmail() {
   
   try {
     const { data, error } = await resend.emails.send({
-      from: `SchedulEd <${fromEmail}>`,
+      from: `Lindsey <${fromEmail}>`,
       to: toEmail,
-      subject: 'SchedulEd - Resend Test',
+      subject: 'SchedulEd - Test Email',
       html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <img src="${appUrl}/SchedulEd_new_logo.png" alt="SchedulEd Logo" style="max-width: 150px; height: auto; margin-bottom: 20px;" />

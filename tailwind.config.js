@@ -5,6 +5,7 @@ module.exports = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       container: {
@@ -29,6 +30,9 @@ module.exports = {
       animation: {
         'fade-in': 'fadeIn 0.75s ease-in forwards',
         'slide-up': 'slideUp 0.75s ease-out forwards',
+        'pulse-glow': 'pulseGlow 2s infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'spin-slow': 'spin 8s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -39,6 +43,17 @@ module.exports = {
           '0%': { transform: 'translateY(20px)', opacity: 0 },
           '100%': { transform: 'translateY(0)', opacity: 1 },
         },
+        pulseGlow: {
+          '0%, 100%': { opacity: 1, boxShadow: '0 0 0 0 rgba(99, 102, 241, 0)' },
+          '50%': { opacity: 0.8, boxShadow: '0 0 20px 10px rgba(99, 102, 241, 0.3)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
     },
   },
