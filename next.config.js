@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",
+  output: "export",
   reactStrictMode: true,
   swcMinify: true,
   images: {
@@ -11,6 +11,7 @@ const nextConfig = {
         pathname: '**',
       },
     ],
+    unoptimized: true,
   },
   async redirects() {
     return [
