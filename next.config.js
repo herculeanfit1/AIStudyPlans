@@ -13,15 +13,16 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
-  async redirects() {
-    return [
-      {
-        source: '/app',
-        destination: 'https://app.aistudyplans.com',
-        permanent: false,
-      },
-    ];
-  },
+  // Commenting out redirects since they don't work with static export
+  // async redirects() {
+  //   return [
+  //     {
+  //       source: '/app',
+  //       destination: 'https://app.aistudyplans.com',
+  //       permanent: false,
+  //     },
+  //   ];
+  // },
 };
 
 module.exports = nextConfig; 
