@@ -1,3 +1,19 @@
+# AI Study Plans
+
+A modern web application for AI-powered study plan generation.
+
+## Deployment Status
+
+This application is deployed on Azure Static Web Apps.
+
+## Features
+
+- AI-powered study plan generation
+- Responsive design
+- Modern UI with animations
+- Email notifications
+- Custom domain support
+
 # AIStudyPlans Landing Page
 
 A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan generator. This landing page is built with Next.js 14 and Tailwind CSS, showcasing modern web development techniques and best practices.
