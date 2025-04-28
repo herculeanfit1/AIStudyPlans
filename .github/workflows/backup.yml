@@ -22,10 +22,16 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
+      - name: Set debug mode
+        run: |
+          echo "DEBUG_ENABLED=true" >> $GITHUB_ENV
+          echo "Starting backup job in debug mode"
+      
       # Configure Git properly to avoid common issues
       - name: Configure Git
         shell: bash
         run: |
+          echo "::group::Git Configuration"
           # Ensure Git is properly initialized with safe directories and no extraheader
           git config --global --add safe.directory '*'
           git config --global core.longpaths true
@@ -41,6 +47,7 @@ jobs:
           # Display current git config for debugging
           echo "Current Git configuration:"
           git config --global --list
+          echo "::endgroup::"
       
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -48,9 +55,21 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
       
+      - name: Debug environment
+        run: |
+          echo "::group::Environment Info"
+          echo "OS: $(uname -a)"
+          echo "Working directory: $(pwd)"
+          echo "Directory contents:"
+          ls -la
+          echo "GPG version:"
+          gpg --version
+          echo "::endgroup::"
+      
       - name: Setup GPG
         id: setup_gpg
         run: |
+          echo "::group::GPG Setup"
           # Debug step to check if secrets exist (without revealing their values)
           if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
             echo "Error: GPG_PRIVATE_KEY secret is not set"
@@ -114,6 +133,7 @@ jobs:
             echo "TEST MODE: Showing all available GPG keys"
             gpg --list-keys
           fi
+          echo "::endgroup::"
       
       # Skip the rest of the workflow if in test mode
       - name: Test Mode Check
@@ -127,13 +147,18 @@ jobs:
       - name: Create Backup
         if: ${{ github.event.inputs.test_mode != 'true' }}
         run: |
+          echo "::group::Backup Creation"
           # Generate timestamp for backup identification
           TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
           echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
           
+          # Debug directory contents
+          echo "Current directory contents before backup:"
+          find . -maxdepth 3 -type d | sort
+          
           # Create archive of project files
           echo "Creating backup archive..."
-          tar -czf backup-$TIMESTAMP.tar.gz . || {
+          tar -czvf backup-$TIMESTAMP.tar.gz --exclude='.git' --exclude='node_modules' --exclude='.next' . || {
             echo "Error: Failed to create tar archive"
             exit 1
           }
@@ -141,6 +166,8 @@ jobs:
           # Check archive was created successfully
           archive_size=$(wc -c < backup-$TIMESTAMP.tar.gz)
           echo "Archive size: $archive_size bytes"
+          echo "Archive file details:"
+          ls -la backup-$TIMESTAMP.tar.gz
           
           # List GPG keys again before encryption
           echo "Available GPG keys for encryption:"
@@ -162,10 +189,12 @@ jobs:
           rm backup-$TIMESTAMP.tar.gz
           echo "BACKUP_FILE=backup-$TIMESTAMP.tar.gz.gpg" >> $GITHUB_ENV
           echo "Backup encrypted successfully"
+          echo "::endgroup::"
       
       - name: Verify Backup Integrity
         if: ${{ github.event.inputs.test_mode != 'true' }}
         run: |
+          echo "::group::Backup Verification"
           # List the backup file to verify it exists
           ls -la ${{ env.BACKUP_FILE }}
           
@@ -174,10 +203,13 @@ jobs:
             echo "Error: Backup file too small, backup may have failed"
             exit 1
           fi
+          echo "Backup file verification completed successfully"
+          echo "::endgroup::"
       
       - name: Push to Backup Repository
         if: ${{ github.event.inputs.test_mode != 'true' }}
         run: |
+          echo "::group::Backup Repository Push"
           # Check if backup token is set
           if [ -z "${{ secrets.BACKUP_TOKEN }}" ]; then
             echo "Error: BACKUP_TOKEN secret is not set"
@@ -209,9 +241,11 @@ jobs:
             if [ "$REPO_TEST" = "404" ]; then
               echo "Creating new backup repository..."
               # Create the repository via API
-              curl -X POST -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" \
+              CREATE_RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" \
                 -d '{"name":"AIStudyPlans-Backups", "private":true}' \
-                https://api.github.com/user/repos
+                https://api.github.com/user/repos)
+              
+              echo "Repository creation response: $CREATE_RESPONSE"
               
               # Now set up the local repo
               mkdir -p backup-repo
@@ -264,31 +298,59 @@ jobs:
           fi
           
           echo "Backup successfully pushed to repository"
+          echo "::endgroup::"
       
       - name: Cleanup Old Backups
         if: ${{ github.event.inputs.test_mode != 'true' }}
         run: |
+          echo "::group::Cleanup Old Backups"
           cd backup-repo
           
           # Get list of backup branches
           git fetch origin
           BRANCHES=$(git branch -r | grep origin/backup- | sed 's/origin\///')
+          echo "Found branches: $BRANCHES"
           
           # Get 30 days ago date in seconds
           CUTOFF_DATE=$(date -d "30 days ago" +%s)
+          echo "Cutoff date: $(date -d @$CUTOFF_DATE)"
           
           # Check each branch and delete if older than cutoff
           for BRANCH in $BRANCHES; do
+            echo "Processing branch: $BRANCH"
             # Extract date from branch name (format: backup-YYYY-MM-DD-HHMMSS)
             BRANCH_DATE=$(echo $BRANCH | sed -E 's/backup-([0-9]{4}-[0-9]{2}-[0-9]{2}).*/\1/')
             
             if [ -n "$BRANCH_DATE" ]; then
+              echo "  Branch date: $BRANCH_DATE"
               # Convert to seconds - ensure compatibility with Ubuntu runner
               BRANCH_SECONDS=$(date -d "$BRANCH_DATE" +%s 2>/dev/null || echo 0)
               
               if [ $BRANCH_SECONDS -lt $CUTOFF_DATE ] && [ $BRANCH_SECONDS -gt 0 ]; then
                 echo "Deleting old backup branch: $BRANCH"
                 git push origin --delete $BRANCH
+              else
+                echo "  Branch is within retention period, keeping it"
               fi
+            else
+              echo "  Could not extract date from branch name: $BRANCH"
             fi
-          done 
+          done
+          echo "::endgroup::"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "::group::Backup Summary"
+          echo "Backup job completed with final status: $?"
+          if [ "${{ github.event.inputs.test_mode }}" == "true" ]; then
+            echo "Test mode was enabled - only verified GPG setup"
+          else
+            if [ -n "${{ env.BACKUP_FILE }}" ]; then
+              echo "Created backup file: ${{ env.BACKUP_FILE }}"
+              echo "Timestamp: ${{ env.TIMESTAMP }}"
+            else
+              echo "No backup file was created"
+            fi
+          fi
+          echo "::endgroup::"
