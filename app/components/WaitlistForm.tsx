@@ -159,8 +159,8 @@ export default function WaitlistForm() {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 ${
-                    errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-gray-800 dark:text-white dark:bg-gray-800 ${
+                    errors.name ? 'border-red-500 bg-red-50 dark:bg-red-900' : 'border-gray-300 dark:border-gray-700'
                   }`}
                   placeholder="Your name"
                 />
@@ -186,8 +186,8 @@ export default function WaitlistForm() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 ${
-                    errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-gray-800 dark:text-white dark:bg-gray-800 ${
+                    errors.email ? 'border-red-500 bg-red-50 dark:bg-red-900' : 'border-gray-300 dark:border-gray-700'
                   }`}
                   placeholder="you@example.com"
                 />
