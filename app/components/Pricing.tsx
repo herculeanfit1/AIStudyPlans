@@ -22,32 +22,52 @@ function PricingTier({ name, price, period, description, features, buttonText, h
   return (
     <div className={`pricing-tier ${highlighted ? 'popular' : ''}`}>
       {highlighted && (
-        <div className="absolute top-0 left-0 right-0 bg-indigo-500 text-white text-center text-sm py-1 font-medium">
+        <div className="absolute top-0 left-0 right-0 bg-indigo-500 text-white text-center text-sm py-1 font-medium rounded-t-xl">
           Most Popular
         </div>
       )}
       
       <div className={`pricing-header ${highlighted ? 'pt-10' : ''}`}>
-        <h3 className="text-2xl font-bold text-gray-800 mb-4">{name}</h3>
+        <h3 className="text-2xl font-bold mb-4">{name}</h3>
         <div className="mb-6">
-          <span className="text-4xl font-bold text-gray-900">{price}</span>
-          <span className="text-gray-500 text-sm">{period}</span>
+          <span className="text-4xl font-bold">{price}</span>
+          <span className="text-sm ml-1">{period}</span>
         </div>
-        <p className="text-gray-600 mb-6">{description}</p>
+        <p className="mb-6">{description}</p>
       </div>
       
       <div className="pricing-features">
-        <p className="font-medium text-gray-700 mb-4">What's included:</p>
+        <p className="font-medium mb-4">What's included:</p>
         <ul className="space-y-3">
           {features.map((feature, featureIndex) => (
             <li key={featureIndex} className="flex items-start">
-              <i className={`fas ${feature.included ? 'fa-check text-green-500' : 'fa-xmark text-gray-300'} mt-1 mr-3`}></i>
-              <span className={feature.included ? 'text-gray-700' : 'text-gray-400'}>
+              {feature.included ? (
+                <svg className="h-5 w-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5 text-gray-400 dark:text-gray-600 mt-0.5 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              )}
+              <span className={feature.included ? '' : 'text-gray-400 dark:text-gray-500'}>
                 {feature.title}
               </span>
             </li>
           ))}
         </ul>
+      </div>
+      
+      <div className="mt-8">
+        <button 
+          className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+            highlighted 
+              ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
+              : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+          }`}
+        >
+          {buttonText}
+        </button>
       </div>
     </div>
   );

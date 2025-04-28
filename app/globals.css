@@ -256,23 +256,64 @@ p {
 
   /* Pricing */
   .pricing-tier {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl;
+    @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-white relative rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 transition-all duration-300;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
   }
 
   .pricing-tier.popular {
-    @apply ring-2 ring-indigo-600 dark:ring-indigo-400 relative transform scale-105;
+    @apply border-indigo-500 transform scale-105 z-10 shadow-xl;
   }
 
   .pricing-header {
-    @apply p-6 border-b border-gray-100 dark:border-gray-700;
+    @apply mb-6 pb-6 border-b border-gray-200 dark:border-gray-700;
   }
 
   .pricing-features {
-    @apply p-6 space-y-4;
+    @apply mt-4 flex-grow;
   }
 
-  .pricing-cta {
-    @apply p-6 bg-gray-50 dark:bg-gray-900;
+  .pricing-features ul li {
+    @apply mb-3;
+  }
+
+  .pricing-features ul li span {
+    @apply dark:text-gray-300;
+  }
+
+  .pricing-tier:hover {
+    @apply shadow-xl transform translateY(-4px);
+  }
+
+  /* Override text colors specifically for pricing section */
+  .pricing-tier h3 {
+    @apply text-gray-900 dark:text-white;
+  }
+
+  .pricing-tier .text-gray-600 {
+    @apply dark:text-gray-300;
+  }
+
+  .pricing-tier .text-gray-700 {
+    @apply dark:text-gray-200;
+  }
+
+  .pricing-tier .text-gray-400 {
+    @apply dark:text-gray-500;
+  }
+
+  .pricing-tier .text-gray-500 {
+    @apply dark:text-gray-400;
+  }
+
+  .pricing-tier .text-gray-900 {
+    @apply dark:text-white;
+  }
+
+  /* Ensure pricing section background works with both themes */
+  #pricing {
+    @apply bg-gray-50 dark:bg-gray-900;
   }
 
   /* Theme toggle button */
