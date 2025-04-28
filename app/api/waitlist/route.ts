@@ -30,10 +30,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!email.match(/^\S+@\S+\.\S+$/)) {
+    // More permissive email validation pattern
+    // This is a better pattern that allows more valid email formats
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!emailRegex.test(email)) {
       console.error(`Invalid email format: ${email}`);
       return new NextResponse(
-        JSON.stringify({ error: 'Invalid email format' }),
+        JSON.stringify({ error: 'Please enter a valid email address' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -49,6 +53,11 @@ export async function POST(request: NextRequest) {
     console.log(`Email decision: using ${emailToUse} for delivery (isTestEmail: ${isTestEmail}, env: ${process.env.NODE_ENV})`);
 
     try {
+      // Validate required environment variables are set
+      if (!process.env.RESEND_API_KEY) {
+        throw new Error('RESEND_API_KEY environment variable is not set');
+      }
+      
       // Send confirmation email
       console.log(`Sending waitlist confirmation email to ${emailToUse}...`);
       const result = await sendWaitlistConfirmationEmail(emailToUse);

@@ -15,10 +15,22 @@ export async function GET(request: NextRequest) {
     appUrl: process.env.NEXT_PUBLIC_APP_URL || 'not set',
     emailConfig: {
       fromEmailConfigured: !!process.env.EMAIL_FROM,
+      fromEmailValue: process.env.EMAIL_FROM ? `${process.env.EMAIL_FROM.substring(0, 3)}...` : 'not set',
       replyToConfigured: !!process.env.EMAIL_REPLY_TO,
-      resendApiKeyConfigured: !!process.env.RESEND_API_KEY
+      replyToValue: process.env.EMAIL_REPLY_TO ? `${process.env.EMAIL_REPLY_TO.substring(0, 3)}...` : 'not set',
+      resendApiKeyConfigured: !!process.env.RESEND_API_KEY,
+      resendApiKeyPrefix: process.env.RESEND_API_KEY ? 
+        `${process.env.RESEND_API_KEY.substring(0, 3)}...${process.env.RESEND_API_KEY.substring(process.env.RESEND_API_KEY.length - 3)}` : 
+        'not set'
     },
-    serverTime: new Date().toISOString()
+    request: {
+      host: request.headers.get('host'),
+      userAgent: request.headers.get('user-agent'),
+      referer: request.headers.get('referer')
+    },
+    serverTime: new Date().toISOString(),
+    vercelEnv: process.env.VERCEL_ENV || 'not set',
+    nodeVersion: process.version
   };
 
   // Return the status

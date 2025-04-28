@@ -47,13 +47,17 @@ export default function WaitlistForm() {
       isValid = false;
     }
 
-    // Validate email
+    // Validate email - use same pattern as server
     if (!formData.email.trim()) {
       errors.email = 'Email is required';
       isValid = false;
-    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      errors.email = 'Please enter a valid email address';
-      isValid = false;
+    } else {
+      // More permissive email validation pattern
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        errors.email = 'Please enter a valid email address';
+        isValid = false;
+      }
     }
 
     setValidationErrors(errors);
@@ -208,7 +212,7 @@ export default function WaitlistForm() {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border ${
+            className={`w-full px-4 py-3 rounded-lg border text-gray-900 bg-white ${
               validationErrors.name ? 'border-red-500' : 'border-gray-300'
             } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition`}
             placeholder="Your name"
@@ -228,7 +232,7 @@ export default function WaitlistForm() {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border ${
+            className={`w-full px-4 py-3 rounded-lg border text-gray-900 bg-white ${
               validationErrors.email ? 'border-red-500' : 'border-gray-300'
             } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition`}
             placeholder="you@example.com"
