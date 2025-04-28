@@ -28,16 +28,16 @@ function PricingTier({ name, price, period, description, features, buttonText, h
       )}
       
       <div className={`pricing-header ${highlighted ? 'pt-10' : ''}`}>
-        <h3 className="text-2xl font-bold mb-4">{name}</h3>
+        <h3 className="text-2xl font-bold pricing-text mb-4">{name}</h3>
         <div className="mb-6">
-          <span className="text-4xl font-bold">{price}</span>
-          <span className="text-sm ml-1">{period}</span>
+          <span className="text-4xl font-bold pricing-text">{price}</span>
+          <span className="pricing-secondary text-sm ml-1">{period}</span>
         </div>
-        <p className="mb-6">{description}</p>
+        <p className="pricing-description mb-6">{description}</p>
       </div>
       
       <div className="pricing-features">
-        <p className="font-medium mb-4">What's included:</p>
+        <p className="font-medium pricing-label mb-4">What's included:</p>
         <ul className="space-y-3">
           {features.map((feature, featureIndex) => (
             <li key={featureIndex} className="flex items-start">
@@ -50,7 +50,7 @@ function PricingTier({ name, price, period, description, features, buttonText, h
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
               )}
-              <span className={feature.included ? '' : 'text-gray-400 dark:text-gray-500'}>
+              <span className={feature.included ? 'pricing-label' : 'pricing-muted'}>
                 {feature.title}
               </span>
             </li>

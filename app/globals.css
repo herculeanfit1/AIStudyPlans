@@ -286,29 +286,25 @@ p {
     @apply shadow-xl transform -translate-y-1;
   }
 
-  /* Override text colors specifically for pricing section */
-  .pricing-tier h3 {
+  /* Add a custom class for pricing text in dark mode */
+  .pricing-text {
     @apply text-gray-900 dark:text-white;
   }
 
-  .pricing-tier .text-gray-600 {
-    @apply dark:text-gray-300;
+  .pricing-description {
+    @apply text-gray-600 dark:text-gray-300;
   }
 
-  .pricing-tier .text-gray-700 {
-    @apply dark:text-gray-200;
+  .pricing-label {
+    @apply text-gray-700 dark:text-gray-200;
   }
 
-  .pricing-tier .text-gray-400 {
-    @apply dark:text-gray-500;
+  .pricing-muted {
+    @apply text-gray-400 dark:text-gray-500;
   }
 
-  .pricing-tier .text-gray-500 {
-    @apply dark:text-gray-400;
-  }
-
-  .pricing-tier .text-gray-900 {
-    @apply dark:text-white;
+  .pricing-secondary {
+    @apply text-gray-500 dark:text-gray-400;
   }
 
   /* Ensure pricing section background works with both themes */
