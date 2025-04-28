@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface FormData {
@@ -25,8 +25,17 @@ export default function WaitlistForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // State for environment detection
+  const [isDev, setIsDev] = useState(true);
+  
   // State for validation errors
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  
+  // Check environment on mount
+  useEffect(() => {
+    // In production, this will be false
+    setIsDev(process.env.NODE_ENV === 'development');
+  }, []);
 
   const validateForm = (): boolean => {
     const errors: ValidationErrors = {};
@@ -252,21 +261,23 @@ export default function WaitlistForm() {
         </motion.button>
       </motion.form>
       
-      {/* Admin notice about email configuration */}
-      <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-        <h4 className="font-semibold mb-1">⚠️ Administrator Notice</h4>
-        <p className="mb-2">
-          Email delivery requires proper configuration:
-        </p>
-        <ul className="list-disc pl-5 space-y-1">
-          <li>Set <code className="bg-amber-100 px-1 rounded">RESEND_API_KEY</code> in <code className="bg-amber-100 px-1 rounded">.env.local</code></li>
-          <li>Verify email domain in Resend dashboard</li>
-          <li>For testing, use <code className="bg-amber-100 px-1 rounded">delivered@resend.dev</code></li>
-        </ul>
-        <p className="mt-2 text-xs">
-          This notice is only visible in development mode.
-        </p>
-      </div>
+      {/* Admin notice about email configuration - only in development */}
+      {isDev && (
+        <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          <h4 className="font-semibold mb-1">⚠️ Administrator Notice</h4>
+          <p className="mb-2">
+            Email delivery requires proper configuration:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Set <code className="bg-amber-100 px-1 rounded">RESEND_API_KEY</code> in <code className="bg-amber-100 px-1 rounded">.env.local</code></li>
+            <li>Verify email domain in Resend dashboard</li>
+            <li>For testing, use <code className="bg-amber-100 px-1 rounded">delivered@resend.dev</code></li>
+          </ul>
+          <p className="mt-2 text-xs">
+            This notice is only visible in development mode.
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 }
