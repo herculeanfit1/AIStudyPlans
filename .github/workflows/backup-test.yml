@@ -1,0 +1,141 @@
+name: Backup Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_component:
+        description: 'Component to test'
+        required: true
+        default: 'gpg'
+        type: choice
+        options:
+          - gpg
+          - github_token
+          - tar
+          - all
+
+jobs:
+  test_backup_components:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Test GPG Setup
+        if: ${{ github.event.inputs.test_component == 'gpg' || github.event.inputs.test_component == 'all' }}
+        run: |
+          echo "Testing GPG setup..."
+          
+          # Check if GPG is installed
+          gpg --version
+          
+          # Create a simple test file
+          echo "This is a test file" > test-file.txt
+          
+          # Import the GPG key
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" > /tmp/private.key
+          gpg --batch --import /tmp/private.key
+          rm /tmp/private.key
+          
+          # List keys
+          echo "Available GPG keys:"
+          gpg --list-keys
+          
+          # Try to encrypt the file
+          echo "Encrypting test file..."
+          gpg --batch --yes --trust-model always --encrypt --recipient "${{ secrets.GPG_RECIPIENT }}" test-file.txt
+          
+          # Verify encryption worked
+          if [ -f "test-file.txt.gpg" ]; then
+            echo "✅ GPG encryption successful"
+            ls -la test-file.txt.gpg
+          else
+            echo "❌ GPG encryption failed"
+            exit 1
+          fi
+      
+      - name: Test GitHub Token
+        if: ${{ github.event.inputs.test_component == 'github_token' || github.event.inputs.test_component == 'all' }}
+        run: |
+          echo "Testing GitHub token..."
+          
+          # Test if token has required permissions
+          AUTH_TEST=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" https://api.github.com/user)
+          echo "Authentication result: $AUTH_TEST"
+          
+          if [ "$AUTH_TEST" != "200" ]; then
+            echo "❌ GitHub token authentication failed"
+            exit 1
+          else
+            echo "✅ GitHub token authentication successful"
+          fi
+          
+          # Test repository access
+          REPO_TEST=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" https://api.github.com/repos/${{ github.repository_owner }}/AIStudyPlans-Backups)
+          echo "Repository check result: $REPO_TEST"
+          
+          # If repository doesn't exist, try to create it (and then delete it to avoid leftovers)
+          if [ "$REPO_TEST" = "404" ]; then
+            echo "Repository doesn't exist, testing creation permissions..."
+            CREATE_RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" \
+              -d '{"name":"Backup-Test-Temp", "private":true, "auto_init": true}' \
+              https://api.github.com/user/repos)
+            
+            if echo "$CREATE_RESPONSE" | grep -q "name"; then
+              echo "✅ Successfully created test repository"
+              TEMP_REPO_NAME=$(echo "$CREATE_RESPONSE" | grep -o '"full_name": "[^"]*' | cut -d'"' -f4)
+              echo "Created: $TEMP_REPO_NAME"
+              
+              # Clean up - delete test repository
+              curl -s -X DELETE -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" \
+                https://api.github.com/repos/$TEMP_REPO_NAME
+              echo "Test repository deleted"
+            else
+              echo "❌ Failed to create test repository"
+              echo "Response: $CREATE_RESPONSE"
+              exit 1
+            fi
+          elif [ "$REPO_TEST" = "200" ]; then
+            echo "✅ Backup repository exists and is accessible"
+          else
+            echo "❌ Unexpected response when checking repository: $REPO_TEST"
+            exit 1
+          fi
+      
+      - name: Test Tar Command
+        if: ${{ github.event.inputs.test_component == 'tar' || github.event.inputs.test_component == 'all' }}
+        run: |
+          echo "Testing tar command..."
+          
+          # Create a small directory structure for testing
+          mkdir -p test-backup/dir1/dir2
+          echo "File 1" > test-backup/file1.txt
+          echo "File 2" > test-backup/dir1/file2.txt
+          echo "File 3" > test-backup/dir1/dir2/file3.txt
+          
+          # Try to create a small archive
+          if tar -czf test-archive.tar.gz test-backup; then
+            echo "✅ Small tar archive created successfully"
+            ls -la test-archive.tar.gz
+          else
+            echo "❌ Failed to create small tar archive"
+            exit 1
+          fi
+          
+          # Try to create a project archive excluding large directories
+          echo "Creating project archive..."
+          if tar -czf project-archive.tar.gz --exclude='.git' --exclude='node_modules' --exclude='.next' .; then
+            echo "✅ Project archive created successfully"
+            ls -la project-archive.tar.gz
+          else
+            echo "❌ Failed to create project archive"
+            exit 1
+          fi
+      
+      - name: All Tests Complete
+        if: success()
+        run: |
+          echo "✅ All requested tests completed successfully"
+          echo "You can now proceed with the full backup workflow" 
