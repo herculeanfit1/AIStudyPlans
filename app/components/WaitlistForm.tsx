@@ -212,8 +212,8 @@ export default function WaitlistForm() {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border text-gray-900 bg-white ${
-              validationErrors.name ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-3 rounded-lg border text-white bg-gray-900 ${
+              validationErrors.name ? 'border-red-500' : 'border-gray-700'
             } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition`}
             placeholder="Your name"
           />
@@ -232,8 +232,8 @@ export default function WaitlistForm() {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border text-gray-900 bg-white ${
-              validationErrors.email ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-3 rounded-lg border text-white bg-gray-900 ${
+              validationErrors.email ? 'border-red-500' : 'border-gray-700'
             } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition`}
             placeholder="you@example.com"
           />
