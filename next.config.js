@@ -4,6 +4,11 @@ const nextConfig = {
   output: process.env.NODE_ENV === 'production' ? "export" : undefined,
   reactStrictMode: true,
   swcMinify: true,
+  // Configure static export to allow API routes to work in development
+  experimental: {
+    // This is needed for API routes to work with static export
+    allowDynamicGlobals: true,
+  },
   images: {
     remotePatterns: [
       {
