@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "export",
+  // Only use static export in production, never in development
+  output: process.env.NODE_ENV === 'production' ? "export" : undefined,
   reactStrictMode: true,
   swcMinify: true,
   images: {

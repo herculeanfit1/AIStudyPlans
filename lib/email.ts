@@ -1,11 +1,12 @@
 import { Resend } from 'resend';
-import { getWaitlistConfirmationTemplate, getPasswordResetTemplate } from './email-templates';
+import { getWaitlistConfirmationTemplate, getPasswordResetTemplate, getWaitlistAdminNotificationTemplate } from './email-templates';
 
 // Initialize Resend with API key
 const resendApiKey = process.env.RESEND_API_KEY;
 const fromEmail = process.env.EMAIL_FROM || 'Lindsey <lindsey@aistudyplans.com>';
 const replyToEmail = process.env.EMAIL_REPLY_TO || 'support@aistudyplans.com';
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const adminEmail = 'waitlist@aistudyplans.com';
 
 // Check if API key is provided
 if (!resendApiKey) {
@@ -84,6 +85,32 @@ export async function sendPasswordResetEmail(email: string, resetToken: string) 
 
   return sendEmail({
     to: email,
+    subject,
+    html,
+    text,
+  });
+}
+
+/**
+ * Send an admin notification when a new user joins the waitlist
+ */
+export async function sendWaitlistAdminNotification(name: string, email: string) {
+  const subject = 'New SchedulEd Waitlist Signup';
+  
+  // Get the email template
+  const { html, text } = getWaitlistAdminNotificationTemplate({ 
+    appUrl,
+    userName: name,
+    userEmail: email
+  });
+
+  // Use Resend's test email as fallback to avoid domain verification issues
+  const adminEmailToUse = process.env.NODE_ENV === 'production' 
+    ? adminEmail 
+    : 'delivered@resend.dev';
+
+  return sendEmail({
+    to: adminEmailToUse,
     subject,
     html,
     text,
