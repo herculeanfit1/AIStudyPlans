@@ -170,3 +170,37 @@ If you encounter issues with deployment:
 ## License
 
 [MIT](LICENSE)
+
+## Backup System
+
+AIStudyPlans is secured with an automated backup system that:
+
+1. Creates encrypted backups of the codebase using GPG encryption
+2. Pushes the encrypted backups to a separate private repository
+3. Runs automatically twice daily (9AM and 9PM Central Time)
+4. Can also be triggered manually when needed
+
+### Running a Manual Backup
+
+1. Go to GitHub → Actions → "Secure Backup" workflow
+2. Click "Run workflow" → "Run workflow"
+3. The backup will be created and pushed to the backup repository
+
+### Restoring from a Backup
+
+1. Get access to the backup repository (`AIStudyPlans-Backups`)
+2. Clone the backup repository
+3. View the branches to see all available backups: `git branch -r`
+4. Choose a backup branch and check it out: `git checkout backup-YYYY-MM-DD-HHMMSS`
+5. Decrypt the backup file: `gpg --decrypt backup-YYYY-MM-DD-HHMMSS.tar.gz.gpg > restored-backup.tar.gz`
+6. Extract the backup: `tar -xzf restored-backup.tar.gz`
+
+Note: You need the GPG private key to decrypt the backup files. This key is stored securely in the repository secrets and in 1Password.
+
+## Testing the Backup System
+
+To test if the backup system is working properly:
+
+1. Go to GitHub → Actions → "Verify PAT Token" workflow
+2. Run the workflow to verify GitHub token permissions
+3. If successful, the backup system should be fully operational

@@ -204,7 +204,7 @@ jobs:
             exit 1
           }
           
-          # Remove unencrypted backup and temp directory
+          # Remove unencrypted backup and temp files
           rm backup-$TIMESTAMP.tar.gz
           rm -rf backup-content
           rm backup-files.txt
@@ -251,39 +251,37 @@ jobs:
           fi
           echo "GitHub token authentication successful"
           
+          # Define the backup repository name
+          REPO_NAME="${{ github.repository_owner }}/AIStudyPlans-Backups"
+          echo "Using backup repository: $REPO_NAME"
+          
           # Check if backup repository exists
-          echo "Checking backup repository exists: ${{ env.BACKUP_REPO }}"
-          REPO_TEST=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" https://api.github.com/repos/${{ env.BACKUP_REPO }})
+          echo "Checking backup repository exists: $REPO_NAME"
+          REPO_TEST=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" https://api.github.com/repos/$REPO_NAME)
           echo "Repository check result: $REPO_TEST"
           
           # Clone backup repository (or create if it doesn't exist)
           echo "Cloning backup repository..."
-          if ! git clone https://${{ secrets.BACKUP_TOKEN }}@github.com/${{ env.BACKUP_REPO }}.git backup-repo 2>/dev/null; then
+          if ! git clone https://${{ secrets.BACKUP_TOKEN }}@github.com/$REPO_NAME.git backup-repo 2>/dev/null; then
             if [ "$REPO_TEST" = "404" ]; then
               echo "Creating new backup repository..."
               # Create the repository via API
               CREATE_RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" \
-                -d '{"name":"AIStudyPlans-Backups", "private":true}' \
+                -d "{\"name\":\"AIStudyPlans-Backups\", \"private\":true, \"auto_init\": true}" \
                 https://api.github.com/user/repos)
               
-              echo "Repository creation response: $CREATE_RESPONSE"
-              
-              # Now set up the local repo
-              mkdir -p backup-repo
-              cd backup-repo
-              git init
-              git remote add origin https://${{ secrets.BACKUP_TOKEN }}@github.com/${{ env.BACKUP_REPO }}.git
-              git branch -M main
-              echo "# AIStudyPlans Backup Repository" > README.md
-              git add README.md
-              git commit -m "Initial commit"
-              if ! git push -u origin main; then
-                echo "Error: Failed to push initial commit to backup repository"
-                echo "Git push output:"
-                GIT_TRACE=1 git push -u origin main
+              if ! echo "$CREATE_RESPONSE" | grep -q "name"; then
+                echo "Error: Failed to create backup repository"
+                echo "API Response: $CREATE_RESPONSE"
                 exit 1
               fi
-              cd ..
+              
+              echo "Repository creation response received, cloning the new repository"
+              git clone https://${{ secrets.BACKUP_TOKEN }}@github.com/$REPO_NAME.git backup-repo
+              if [ $? -ne 0 ]; then
+                echo "Error: Failed to clone newly created repository"
+                exit 1
+              fi
             else
               echo "Error: Failed to clone repository and repository exists (HTTP $REPO_TEST)"
               echo "Please check permissions on the repository"
