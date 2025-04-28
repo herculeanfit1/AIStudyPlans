@@ -152,13 +152,32 @@ jobs:
           TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
           echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
           
-          # Debug directory contents
-          echo "Current directory contents before backup:"
-          find . -maxdepth 3 -type d | sort
+          # Create a clean directory for the backup contents
+          echo "Creating backup directory..."
+          mkdir -p backup-content
           
-          # Create archive of project files
+          # Create a file list excluding problematic directories
+          echo "Creating file list..."
+          find . -type f \
+            -not -path "*/node_modules/*" \
+            -not -path "*/.git/*" \
+            -not -path "*/.next/*" \
+            -not -path "*/backup-content/*" \
+            > backup-files.txt
+          
+          # Copy files to the backup directory while preserving structure
+          echo "Copying files to backup directory..."
+          cat backup-files.txt | while read file; do
+            # Create target directory
+            dir=$(dirname "$file")
+            mkdir -p "backup-content/$dir"
+            # Copy file
+            cp "$file" "backup-content/$file"
+          done
+          
+          # Create archive from the clean directory
           echo "Creating backup archive..."
-          tar -czvf backup-$TIMESTAMP.tar.gz --exclude='.git' --exclude='node_modules' --exclude='.next' . || {
+          tar -czf backup-$TIMESTAMP.tar.gz -C backup-content . || {
             echo "Error: Failed to create tar archive"
             exit 1
           }
@@ -169,7 +188,7 @@ jobs:
           echo "Archive file details:"
           ls -la backup-$TIMESTAMP.tar.gz
           
-          # List GPG keys again before encryption
+          # List GPG keys before encryption
           echo "Available GPG keys for encryption:"
           gpg --list-keys
           
@@ -185,8 +204,10 @@ jobs:
             exit 1
           }
           
-          # Remove unencrypted backup
+          # Remove unencrypted backup and temp directory
           rm backup-$TIMESTAMP.tar.gz
+          rm -rf backup-content
+          rm backup-files.txt
           echo "BACKUP_FILE=backup-$TIMESTAMP.tar.gz.gpg" >> $GITHUB_ENV
           echo "Backup encrypted successfully"
           echo "::endgroup::"
