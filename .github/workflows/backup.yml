@@ -1,6 +1,6 @@
 name: Secure Backup
 
-# Update: Added test mode option and enhanced error reporting
+# Update: Added test mode option and enhanced error reporting 
 on:
   schedule:
     # Run at 9AM Central (14:00-15:00 UTC) and 9PM Central (02:00-03:00 UTC)
