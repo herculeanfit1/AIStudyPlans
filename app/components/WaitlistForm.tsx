@@ -90,13 +90,22 @@ export default function WaitlistForm() {
     setIsSubmitting(true);
     setSubmitResult(null);
 
-    // For static export, we'll just simulate success
-    // In development, we'd call the API
     try {
-      // In a real app with API routes, we'd call:
-      // const response = await fetch('/api/waitlist', {...});
+      // Make the actual API call to the waitlist endpoint
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
       
-      // For the static export, we'll just simulate a success
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'An error occurred during signup');
+      }
+      
       setSubmitResult({
         success: true,
         message: 'Thank you for joining our waitlist! We\'ll be in touch soon.'
@@ -108,6 +117,7 @@ export default function WaitlistForm() {
         email: '',
       });
     } catch (error) {
+      console.error('Waitlist signup error:', error);
       setSubmitResult({
         success: false,
         message: 'An error occurred. Please try again later or email us at support@aistudyplans.com'
