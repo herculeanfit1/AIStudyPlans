@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = 'force-dynamic';
+
 // Runtime configuration for Node.js
 export const runtime = 'nodejs';
 
@@ -23,10 +26,11 @@ export async function GET(request: NextRequest) {
         `${process.env.RESEND_API_KEY.substring(0, 3)}...${process.env.RESEND_API_KEY.substring(process.env.RESEND_API_KEY.length - 3)}` : 
         'not set'
     },
+    // Safely get headers if available
     request: {
-      host: request.headers.get('host'),
-      userAgent: request.headers.get('user-agent'),
-      referer: request.headers.get('referer')
+      host: request.headers?.get('host') || 'unknown',
+      userAgent: request.headers?.get('user-agent') || 'unknown',
+      referer: request.headers?.get('referer') || 'unknown'
     },
     serverTime: new Date().toISOString(),
     vercelEnv: process.env.VERCEL_ENV || 'not set',
