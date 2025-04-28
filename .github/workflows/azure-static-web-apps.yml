@@ -45,10 +45,21 @@ jobs:
         with:
           node-version: '18'
           
-      - name: npm install, build
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+          
+      - name: npm install and build
         run: |
-          npm install
+          npm ci
           npm run build
+        env:
+          # Add any environment variables needed for the build
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://aistudyplans.com' }}
 
       - name: Build And Deploy
         id: builddeploy
@@ -62,6 +73,7 @@ jobs:
           app_location: "/" # App source code path
           api_location: "" # Api source code path - optional
           output_location: "out" # Built app content directory - optional
+          skip_app_build: true # Skip build as we already built the app
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
