@@ -4,7 +4,7 @@
 # Your specific values
 STATIC_WEB_APP_NAME="aistudyplanslanding"
 KEY_VAULT_NAME="aistudyplansvault" 
-RESOURCE_GROUP="BridgingTrust.AI"  # Based on your screenshot showing "Bridging Trust AI"
+RESOURCE_GROUP="AIStudyPlans-RG1"  # Updated to use the correct resource group
 
 echo "Setting up managed identity for $STATIC_WEB_APP_NAME to access Key Vault $KEY_VAULT_NAME..."
 
@@ -30,7 +30,7 @@ echo "Granting Key Vault access permissions..."
 az keyvault set-policy \
   --name $KEY_VAULT_NAME \
   --resource-group "$RESOURCE_GROUP" \
-  --object-id $PRINCIPAL_ID \
+  --object-id "$PRINCIPAL_ID" \
   --secret-permissions get list
 
 echo "✅ Managed identity setup complete!"

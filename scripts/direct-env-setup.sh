@@ -4,7 +4,7 @@
 
 # Your specific values - REPLACE API_KEY with your actual Resend API key
 STATIC_WEB_APP_NAME="aistudyplanslanding"
-RESOURCE_GROUP="BridgingTrust.AI"
+RESOURCE_GROUP="AIStudyPlans-RG1"
 API_KEY="re_REPLACE_WITH_YOUR_ACTUAL_KEY"
 
 echo "Setting environment variables directly for immediate testing..."
