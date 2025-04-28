@@ -1,0 +1,47 @@
+name: Verify PAT Token
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify_token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test GitHub Token
+        run: |
+          echo "Testing GitHub token..."
+          
+          # Test if token has required permissions
+          AUTH_TEST=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" https://api.github.com/user)
+          echo "Authentication result: $AUTH_TEST"
+          
+          if [ "$AUTH_TEST" != "200" ]; then
+            echo "❌ GitHub token authentication failed"
+            exit 1
+          else
+            echo "✅ GitHub token authentication successful"
+          fi
+          
+          # Test repository creation permissions
+          echo "Testing repository creation permissions..."
+          CREATE_RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" \
+            -d '{"name":"verify-pat-test-repo", "private":true, "auto_init": true}' \
+            https://api.github.com/user/repos)
+          
+          if echo "$CREATE_RESPONSE" | grep -q "name"; then
+            echo "✅ Repository creation permissions verified"
+            TEMP_REPO_NAME=$(echo "$CREATE_RESPONSE" | grep -o '"full_name": "[^"]*' | cut -d'"' -f4)
+            echo "Created test repository: $TEMP_REPO_NAME"
+            
+            # Clean up - delete test repository
+            echo "Cleaning up test repository..."
+            curl -s -X DELETE -H "Authorization: token ${{ secrets.BACKUP_TOKEN }}" \
+              https://api.github.com/repos/$TEMP_REPO_NAME
+            echo "Test repository deleted"
+          else
+            echo "❌ Failed to create test repository"
+            echo "Response: $CREATE_RESPONSE"
+            exit 1
+          fi
+          
+          echo "PAT token verification complete - all tests passed!" 
