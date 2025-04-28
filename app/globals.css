@@ -283,7 +283,7 @@ p {
   }
 
   .pricing-tier:hover {
-    @apply shadow-xl transform translateY(-4px);
+    @apply shadow-xl transform -translate-y-1;
   }
 
   /* Override text colors specifically for pricing section */
