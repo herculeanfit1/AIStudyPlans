@@ -1,0 +1,51 @@
+name: Dependabot auto-merge
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      # Remove any existing .git/config extraheader
+      - name: Configure Git
+        shell: bash
+        run: |
+          # Ensure Git is properly initialized with safe directories and no extraheader
+          git config --global --add safe.directory '*'
+          git config --global core.longpaths true
+          
+          # First check if the extraheader exists before trying to remove it
+          if git config --global --get http.https://github.com/.extraheader > /dev/null 2>&1; then
+            echo "Removing existing extraheader..."
+            git config --global --unset-all http.https://github.com/.extraheader
+          else
+            echo "No extraheader found to remove"
+          fi
+          
+          # Display current git config for debugging
+          echo "Current Git configuration:"
+          git config --global --list
+
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1.3.3
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      
+      - name: Approve PR
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}} 

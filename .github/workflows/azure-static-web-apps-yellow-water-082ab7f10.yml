@@ -15,10 +15,25 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
+      # Remove any existing .git/config extraheader
       - name: Configure Git
+        shell: bash
         run: |
+          # Ensure Git is properly initialized with safe directories and no extraheader
+          git config --global --add safe.directory '*'
           git config --global core.longpaths true
-          git config --global --unset-all http.https://github.com/.extraheader || true
+          
+          # First check if the extraheader exists before trying to remove it
+          if git config --global --get http.https://github.com/.extraheader > /dev/null 2>&1; then
+            echo "Removing existing extraheader..."
+            git config --global --unset-all http.https://github.com/.extraheader
+          else
+            echo "No extraheader found to remove"
+          fi
+          
+          # Display current git config for debugging
+          echo "Current Git configuration:"
+          git config --global --list
       
       - uses: actions/checkout@v4
         with:
