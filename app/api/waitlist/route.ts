@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendWaitlistConfirmationEmail, sendWaitlistAdminNotification } from '@/lib/email';
 
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = 'force-dynamic';
+
 // Runtime configuration for Node.js
 export const runtime = 'nodejs';
 

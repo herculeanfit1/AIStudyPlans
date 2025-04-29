@@ -40,25 +40,30 @@ jobs:
           submodules: true
           lfs: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Git config
+        run: |
+          git config --global core.longpaths true
+          git config --list
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
-          
-      - name: Cache dependencies
+
+      - name: Setup caching
         uses: actions/cache@v3
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-          
-      - name: npm install and build
+
+      - name: Install dependencies and build
         run: |
           npm ci
-          npm run build
+          chmod +x build-static.sh
+          ./build-static.sh
         env:
-          # Add any environment variables needed for the build
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://aistudyplans.com' }}
 
       - name: Build And Deploy

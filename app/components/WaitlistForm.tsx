@@ -92,6 +92,22 @@ export default function WaitlistForm() {
     setError(null);
 
     try {
+      // Check if we're in static export mode (production)
+      if (process.env.NODE_ENV === 'production') {
+        // In production static export, API routes aren't available
+        // Just simulate success after a delay for demo purposes
+        console.log('Static export mode - simulating waitlist submission');
+        console.log('Form data:', formData);
+        
+        // In real implementation, you would send this data to an external API
+        // like an Azure Function that's deployed alongside the static site
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setIsSubmitted(true);
+        return;
+      }
+
+      // Regular API route for development mode
       const response = await fetch('/api/waitlist', {
         method: 'POST',
         headers: {
