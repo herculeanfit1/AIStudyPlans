@@ -68,17 +68,21 @@ run_tests() {
 
 # Function to test the email system
 test_email() {
-  if [ -z "$1" ]; then
-    echo -e "${RED}Error: Email address is required.${NC}"
-    echo "Usage: ./run-docker.sh email your-email@example.com"
-    exit 1
-  fi
+  local email_type=${1:-"simple"}
+  local recipient=$2
   
   check_env_file
-  echo -e "${GREEN}Testing email with address: $1${NC}"
   
-  # Run directly instead of in Docker for testing
-  node test-resend.js "$1"
+  if [ -z "$recipient" ] && [ "$email_type" != "simple" ] && [ "$email_type" != "waitlist" ] && [ "$email_type" != "feedback" ] && [ "$email_type" != "all" ]; then
+    # If only one argument is provided and it's not a valid type, consider it as the recipient
+    recipient=$email_type
+    email_type="simple"
+  fi
+  
+  echo -e "${GREEN}Testing ${email_type} email${recipient:+ with address: $recipient}${NC}"
+  
+  # Run the consolidated email test script
+  node scripts/email-test.js $email_type $recipient
 }
 
 # Function to run e2e tests
@@ -103,9 +107,13 @@ show_usage() {
     echo "  test      - Run unit tests"
     echo "  e2e       - Run end-to-end tests"
     echo "  lighthouse - Run Lighthouse performance tests"
+    echo "  email [type] [recipient] - Test email sending functionality"
+    echo "           Types: simple, waitlist, feedback, all (default: simple)"
     echo "Examples:"
     echo "  $0 start"
     echo "  $0 test"
+    echo "  $0 email your-email@example.com"
+    echo "  $0 email waitlist your-email@example.com"
 }
 
 # Main script logic
@@ -130,7 +138,7 @@ case "$1" in
         run_lighthouse
         ;;
     email)
-        test_email "$2"
+        test_email "$2" "$3"
         ;;
     *)
         show_usage

@@ -1,15 +1,19 @@
 name: Backup to Separate Repository
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Azure Static Web Apps CI/CD"]
+    branches: [main]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
   backup:
     runs-on: ubuntu-latest
     name: Backup Repository
+    # Only run if the Azure workflow completed successfully
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
       - name: Checkout Source Repository
         uses: actions/checkout@v4
@@ -21,14 +25,23 @@ jobs:
         run: |
           echo "BACKUP_REPO is set: ${{ secrets.BACKUP_REPO != '' }}"
           echo "BACKUP_PAT is set: ${{ secrets.BACKUP_PAT != '' }}"
-          # Show the masked repo name (first and last character only)
+          
+          # Check if BACKUP_REPO secret is actually set
           if [ "${{ secrets.BACKUP_REPO != '' }}" = "true" ]; then
+            # Print first character and length to diagnose format issues
+            REPO_LENGTH=$(echo "${{ secrets.BACKUP_REPO }}" | wc -c)
             FIRST_CHAR=$(echo "${{ secrets.BACKUP_REPO }}" | cut -c1)
-            LENGTH=$(echo "${{ secrets.BACKUP_REPO }}" | wc -c)
-            LAST_CHAR=$(echo "${{ secrets.BACKUP_REPO }}" | cut -c$(($LENGTH-1)))
-            echo "BACKUP_REPO format (masked): ${FIRST_CHAR}*****${LAST_CHAR}"
+            LAST_CHAR=$(echo "${{ secrets.BACKUP_REPO }}" | cut -c$((REPO_LENGTH-1)))
+            echo "BACKUP_REPO format check: starts with '${FIRST_CHAR}', ends with '${LAST_CHAR}', length: ${REPO_LENGTH} chars"
+            
+            # Check if it contains a slash (username/repo format)
+            if echo "${{ secrets.BACKUP_REPO }}" | grep -q "/"; then
+              echo "BACKUP_REPO contains a slash - good format"
+            else
+              echo "BACKUP_REPO does NOT contain a slash - BAD FORMAT, should be 'username/repository'"
+            fi
           else
-            echo "BACKUP_REPO is not set!"
+            echo "BACKUP_REPO is not set correctly!"
           fi
 
       - name: Push to Backup Repository
@@ -58,7 +71,8 @@ jobs:
           git commit -m "Backup from main repository - $(date)"
           
           # Show the repo URL we're pushing to (with any token part masked)
-          echo "Pushing to: https://***@github.com/${{ secrets.BACKUP_REPO }}.git"
+          echo "Backup Repository value: [${{ secrets.BACKUP_REPO }}]"
+          echo "Pushing to: https://[token]@github.com/${{ secrets.BACKUP_REPO }}.git"
           
           # Push to backup repository (force to overwrite history)
           git remote add backup https://${{ secrets.BACKUP_PAT }}@github.com/${{ secrets.BACKUP_REPO }}.git

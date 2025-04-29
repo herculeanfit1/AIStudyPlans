@@ -80,6 +80,21 @@ We provide a convenient Docker development environment:
    ./run-docker.sh stop
    ```
 
+### Testing Email Functionality
+
+We provide a consolidated email testing utility:
+
+```bash
+# Test a simple notification email
+./run-docker.sh email simple your-email@example.com
+
+# Test a waitlist confirmation email
+./run-docker.sh email waitlist your-email@example.com
+
+# Test all email templates
+./run-docker.sh email all your-email@example.com
+```
+
 ## Testing
 
 ### Running Unit Tests
@@ -120,10 +135,28 @@ npm run test:e2e
 ├── e2e/                  # End-to-end tests
 ├── __tests__/            # Unit tests
 ├── public/               # Static assets
+├── scripts/              # Utility scripts
+│   ├── email-test.js     # Consolidated email testing utility
+│   └── cleanup-duplicates.sh # Configuration cleanup script
 ├── docker-compose.yml    # Docker Compose configuration
 ├── Dockerfile.dev        # Development Dockerfile
 ├── Dockerfile.test       # Testing Dockerfile
 └── run-docker.sh         # Helper script for Docker operations
+```
+
+## Configuration
+
+The project uses modern JavaScript/TypeScript tooling with consolidated configuration files:
+
+- **Next.js**: `next.config.mjs` - Unified configuration for Next.js
+- **Tailwind CSS**: `tailwind.config.ts` - TypeScript-based Tailwind configuration
+- **PostCSS**: `postcss.config.mjs` - Modern PostCSS configuration
+- **Docker**: Multiple Dockerfiles for different environments (production, development, testing)
+
+To clean up any duplicate configuration files after a pull, run:
+
+```bash
+./scripts/cleanup-duplicates.sh
 ```
 
 ## Deployment
