@@ -2,6 +2,12 @@
 
 A modern web application for AI-powered study plan generation.
 
+Updated: Testing backup workflow - timestamp: 2023-11-14T15:42:00Z
+
+# AI Study Plans
+
+A modern web application for AI-powered study plan generation.
+
 ## Deployment Status
 
 This application is deployed on Azure Static Web Apps.
@@ -171,4 +177,4 @@ If you encounter issues with deployment:
 
 [MIT](LICENSE)
 
-Updated: Testing backup workflow
+Updated: Testing backup workflow - timestamp: 2023-11-14T15:42:00Z
