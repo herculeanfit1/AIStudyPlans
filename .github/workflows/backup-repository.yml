@@ -25,8 +25,24 @@ jobs:
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
           
-          # Set up the new remote repository
-          git remote add backup https://${{ secrets.BACKUP_PAT }}@github.com/${{ secrets.BACKUP_REPO }}.git
+          # Create a temporary directory for the filtered content
+          mkdir -p ../filtered-repo
           
-          # Push to backup repository
+          # Copy everything except .github directory to the filtered directory
+          rsync -av --exclude='.github' ./ ../filtered-repo/
+          
+          # Add a special .gitignore to the backup repo to prevent workflow triggers
+          echo "# Ignore GitHub workflows to prevent duplicate runs" > ../filtered-repo/.github-actions-ignore
+          echo ".github/" >> ../filtered-repo/.github-actions-ignore
+          
+          # Set up the new remote repository
+          cd ../filtered-repo
+          git init
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add .
+          git commit -m "Backup from main repository - $(date)"
+          
+          # Push to backup repository (force to overwrite history)
+          git remote add backup https://${{ secrets.BACKUP_PAT }}@github.com/${{ secrets.BACKUP_REPO }}.git
           git push backup main:main --force 
