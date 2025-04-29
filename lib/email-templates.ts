@@ -244,7 +244,7 @@ The SchedulEd Team
     html,
     text,
   };
-}
+} 
 
 /**
  * Generate the admin notification email template for waitlist signups
