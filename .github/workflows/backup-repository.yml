@@ -17,6 +17,20 @@ jobs:
           fetch-depth: 0
           path: source-repo
 
+      - name: Debug Secrets
+        run: |
+          echo "BACKUP_REPO is set: ${{ secrets.BACKUP_REPO != '' }}"
+          echo "BACKUP_PAT is set: ${{ secrets.BACKUP_PAT != '' }}"
+          # Show the masked repo name (first and last character only)
+          if [ "${{ secrets.BACKUP_REPO != '' }}" = "true" ]; then
+            FIRST_CHAR=$(echo "${{ secrets.BACKUP_REPO }}" | cut -c1)
+            LENGTH=$(echo "${{ secrets.BACKUP_REPO }}" | wc -c)
+            LAST_CHAR=$(echo "${{ secrets.BACKUP_REPO }}" | cut -c$(($LENGTH-1)))
+            echo "BACKUP_REPO format (masked): ${FIRST_CHAR}*****${LAST_CHAR}"
+          else
+            echo "BACKUP_REPO is not set!"
+          fi
+
       - name: Push to Backup Repository
         run: |
           cd source-repo
@@ -42,6 +56,9 @@ jobs:
           git config user.email "action@github.com"
           git add .
           git commit -m "Backup from main repository - $(date)"
+          
+          # Show the repo URL we're pushing to (with any token part masked)
+          echo "Pushing to: https://***@github.com/${{ secrets.BACKUP_REPO }}.git"
           
           # Push to backup repository (force to overwrite history)
           git remote add backup https://${{ secrets.BACKUP_PAT }}@github.com/${{ secrets.BACKUP_REPO }}.git
