@@ -69,14 +69,15 @@ export async function addToWaitlist(name: string, email: string, source?: string
 }
 
 // Start feedback campaign for a user
+// Note: The first feedback email will be sent 3-7 days after signup by the scheduled job
 export async function startFeedbackCampaign(userId: number): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabase
       .from('waitlist_users')
       .update({ 
         feedback_campaign_started: true,
-        email_sequence_position: 1,
-        last_email_sent_at: new Date().toISOString()
+        email_sequence_position: 0, // Start at 0, first email (position 1) will be sent by scheduled job
+        last_email_sent_at: new Date().toISOString() // Record welcome email time
       })
       .eq('id', userId);
     
@@ -121,21 +122,59 @@ export async function storeFeedback(
 export async function getUsersForNextFeedbackEmail(): Promise<{ users: WaitlistUser[]; error?: string }> {
   try {
     const now = new Date();
-    // Get users who have started the campaign but haven't received all emails
-    // and whose last email was sent at least 3 days ago
-    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Time windows for each email in the sequence
+    // Welcome email (position 0) -> First feedback email (position 1): 3-7 days 
+    // First feedback (position 1) -> Second feedback (position 2): 7-14 days
+    // Second feedback (position 2) -> Third feedback (position 3): 7-14 days
+    // Third feedback (position 3) -> Final feedback (position 4): 7-14 days
     
+    // Get the appropriate time threshold based on sequence position
+    function getTimeThresholdForPosition(position: number): Date {
+      // For new signups (position 0), send first feedback email after 5 days (middle of 3-7 day range)
+      if (position === 0) {
+        return new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
+      }
+      // For all other positions, use 10 days (middle of 7-14 day range)
+      return new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
+    }
+    
+    // Get users who:
+    // 1. Have started the campaign
+    // 2. Haven't received all emails yet (position < 4)
+    // 3. Are due for their next email based on position-specific timing
     const { data, error } = await supabase
       .from('waitlist_users')
       .select('*')
       .eq('feedback_campaign_started', true)
-      .lt('email_sequence_position', 4) // Assuming a 4-email sequence
-      .lt('last_email_sent_at', threeDaysAgo)
+      .lt('email_sequence_position', 4) // Max 4 feedback emails (5 total including welcome)
+      .lt('last_email_sent_at', getTimeThresholdForPosition(0).toISOString())
       .order('last_email_sent_at', { ascending: true });
     
     if (error) throw error;
     
-    return { users: (data as WaitlistUser[]) || [] };
+    // Further filter users based on their specific position
+    const filteredUsers = (data as WaitlistUser[]).filter(user => {
+      const position = user.email_sequence_position || 0;
+      const lastSentTime = new Date(user.last_email_sent_at || '');
+      const threshold = getTimeThresholdForPosition(position);
+      return lastSentTime < threshold;
+    });
+    
+    // Sort by priority: earlier signups first, and by sequence position
+    filteredUsers.sort((a, b) => {
+      // First by sequence position (lower position = higher priority)
+      const posA = a.email_sequence_position || 0;
+      const posB = b.email_sequence_position || 0;
+      if (posA !== posB) return posA - posB;
+      
+      // Then by last email time (earlier = higher priority)
+      const timeA = new Date(a.last_email_sent_at || '').getTime();
+      const timeB = new Date(b.last_email_sent_at || '').getTime();
+      return timeA - timeB;
+    });
+    
+    return { users: filteredUsers || [] };
   } catch (error: any) {
     console.error('Error getting users for feedback emails:', error.message);
     return { users: [], error: error.message };

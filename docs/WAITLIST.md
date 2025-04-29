@@ -49,7 +49,10 @@ For the feedback campaign to run automatically:
    - `FEEDBACK_CAMPAIGN_API_KEY`: The same value you set in your environment variables
    - `NEXT_PUBLIC_APP_URL`: Your application's URL
 
-2. The GitHub Actions workflow will automatically run at the scheduled time (9:00 AM UTC by default)
+2. The GitHub Actions workflow will automatically run on the most effective days and times:
+   - Tuesday at 10:00 AM UTC (mid-morning sweet spot)
+   - Thursday at 10:00 AM UTC (highest performing day)
+   - Monday at 5:00 AM UTC (early morning peak)
 
 ## How It Works
 
@@ -58,13 +61,13 @@ For the feedback campaign to run automatically:
 1. User submits the waitlist form with their name and email
 2. The data is sent to the `/api/waitlist` endpoint
 3. The data is stored in the Supabase `waitlist_users` table
-4. A confirmation email is sent to the user
+4. A confirmation email is sent to the user immediately (research shows 74% of users expect an immediate welcome email)
 5. An admin notification is sent
 6. The user is enrolled in the feedback campaign (with `feedback_campaign_started = true`)
 
 ### Feedback Campaign
 
-1. The GitHub Actions workflow runs on a schedule
+1. The GitHub Actions workflow runs on a schedule based on research-backed optimal sending times
 2. It calls the `/api/feedback-campaign` endpoint, which:
    - Retrieves users who need to receive the next email in their campaign sequence
    - Sends the appropriate feedback email to each user
@@ -79,13 +82,32 @@ For the feedback campaign to run automatically:
 4. When a user clicks the feedback link in an email, they're taken to the feedback form with their user ID and email ID as URL parameters
 5. When they submit feedback, it's stored in the `feedback_responses` table in Supabase
 
-## Email Sequence Timing
+## Email Sequence Timing (Research-Backed)
 
-Emails are sent with the following schedule:
+Our email timing is based on scientific research showing optimal engagement patterns:
 
-1. First email: Immediately after waitlist signup
-2. Subsequent emails: At least 3 days after the previous email
-3. Maximum of 4 emails in the sequence
+1. **Welcome Email**: Sent immediately after signup (research shows 74% of users expect this, with 80%+ open rates)
+2. **First Feedback Email**: Sent 3-7 days after welcome (when user is still engaged but has had time to reflect)
+3. **Second Feedback Email**: Sent 7-14 days after the first email
+4. **Third Feedback Email**: Sent 7-14 days after the second email
+5. **Final Feedback Email**: Sent 7-14 days after the third email
+
+Key timing research findings implemented:
+- Midweek sending (Tues-Thurs) consistently outperforms other days
+- Mid-morning (9-11 AM) and early morning (4-6 AM) are optimal sending hours
+- 3-5 emails is the ideal sequence length before diminishing returns
+- Biweekly cadence balances visibility and recipient fatigue
+
+## Optimal Sending Days and Times
+
+Our system sends emails on:
+- **Thursdays** (top performing day according to research)
+- **Tuesdays** (second best performing day)
+- **Monday mornings** (to capture early week attention)
+
+At optimal times:
+- 10:00 AM (midweek sweet spot with highest open rates)
+- 5:00 AM (early morning to avoid inbox competition)
 
 ## Accessing and Analyzing Feedback
 
