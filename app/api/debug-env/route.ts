@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Force dynamic rendering to avoid static generation issues
-export const dynamic = 'force-dynamic';
-
-// Runtime configuration for Node.js
-export const runtime = 'nodejs';
+// Instead of using force-dynamic, use the edge runtime which is compatible with static exports
+export const runtime = 'edge';
 
 /**
  * Debug environment variables API route
@@ -34,7 +31,7 @@ export async function GET(request: NextRequest) {
     },
     serverTime: new Date().toISOString(),
     vercelEnv: process.env.VERCEL_ENV || 'not set',
-    nodeVersion: process.version
+    nodeVersion: typeof process.version !== 'undefined' ? process.version : 'not available'
   };
 
   // Return the status

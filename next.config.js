@@ -21,7 +21,16 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
-  }
+  },
+  // Include the API routes in the static export
+  trailingSlash: true,
+  // Ensure API routes are copied to the output directory
+  experimental: {
+    // This will copy the /api directory to the output folder
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./app/api/**/*'],
+    },
+  },
 };
 
 module.exports = nextConfig; 

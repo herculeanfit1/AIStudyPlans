@@ -1,0 +1,9 @@
+{
+  "name": "scheduled-api",
+  "version": "1.0.0",
+  "description": "SchedulEd API for Azure Static Web Apps",
+  "main": "index.js",
+  "dependencies": {
+    "resend": "^2.1.0"
+  }
+} 
