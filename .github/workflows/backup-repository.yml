@@ -1,0 +1,32 @@
+name: Backup to Separate Repository
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    name: Backup Repository
+    steps:
+      - name: Checkout Source Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: source-repo
+
+      - name: Push to Backup Repository
+        run: |
+          cd source-repo
+          
+          # Configure Git
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          
+          # Set up the new remote repository
+          git remote add backup https://${{ secrets.BACKUP_PAT }}@github.com/${{ secrets.BACKUP_REPO }}.git
+          
+          # Push to backup repository
+          git push backup main:main --force 
