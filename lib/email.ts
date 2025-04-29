@@ -1,5 +1,7 @@
 import { Resend } from 'resend';
 import { getWaitlistConfirmationTemplate, getPasswordResetTemplate, getWaitlistAdminNotificationTemplate } from './email-templates';
+import { getFeedbackEmailTemplate } from './feedback-email-templates';
+import { WaitlistUser } from './supabase';
 
 // Initialize Resend with API key
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -7,6 +9,7 @@ const fromEmail = process.env.EMAIL_FROM || 'Lindsey <lindsey@aistudyplans.com>'
 const replyToEmail = process.env.EMAIL_REPLY_TO || 'support@aistudyplans.com';
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 const adminEmail = 'waitlist@aistudyplans.com';
+const feedbackFormUrl = `${appUrl}/feedback`;
 
 // Check if API key is provided
 if (!resendApiKey) {
@@ -115,4 +118,39 @@ export async function sendWaitlistAdminNotification(name: string, email: string)
     html,
     text,
   });
+}
+
+/**
+ * Send a feedback campaign email to a waitlist user
+ */
+export async function sendFeedbackCampaignEmail(user: WaitlistUser) {
+  // Determine which email to send based on the user's position in the sequence
+  const sequencePosition = user.email_sequence_position || 1;
+  
+  // Get the appropriate template
+  const { html, text, subject } = getFeedbackEmailTemplate(
+    sequencePosition, 
+    { 
+      appUrl, 
+      user, 
+      feedbackFormUrl 
+    }
+  );
+
+  try {
+    // Send the email
+    const result = await sendEmail({
+      to: user.email,
+      subject,
+      html,
+      text,
+    });
+    
+    console.log(`Sent feedback email #${sequencePosition} to ${user.email}`);
+    
+    return result;
+  } catch (error) {
+    console.error(`Failed to send feedback email #${sequencePosition} to ${user.email}:`, error);
+    throw error;
+  }
 } 

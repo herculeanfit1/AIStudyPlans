@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendWaitlistConfirmationEmail, sendWaitlistAdminNotification } from '@/lib/email';
+import { addToWaitlist, startFeedbackCampaign } from '@/lib/supabase';
 
 // Use edge runtime instead of nodejs for static export compatibility
 export const runtime = 'edge';
@@ -13,11 +14,13 @@ export async function POST(request: NextRequest) {
     console.log(`Waitlist API route called (${process.env.NODE_ENV} environment)`);
     console.log(`Environment config: URL=${process.env.NEXT_PUBLIC_APP_URL || 'not set'}`);
     console.log(`Email config present: ${!!process.env.RESEND_API_KEY}, FROM=${!!process.env.EMAIL_FROM}, REPLY=${!!process.env.EMAIL_REPLY_TO}`);
+    console.log(`Supabase config present: ${!!process.env.NEXT_PUBLIC_SUPABASE_URL}, KEY=${!!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`);
     
     // Get body data, using a more resilient approach
     const body = await request.json().catch(() => ({}));
     const name = body.name || '';
     const email = body.email || '';
+    const source = body.source || 'website'; // Track where the signup came from
     
     console.log(`Received waitlist request for: ${name} (${email})`);
 
@@ -53,6 +56,16 @@ export async function POST(request: NextRequest) {
     console.log(`Email decision: using ${emailToUse} for delivery (isTestEmail: ${isTestEmail}, env: ${process.env.NODE_ENV})`);
 
     try {
+      // Add user to database
+      const dbResult = await addToWaitlist(name, emailToUse, source);
+      
+      if (!dbResult.success) {
+        console.error('Error adding user to database:', dbResult.error);
+        // We'll continue even if DB insertion fails - to ensure the welcome email is still sent
+      } else {
+        console.log('Successfully added user to database:', dbResult.user?.id);
+      }
+      
       // Validate required environment variables are set
       if (!process.env.RESEND_API_KEY) {
         throw new Error('RESEND_API_KEY environment variable is not set');
@@ -67,6 +80,12 @@ export async function POST(request: NextRequest) {
       console.log('Sending admin notification email...');
       const adminResult = await sendWaitlistAdminNotification(name, emailToUse);
       console.log('Admin notification email sent successfully, ID:', adminResult?.messageId);
+      
+      // Start feedback campaign (set up, but first email will be sent by cron job)
+      if (dbResult.success && dbResult.user) {
+        console.log('Starting feedback campaign for user:', dbResult.user.id);
+        await startFeedbackCampaign(dbResult.user.id);
+      }
       
       return new NextResponse(
         JSON.stringify({ 
