@@ -1,0 +1,22 @@
+{
+  "environment": "staging",
+  "api": {
+    "baseUrl": "https://staging-aistudyplans.azurewebsites.net/api",
+    "timeout": 8000
+  },
+  "features": {
+    "feedback": true,
+    "analytics": true,
+    "debugMode": false
+  },
+  "logging": {
+    "level": "info",
+    "enableConsole": true,
+    "enableRemote": true
+  },
+  "deployment": {
+    "containerRegistry": "ghcr.io",
+    "imageName": "aistudyplans",
+    "appServiceName": "staging-aistudyplans"
+  }
+} 

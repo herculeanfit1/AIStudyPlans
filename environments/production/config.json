@@ -1,0 +1,24 @@
+{
+  "environment": "production",
+  "api": {
+    "baseUrl": "https://aistudyplans.com/api",
+    "timeout": 5000
+  },
+  "features": {
+    "feedback": true,
+    "analytics": true,
+    "debugMode": false
+  },
+  "logging": {
+    "level": "error",
+    "enableConsole": false,
+    "enableRemote": true
+  },
+  "deployment": {
+    "containerRegistry": "ghcr.io",
+    "imageName": "aistudyplans",
+    "appServiceName": "aistudyplans-prod",
+    "canaryEnabled": true,
+    "canaryPercentage": 10
+  }
+} 

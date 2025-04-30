@@ -1,0 +1,22 @@
+{
+  "environment": "development",
+  "api": {
+    "baseUrl": "https://dev-aistudyplans.azurewebsites.net/api",
+    "timeout": 10000
+  },
+  "features": {
+    "feedback": true,
+    "analytics": false,
+    "debugMode": true
+  },
+  "logging": {
+    "level": "debug",
+    "enableConsole": true,
+    "enableRemote": false
+  },
+  "deployment": {
+    "containerRegistry": "ghcr.io",
+    "imageName": "aistudyplans",
+    "appServiceName": "dev-aistudyplans"
+  }
+} 

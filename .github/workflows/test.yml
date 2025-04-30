@@ -1,0 +1,307 @@
+name: Run Tests
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['main', 'develop']
+  workflow_dispatch:
+
+jobs:
+  prepare:
+    name: Prepare Test Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      test-chunks: ${{ steps.split-tests.outputs.test-chunks }}
+      e2e-chunks: ${{ steps.split-tests.outputs.e2e-chunks }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Split tests into chunks for parallel execution
+        id: split-tests
+        run: |
+          # Find all test files
+          UNIT_TEST_FILES=$(find __tests__ -name "*.test.*" -type f | sort)
+          E2E_TEST_FILES=$(find e2e -name "*.spec.*" -type f | sort)
+          
+          # Count number of test files
+          UNIT_TEST_COUNT=$(echo "$UNIT_TEST_FILES" | wc -l)
+          E2E_TEST_COUNT=$(echo "$E2E_TEST_FILES" | wc -l)
+          
+          # Determine chunk size (based on test count)
+          UNIT_CHUNKS=5
+          E2E_CHUNKS=3
+          
+          if [ $UNIT_TEST_COUNT -lt $UNIT_CHUNKS ]; then
+            UNIT_CHUNKS=$UNIT_TEST_COUNT
+          fi
+          
+          if [ $E2E_TEST_COUNT -lt $E2E_CHUNKS ]; then
+            E2E_CHUNKS=$E2E_TEST_COUNT
+          fi
+          
+          # Create JSON array for unit tests
+          echo "Creating $UNIT_CHUNKS chunks for $UNIT_TEST_COUNT unit tests"
+          UNIT_TEST_MATRIX="["
+          for ((i=0; i<$UNIT_CHUNKS; i++)); do
+            if [ $i -gt 0 ]; then
+              UNIT_TEST_MATRIX="$UNIT_TEST_MATRIX,"
+            fi
+            UNIT_TEST_MATRIX="$UNIT_TEST_MATRIX{\"chunk\":$i,\"total\":$UNIT_CHUNKS}"
+          done
+          UNIT_TEST_MATRIX="$UNIT_TEST_MATRIX]"
+          
+          # Create JSON array for e2e tests
+          echo "Creating $E2E_CHUNKS chunks for $E2E_TEST_COUNT e2e tests"
+          E2E_TEST_MATRIX="["
+          for ((i=0; i<$E2E_CHUNKS; i++)); do
+            if [ $i -gt 0 ]; then
+              E2E_TEST_MATRIX="$E2E_TEST_MATRIX,"
+            fi
+            E2E_TEST_MATRIX="$E2E_TEST_MATRIX{\"chunk\":$i,\"total\":$E2E_CHUNKS}"
+          done
+          E2E_TEST_MATRIX="$E2E_TEST_MATRIX]"
+          
+          # Set outputs
+          echo "test-chunks=$UNIT_TEST_MATRIX" >> $GITHUB_OUTPUT
+          echo "e2e-chunks=$E2E_TEST_MATRIX" >> $GITHUB_OUTPUT
+  
+  unit-tests:
+    name: Unit Tests (Chunk ${{ matrix.chunk }}/${{ matrix.total }})
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.test-chunks) }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests for this chunk
+        run: |
+          # Find all test files
+          TEST_FILES=$(find __tests__ -name "*.test.*" -type f | sort)
+          
+          # Count tests and calculate chunk size
+          TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
+          CHUNK_SIZE=$((TEST_COUNT / ${{ matrix.total }} + 1))
+          
+          # Calculate start and end indexes for this chunk
+          START=$((${{ matrix.chunk }} * CHUNK_SIZE))
+          END=$((START + CHUNK_SIZE - 1))
+          
+          # Get the test files for this chunk
+          CHUNK_FILES=$(echo "$TEST_FILES" | sed -n "$((START+1)),$((END+1))p")
+          echo "Running tests for chunk ${{ matrix.chunk }}/${{ matrix.total }} (files $START-$END):"
+          echo "$CHUNK_FILES"
+          
+          # Run tests for only these files
+          if [ ! -z "$CHUNK_FILES" ]; then
+            echo "$CHUNK_FILES" | xargs npx jest --runInBand --ci --no-cache
+          else
+            echo "No tests to run in this chunk"
+          fi
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-results-chunk-${{ matrix.chunk }}
+          path: |
+            coverage/
+            junit.xml
+            test-results.json
+          retention-days: 7
+  
+  e2e-tests:
+    name: E2E Tests (Chunk ${{ matrix.chunk }}/${{ matrix.total }})
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.e2e-chunks) }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      
+      - name: Run e2e tests for this chunk
+        run: |
+          # Find all e2e test files
+          TEST_FILES=$(find e2e -name "*.spec.*" -type f | sort)
+          
+          # Count tests and calculate chunk size
+          TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
+          CHUNK_SIZE=$((TEST_COUNT / ${{ matrix.total }} + 1))
+          
+          # Calculate start and end indexes for this chunk
+          START=$((${{ matrix.chunk }} * CHUNK_SIZE))
+          END=$((START + CHUNK_SIZE - 1))
+          
+          # Get the test files for this chunk
+          CHUNK_FILES=$(echo "$TEST_FILES" | sed -n "$((START+1)),$((END+1))p")
+          echo "Running e2e tests for chunk ${{ matrix.chunk }}/${{ matrix.total }} (files $START-$END):"
+          echo "$CHUNK_FILES"
+          
+          # Run tests for only these files
+          if [ ! -z "$CHUNK_FILES" ]; then
+            echo "$CHUNK_FILES" | xargs npx playwright test --browser=chromium
+          else
+            echo "No tests to run in this chunk"
+          fi
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-test-results-chunk-${{ matrix.chunk }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+  
+  test-summary:
+    name: Summarize Test Results
+    needs: [unit-tests, e2e-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+      
+      - name: Generate test summary
+        run: |
+          echo "# Test Summary" > test-summary.md
+          echo "## Unit Tests" >> test-summary.md
+          echo "Results from parallel execution:" >> test-summary.md
+          
+          # Process unit test results
+          UNIT_PASS=0
+          UNIT_FAIL=0
+          UNIT_SKIP=0
+          
+          for dir in artifacts/unit-test-results-chunk-*; do
+            if [ -d "$dir" ]; then
+              chunk=$(echo $dir | sed 's/.*chunk-//')
+              echo "### Chunk $chunk" >> test-summary.md
+              
+              if [ -f "$dir/test-results.json" ]; then
+                # Extract numbers using jq if available
+                PASS=$(cat "$dir/test-results.json" | grep -o '"numPassedTests":[0-9]*' | cut -d':' -f2)
+                FAIL=$(cat "$dir/test-results.json" | grep -o '"numFailedTests":[0-9]*' | cut -d':' -f2)
+                SKIP=$(cat "$dir/test-results.json" | grep -o '"numPendingTests":[0-9]*' | cut -d':' -f2)
+                
+                UNIT_PASS=$((UNIT_PASS + PASS))
+                UNIT_FAIL=$((UNIT_FAIL + FAIL))
+                UNIT_SKIP=$((UNIT_SKIP + SKIP))
+                
+                echo "- Passed: $PASS" >> test-summary.md
+                echo "- Failed: $FAIL" >> test-summary.md
+                echo "- Skipped: $SKIP" >> test-summary.md
+              else
+                echo "- No test results found" >> test-summary.md
+              fi
+            fi
+          done
+          
+          echo "## E2E Tests" >> test-summary.md
+          
+          # Process e2e test results
+          E2E_PASS=0
+          E2E_FAIL=0
+          E2E_SKIP=0
+          
+          for dir in artifacts/e2e-test-results-chunk-*; do
+            if [ -d "$dir" ]; then
+              chunk=$(echo $dir | sed 's/.*chunk-//')
+              echo "### Chunk $chunk" >> test-summary.md
+              
+              # For Playwright results
+              if [ -d "$dir/playwright-report" ]; then
+                if [ -f "$dir/playwright-report/results.json" ]; then
+                  # Process Playwright results
+                  RESULTS=$(cat "$dir/playwright-report/results.json")
+                  PASS=$(echo "$RESULTS" | grep -o '"status":"passed"' | wc -l)
+                  FAIL=$(echo "$RESULTS" | grep -o '"status":"failed"' | wc -l)
+                  SKIP=$(echo "$RESULTS" | grep -o '"status":"skipped"' | wc -l)
+                  
+                  E2E_PASS=$((E2E_PASS + PASS))
+                  E2E_FAIL=$((E2E_FAIL + FAIL))
+                  E2E_SKIP=$((E2E_SKIP + SKIP))
+                  
+                  echo "- Passed: $PASS" >> test-summary.md
+                  echo "- Failed: $FAIL" >> test-summary.md
+                  echo "- Skipped: $SKIP" >> test-summary.md
+                else
+                  echo "- No test results found" >> test-summary.md
+                fi
+              else
+                echo "- No Playwright report found" >> test-summary.md
+              fi
+            fi
+          done
+          
+          echo "## Summary" >> test-summary.md
+          echo "### Unit Tests" >> test-summary.md
+          echo "- Passed: $UNIT_PASS" >> test-summary.md
+          echo "- Failed: $UNIT_FAIL" >> test-summary.md
+          echo "- Skipped: $UNIT_SKIP" >> test-summary.md
+          echo "### E2E Tests" >> test-summary.md
+          echo "- Passed: $E2E_PASS" >> test-summary.md
+          echo "- Failed: $E2E_FAIL" >> test-summary.md
+          echo "- Skipped: $E2E_SKIP" >> test-summary.md
+          
+          # Determine if tests passed overall
+          TOTAL_FAIL=$((UNIT_FAIL + E2E_FAIL))
+          if [ $TOTAL_FAIL -gt 0 ]; then
+            echo "❌ $TOTAL_FAIL tests failed" >> test-summary.md
+            exit 1
+          else
+            echo "✅ All tests passed" >> test-summary.md
+          fi
+      
+      - name: Upload test summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-summary
+          path: test-summary.md
+          retention-days: 7 

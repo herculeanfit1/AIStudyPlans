@@ -1,0 +1,58 @@
+schemaVersion: 2.0.0
+
+# File existence tests
+fileExistenceTests:
+  - name: 'Verify Next.js installed'
+    path: '/app/node_modules/next'
+    shouldExist: true
+    
+  - name: 'Verify package.json exists'
+    path: '/app/package.json'
+    shouldExist: true
+    
+  - name: 'Verify application code exists'
+    path: '/app/app'
+    shouldExist: true
+    
+  - name: 'No development dependencies in production'
+    path: '/app/node_modules/typescript'
+    shouldExist: false
+    onlyInProd: true
+
+# Command tests to validate runtime environment
+commandTests:
+  - name: 'Node version check'
+    command: 'node'
+    args: ['--version']
+    expectedOutput: ['v1[68]']
+    
+  - name: 'NPM is installed'
+    command: 'npm'
+    args: ['--version']
+    expectedError: ['']
+    
+  - name: 'No root user for security'
+    command: 'whoami'
+    expectedOutput: ['nextjs']
+    excludedOutput: ['root']
+    
+  - name: 'Check environment variables set'
+    command: 'env'
+    expectedOutput: ['NODE_ENV=production', 'NEXT_TELEMETRY_DISABLED=1']
+    onlyInProd: true
+
+# Metadata test
+metadataTest:
+  labels:
+    - key: 'org.opencontainers.image.source'
+      value: 'https://github.com/.+'
+    - key: 'org.opencontainers.image.created'
+      value: '.+'
+
+# License test
+licenseTests:
+  - debian: false
+    files:
+      - path: '/app/LICENSE'
+        licenses:
+          - 'MIT' 

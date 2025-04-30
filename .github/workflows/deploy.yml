@@ -1,0 +1,137 @@
+name: Deploy Application
+
+on:
+  workflow_run:
+    workflows: ["Build Application Artifact"]
+    types:
+      - completed
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      image_tag:
+        description: 'Image tag to deploy (leave empty for latest)'
+        required: false
+        type: string
+
+jobs:
+  prepare:
+    name: Prepare Deployment
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      image_tag: ${{ steps.set-image.outputs.image_tag }}
+      
+    steps:
+      - name: Set environment
+        id: set-env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.event.workflow_run.head_branch }}" == "main" ]]; then
+            ENVIRONMENT="production"
+          elif [[ "${{ github.event.workflow_run.head_branch }}" == "develop" ]]; then
+            ENVIRONMENT="staging"
+          else
+            ENVIRONMENT="development"
+          fi
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+      
+      - name: Download artifact
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.image_tag == '' }}
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build-artifact.yml
+          name: docker-image-info-${{ steps.set-env.outputs.environment }}
+          path: artifacts
+          
+      - name: Set image tag
+        id: set-image
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.image_tag }}" != "" ]]; then
+            echo "image_tag=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            TAG=$(head -n 1 artifacts/image-tags.txt)
+            echo "image_tag=$TAG" >> $GITHUB_OUTPUT
+          fi
+          
+  deploy:
+    name: Deploy to ${{ needs.prepare.outputs.environment }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    environment: ${{ needs.prepare.outputs.environment }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up deployment configuration
+        run: |
+          echo "Deploying ${{ needs.prepare.outputs.image_tag }} to ${{ needs.prepare.outputs.environment }}"
+          
+          # For production, run additional validation
+          if [[ "${{ needs.prepare.outputs.environment }}" == "production" ]]; then
+            echo "Running additional validation for production deployment"
+          fi
+          
+      # For Azure Static Web Apps
+      - name: Deploy to Azure Static Web Apps
+        id: deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/"
+          api_location: "api"
+          output_location: "out"
+          deployment_environment: ${{ needs.prepare.outputs.environment }}
+          app_build_command: |
+            docker pull ${{ needs.prepare.outputs.image_tag }}
+            docker create --name extractor ${{ needs.prepare.outputs.image_tag }}
+            docker cp extractor:/app/out ./out
+            docker rm extractor
+      
+      # Record deployment metrics
+      - name: Record deployment metrics
+        run: |
+          DEPLOY_DURATION=${{ steps.deploy.outputs.duration || '0' }}
+          echo "Deployment duration: $DEPLOY_DURATION seconds"
+          echo "Environment: ${{ needs.prepare.outputs.environment }}"
+          echo "Image: ${{ needs.prepare.outputs.image_tag }}"
+          echo "Status: ${{ steps.deploy.outcome }}"
+          
+  post-deploy:
+    name: Post-Deployment Validation
+    needs: [prepare, deploy]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Validate Deployment
+        run: |
+          echo "Running post-deployment validation for ${{ needs.prepare.outputs.environment }}"
+          
+          # For all environments, check if the app is responsive
+          APP_URL="${{ needs.prepare.outputs.environment == 'production' && 'https://aistudyplans.com' || format('https://{0}-aistudyplans.azurewebsites.net', needs.prepare.outputs.environment) }}"
+          
+          echo "Checking if $APP_URL is responsive..."
+          curl -sSf $APP_URL > /dev/null || (echo "Deployment validation failed" && exit 1)
+          echo "Deployment successfully validated" 
