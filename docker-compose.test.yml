@@ -1,0 +1,136 @@
+services:
+  # Base service with shared configuration
+  test-base: &test-base
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+      target: test-full
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=test
+      - NEXT_TELEMETRY_DISABLED=1
+      - CI=true
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+    stop_signal: SIGINT
+    stop_grace_period: 5s
+
+  # Unit and integration tests
+  test-unit:
+    <<: *test-base
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+      target: test-unit
+    command: npm run test
+    profiles: ["unit", "all"]
+
+  # End-to-end tests with Playwright
+  test-e2e:
+    <<: *test-base
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+      target: test-e2e
+    # Add dependency on web service for e2e tests
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      - BASE_URL=http://web:3000
+      - PLAYWRIGHT_BASE_URL=http://web:3000
+      - DOCKER=true
+    command: npx playwright test
+    profiles: ["e2e", "all"]
+  
+  # Accessibility tests
+  test-a11y:
+    <<: *test-base
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+      target: test-a11y
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      - PA11Y_CHROMIUM_PATH=/usr/bin/chromium-browser
+      - PA11Y_BASE_URL=http://web:3000
+    # Run pa11y against critical pages
+    command: >
+      sh -c "npm run build:pa11y-config && npx pa11y-ci"
+    profiles: ["a11y", "all"]
+  
+  # Visual regression tests
+  test-visual:
+    <<: *test-base
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+      target: test-e2e
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      - BASE_URL=http://web:3000
+      - PLAYWRIGHT_BASE_URL=http://web:3000
+    # Run only visual comparison tests
+    command: npx playwright test --grep @visual
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+    profiles: ["visual", "all"]
+  
+  # Performance tests with Lighthouse
+  test-perf:
+    <<: *test-base
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+      target: test-perf
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      - LHCI_BUILD_CONTEXT__CURRENT_BRANCH=${GITHUB_REF_NAME:-main}
+      - LHCI_BUILD_CONTEXT__COMMIT_SHA=${GITHUB_SHA:-local}
+      - LHCI_SERVER_BASE_URL=${LHCI_SERVER_BASE_URL:-}
+    # Run Lighthouse CI
+    command: lhci autorun
+    profiles: ["perf", "all"]
+  
+  # Web application service for testing
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=test
+      - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health", "||", "exit", "1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    command: npm run dev
+    stop_signal: SIGINT
+    stop_grace_period: 5s
+    profiles: ["e2e", "a11y", "visual", "perf", "all"]
+
+volumes:
+  node_modules:
+    name: aistudyplans_node_modules
+
+networks:
+  default:
+    name: aistudyplans_test_network 

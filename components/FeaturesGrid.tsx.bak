@@ -1,0 +1,73 @@
+import React from &apos;react&apos;;
+
+interface FeatureCardProps {
+  title: string;
+  description: string;
+  icon: string;
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon }) => {
+  return (
+    <div className=&quot;bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg&quot;>
+      <div className=&quot;w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4&quot;>
+        <i className={`${icon} text-indigo-600 text-xl`} aria-hidden=&quot;true&quot;></i>
+      </div>
+      <h3 className=&quot;text-lg font-semibold text-gray-900 mb-2&quot;>{title}</h3>
+      <p className=&quot;text-gray-600&quot;>{description}</p>
+    </div>
+  );
+};
+
+interface FeaturesGridProps {
+  className?: string;
+}
+
+const FeaturesGrid: React.FC<FeaturesGridProps> = ({ className = &apos;&apos; }) => {
+  const features = [
+    {
+      title: &quot;AI-Powered Planning&quot;,
+      description: &quot;Our algorithms create personalized study plans based on your learning style, goals, and available time.&quot;,
+      icon: &quot;fa-solid fa-brain&quot;
+    },
+    {
+      title: &quot;Adaptive Learning&quot;,
+      description: &quot;Plans adjust automatically based on your progress and performance to optimize your study time.&quot;,
+      icon: &quot;fa-solid fa-arrows-spin&quot;
+    },
+    {
+      title: &quot;Multiple Subject Support&quot;,
+      description: &quot;Master any subject with tailored plans for math, science, languages, programming, and more.&quot;,
+      icon: &quot;fa-solid fa-book-open&quot;
+    },
+    {
+      title: &quot;Progress Tracking&quot;,
+      description: &quot;Visualize your learning journey with detailed analytics and milestone tracking.&quot;,
+      icon: &quot;fa-solid fa-chart-line&quot;
+    },
+    {
+      title: &quot;Resource Integration&quot;,
+      description: &quot;Seamlessly incorporates online courses, textbooks, and practice exercises into your plan.&quot;,
+      icon: &quot;fa-solid fa-link&quot;
+    },
+    {
+      title: &quot;Mobile Friendly&quot;,
+      description: &quot;Access your study plan anytime, anywhere with our responsive mobile interface.&quot;,
+      icon: &quot;fa-solid fa-mobile-screen&quot;
+    }
+  ];
+
+  return (
+    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}>
+      {features.map((feature, index) => (
+        <FeatureCard 
+          key={index}
+          title={feature.title}
+          description={feature.description}
+          icon={feature.icon}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default FeaturesGrid; 

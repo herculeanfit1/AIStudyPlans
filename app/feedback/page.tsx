@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { storeFeedback } from '@/lib/supabase';
 
-export default function FeedbackForm() {
+// Client component that uses search params
+function FeedbackFormContent() {
   const searchParams = useSearchParams();
-  const userId = searchParams.get('userId');
-  const emailId = searchParams.get('emailId');
+  const userId = searchParams?.get('userId');
+  const emailId = searchParams?.get('emailId');
   
   const [feedbackType, setFeedbackType] = useState<'feature_request' | 'general' | 'improvement' | 'bug'>('general');
   const [feedbackText, setFeedbackText] = useState('');
@@ -113,7 +114,8 @@ export default function FeedbackForm() {
             <img 
               src="/SchedulEd_new_logo.png" 
               alt="SchedulEd Logo" 
-              className="h-12" 
+              className="h-30" 
+              style={{ height: "120px" }}
             />
           </div>
           
@@ -215,5 +217,35 @@ export default function FeedbackForm() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading fallback
+function FeedbackFormLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+        <div className="p-8">
+          <div className="flex justify-center mb-6">
+            <div className="h-20 w-40 bg-gray-200 animate-pulse rounded"></div>
+          </div>
+          <div className="h-8 bg-gray-200 animate-pulse rounded mb-4"></div>
+          <div className="space-y-6">
+            <div className="h-10 bg-gray-200 animate-pulse rounded"></div>
+            <div className="h-32 bg-gray-200 animate-pulse rounded"></div>
+            <div className="h-10 bg-gray-200 animate-pulse rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main component with suspense boundary
+export default function FeedbackForm() {
+  return (
+    <Suspense fallback={<FeedbackFormLoading />}>
+      <FeedbackFormContent />
+    </Suspense>
   );
 } 

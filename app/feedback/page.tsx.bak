@@ -1,0 +1,219 @@
+&apos;use client&apos;;
+
+import React, { useState, useEffect } from &apos;react&apos;;
+import { useSearchParams } from &apos;next/navigation&apos;;
+import { storeFeedback } from &apos;@/lib/supabase&apos;;
+
+export default function FeedbackForm() {
+  const searchParams = useSearchParams();
+  const userId = searchParams?.get(&apos;userId&apos;);
+  const emailId = searchParams?.get(&apos;emailId&apos;);
+  
+  const [feedbackType, setFeedbackType] = useState<&apos;feature_request&apos; | &apos;general&apos; | &apos;improvement&apos; | &apos;bug&apos;>(&apos;general&apos;);
+  const [feedbackText, setFeedbackText] = useState(&apos;&apos;);
+  const [rating, setRating] = useState<number | undefined>(undefined);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<&apos;idle&apos; | &apos;success&apos; | &apos;error&apos;>(&apos;idle&apos;);
+  const [errorMessage, setErrorMessage] = useState(&apos;&apos;);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!userId) {
+      setSubmitStatus(&apos;error&apos;);
+      setErrorMessage(&apos;Missing user ID. Please use the link from your email.&apos;);
+      return;
+    }
+    
+    if (!feedbackText.trim()) {
+      setSubmitStatus(&apos;error&apos;);
+      setErrorMessage(&apos;Please enter your feedback before submitting.&apos;);
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const result = await storeFeedback(
+        parseInt(userId, 10),
+        feedbackText,
+        feedbackType,
+        rating,
+        emailId || undefined
+      );
+      
+      if (result.success) {
+        setSubmitStatus(&apos;success&apos;);
+        setFeedbackText(&apos;&apos;);
+        setRating(undefined);
+      } else {
+        setSubmitStatus(&apos;error&apos;);
+        setErrorMessage(result.error || &apos;An error occurred while submitting your feedback.&apos;);
+      }
+    } catch (error: any) {
+      setSubmitStatus(&apos;error&apos;);
+      setErrorMessage(error.message || &apos;An error occurred while submitting your feedback.&apos;);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  // Reset error message when user starts typing again
+  useEffect(() => {
+    if (submitStatus === &apos;error&apos; && feedbackText) {
+      setSubmitStatus(&apos;idle&apos;);
+      setErrorMessage(&apos;&apos;);
+    }
+  }, [feedbackText, submitStatus]);
+  
+  // Generate star rating component
+  const renderStarRating = () => {
+    return (
+      <div className=&quot;flex space-x-1 mt-2&quot;>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type=&quot;button&quot;
+            onClick={() => setRating(star)}
+            className=&quot;text-2xl focus:outline-none&quot;
+            aria-label={`Rate ${star} stars`}
+          >
+            {star <= (rating || 0) ? (
+              <span className=&quot;text-yellow-400&quot;>★</span>
+            ) : (
+              <span className=&quot;text-gray-300&quot;>☆</span>
+            )}
+          </button>
+        ))}
+      </div>
+    );
+  };
+  
+  // Get the appropriate title based on the email ID
+  const getTitle = () => {
+    switch (emailId) {
+      case &apos;feedback1&apos;:
+        return &apos;What features would you like to see?&apos;;
+      case &apos;feedback2&apos;:
+        return &apos;What challenges do you face with study planning?&apos;;
+      case &apos;feedback3&apos;:
+        return &apos;How would you design your ideal study tool?&apos;;
+      case &apos;feedback4&apos;:
+        return &apos;Final thoughts before launch?&apos;;
+      default:
+        return &apos;Share your feedback&apos;;
+    }
+  };
+  
+  return (
+    <div className=&quot;min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8&quot;>
+      <div className=&quot;max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl&quot;>
+        <div className=&quot;p-8&quot;>
+          <div className=&quot;flex justify-center mb-6&quot;>
+            <img 
+              src=&quot;/SchedulEd_new_logo.png&quot; 
+              alt=&quot;SchedulEd Logo&quot; 
+              className=&quot;h-12&quot; 
+            />
+          </div>
+          
+          <h2 className=&quot;text-2xl font-bold text-center text-gray-900 mb-4&quot;>
+            {getTitle()}
+          </h2>
+          
+          {submitStatus === &apos;success&apos; ? (
+            <div className=&quot;rounded-md bg-green-50 p-4 my-4&quot;>
+              <div className=&quot;flex&quot;>
+                <div className=&quot;flex-shrink-0&quot;>
+                  <svg className=&quot;h-5 w-5 text-green-400&quot; fill=&quot;currentColor&quot; viewBox=&quot;0 0 20 20&quot;>
+                    <path fillRule=&quot;evenodd&quot; d=&quot;M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z&quot; clipRule=&quot;evenodd&quot; />
+                  </svg>
+                </div>
+                <div className=&quot;ml-3&quot;>
+                  <h3 className=&quot;text-sm font-medium text-green-800&quot;>Feedback submitted successfully!</h3>
+                  <p className=&quot;mt-2 text-sm text-green-700&quot;>
+                    Thank you for your valuable feedback. Your input helps us improve SchedulEd.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className=&quot;space-y-6&quot;>
+              {submitStatus === &apos;error&apos; && (
+                <div className=&quot;rounded-md bg-red-50 p-4&quot;>
+                  <div className=&quot;flex&quot;>
+                    <div className=&quot;flex-shrink-0&quot;>
+                      <svg className=&quot;h-5 w-5 text-red-400&quot; fill=&quot;currentColor&quot; viewBox=&quot;0 0 20 20&quot;>
+                        <path fillRule=&quot;evenodd&quot; d=&quot;M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z&quot; clipRule=&quot;evenodd&quot; />
+                      </svg>
+                    </div>
+                    <div className=&quot;ml-3&quot;>
+                      <h3 className=&quot;text-sm font-medium text-red-800&quot;>Error</h3>
+                      <p className=&quot;mt-2 text-sm text-red-700&quot;>{errorMessage}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div>
+                <label htmlFor=&quot;feedbackType&quot; className=&quot;block text-sm font-medium text-gray-700&quot;>
+                  Feedback Type
+                </label>
+                <select
+                  id=&quot;feedbackType&quot;
+                  value={feedbackType}
+                  onChange={(e) => setFeedbackType(e.target.value as any)}
+                  className=&quot;mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md&quot;
+                >
+                  <option value=&quot;general&quot;>General Feedback</option>
+                  <option value=&quot;feature_request&quot;>Feature Request</option>
+                  <option value=&quot;improvement&quot;>Improvement Suggestion</option>
+                  <option value=&quot;bug&quot;>Issue or Bug</option>
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor=&quot;feedback&quot; className=&quot;block text-sm font-medium text-gray-700&quot;>
+                  Your Feedback
+                </label>
+                <div className=&quot;mt-1&quot;>
+                  <textarea
+                    id=&quot;feedback&quot;
+                    name=&quot;feedback&quot;
+                    rows={5}
+                    className=&quot;shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md p-2&quot;
+                    placeholder=&quot;Please share your thoughts, suggestions, or feature ideas...&quot;
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              
+              {emailId === &apos;feedback4&apos; && (
+                <div>
+                  <label className=&quot;block text-sm font-medium text-gray-700&quot;>
+                    How would you rate our communications so far?
+                  </label>
+                  {renderStarRating()}
+                </div>
+              )}
+              
+              <div>
+                <button
+                  type=&quot;submit&quot;
+                  disabled={isSubmitting}
+                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+                    isSubmitting ? &apos;opacity-75 cursor-not-allowed&apos; : &apos;&apos;
+                  }`}
+                >
+                  {isSubmitting ? &apos;Submitting...&apos; : &apos;Submit Feedback&apos;}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+} 

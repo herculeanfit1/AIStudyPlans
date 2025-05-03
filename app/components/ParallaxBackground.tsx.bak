@@ -1,0 +1,66 @@
+&apos;use client&apos;;
+
+import React, { useEffect, useState } from &apos;react&apos;;
+
+interface ParallaxBackgroundProps {
+  children: React.ReactNode;
+}
+
+export default function ParallaxBackground({ children }: ParallaxBackgroundProps) {
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    // Add scroll event listener
+    window.addEventListener(&apos;scroll&apos;, handleScroll, { passive: true });
+
+    // Remove event listener on cleanup
+    return () => {
+      window.removeEventListener(&apos;scroll&apos;, handleScroll);
+    };
+  }, []);
+
+  return (
+    <div className=&quot;relative overflow-hidden&quot;>
+      {/* Background layers with different parallax rates */}
+      <div 
+        className=&quot;absolute inset-0 opacity-10&quot; 
+        style={{ 
+          transform: `translateY(${scrollY * 0.05}px)`,
+          backgroundImage: &apos;url(/bubble1.svg)&apos;,
+          backgroundSize: &apos;30%&apos;,
+          backgroundRepeat: &apos;repeat&apos;,
+          zIndex: -3,
+        }}
+      />
+      <div 
+        className=&quot;absolute inset-0 opacity-15&quot; 
+        style={{ 
+          transform: `translateY(${scrollY * 0.1}px)`,
+          backgroundImage: &apos;url(/bubble2.svg)&apos;,
+          backgroundSize: &apos;20%&apos;,
+          backgroundRepeat: &apos;repeat&apos;,
+          zIndex: -2,
+        }}
+      />
+      <div 
+        className=&quot;absolute inset-0 opacity-5&quot; 
+        style={{ 
+          transform: `translateY(${scrollY * 0.15}px)`,
+          backgroundImage: &apos;url(/bubble3.svg)&apos;,
+          backgroundSize: &apos;15%&apos;,
+          backgroundRepeat: &apos;repeat&apos;,
+          zIndex: -1,
+        }}
+      />
+      
+      {/* Content */}
+      <div className=&quot;relative z-10&quot;>
+        {children}
+      </div>
+    </div>
+  );
+} 

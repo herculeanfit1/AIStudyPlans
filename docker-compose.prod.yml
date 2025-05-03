@@ -1,10 +1,9 @@
-version: '3.8'
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runner
     restart: always
     ports:
       - "3000:3000"
@@ -16,7 +15,7 @@ services:
       - EMAIL_REPLY_TO=${EMAIL_REPLY_TO:-support@aistudyplans.com}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-https://aistudyplans.com}
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:3000"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health", "||", "exit", "1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -64,7 +63,7 @@ services:
     depends_on:
       - app
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:80"]
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/health", "||", "exit", "1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -91,6 +90,7 @@ services:
 
 networks:
   default:
+    name: aistudyplans_prod_network
     driver: bridge
     ipam:
       driver: default

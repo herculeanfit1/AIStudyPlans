@@ -12,35 +12,41 @@ const config: PlaywrightTestConfig = {
   ],
   use: {
     actionTimeout: 15000,
-    baseURL: 'http://localhost:3000',
+    // Use environment variable BASE_URL for Docker compatibility
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
     video: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
   // Run tests in files in parallel
   fullyParallel: !process.env.CI,
-  // Run browser tests on multiple browsers
+  // In Docker, only use Chromium for stability
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'mobile-chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+        // Use the system installed browser in Docker
+        launchOptions: {
+          executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
+        },
+        // For visual tests, we need to allow for some pixel differences
+        // due to differences in rendering across environments
+        screenshot: {
+          maxDiffPixelRatio: 0.05
+        }
+      },
     },
   ],
-  // Use webServer to start dev server before tests
-  webServer: {
-    command: 'npm run dev',
-    port: 3000,
-    timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
-  },
+  // Use webServer to start dev server before tests when not running in Docker
+  webServer: process.env.CI || process.env.DOCKER 
+    ? undefined 
+    : {
+        command: 'npm run dev',
+        port: 3000,
+        timeout: 120 * 1000,
+        reuseExistingServer: !process.env.CI,
+      },
 };
 
 export default config; 

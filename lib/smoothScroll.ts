@@ -16,7 +16,7 @@ export function initSmoothScroll() {
       e.preventDefault();
       
       // Get the href attribute
-      const href = this.getAttribute('href');
+      const href = (this as HTMLAnchorElement).getAttribute('href');
       
       if (!href) return;
       

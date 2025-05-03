@@ -1,0 +1,48 @@
+&apos;use client&apos;;
+
+import { ReactNode } from &apos;react&apos;;
+import { motion } from &apos;framer-motion&apos;;
+import { useInView } from &apos;react-intersection-observer&apos;;
+
+interface AnimatedFeatureProps {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  index: number; // For staggered animations
+}
+
+export default function AnimatedFeature({ icon, title, description, index }: AnimatedFeatureProps) {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+    rootMargin: &apos;-50px 0px&apos;,
+  });
+
+  return (
+    <motion.div
+      ref={ref}
+      className=&quot;bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 card-hover&quot;
+      initial={{ opacity: 0, y: 50 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{ 
+        duration: 0.5, 
+        delay: index * 0.1, // Stagger effect
+        ease: &quot;easeOut&quot; 
+      }}
+    >
+      <motion.div 
+        className=&quot;feature-icon&quot;
+        whileHover={{ scale: 1.1, rotate: [0, -10, 10, -10, 0] }}
+        transition={{ duration: 0.5 }}
+      >
+        {icon}
+      </motion.div>
+      
+      <h3 className=&quot;text-xl font-bold text-gray-900 dark:text-gray-100 mb-3&quot;>{title}</h3>
+      
+      <p className=&quot;text-gray-600 dark:text-gray-300&quot;>
+        {description}
+      </p>
+    </motion.div>
+  );
+} 

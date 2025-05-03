@@ -1,11 +1,43 @@
 import { createClient } from '@supabase/supabase-js';
+import { addFeedbackSubmission } from './admin-supabase';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// Create a single supabase client for the entire app
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Check if we're in a development environment with missing credentials
+const isMockMode = !supabaseUrl || !supabaseAnonKey;
+
+// Create a single supabase client for the entire app (or a mock if credentials are missing)
+export const supabase = isMockMode 
+  ? createMockClient() 
+  : createClient(supabaseUrl, supabaseAnonKey);
+
+// Create a mock client for development without Supabase
+function createMockClient() {
+  console.log('Using mock Supabase client - no credentials provided');
+  return {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          limit: () => Promise.resolve({ data: [], error: null })
+        }),
+        lt: () => ({
+          order: () => Promise.resolve({ data: [], error: null })
+        }),
+        single: () => Promise.resolve({ data: null, error: null })
+      }),
+      insert: () => ({
+        select: () => ({
+          single: () => Promise.resolve({ data: { id: 1, name: 'Mock User', email: 'mock@example.com' }, error: null })
+        })
+      }),
+      update: () => ({
+        eq: () => Promise.resolve({ error: null })
+      })
+    })
+  };
+}
 
 // Type definitions for our database tables
 export type WaitlistUser = {
@@ -98,6 +130,28 @@ export async function storeFeedback(
   rating?: number, 
   emailId?: string
 ): Promise<{ success: boolean; error?: string }> {
+  if (isMockMode) {
+    console.log('MOCK: Storing feedback:', { waitlistUserId, feedbackText, feedbackType, rating, emailId });
+    // Simulate a brief delay for realism
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Add to the admin dashboard's real feedback collection
+    const feedback: FeedbackResponse = {
+      id: Date.now(), // Use timestamp as mock ID
+      waitlist_user_id: waitlistUserId,
+      feedback_text: feedbackText,
+      feedback_type: feedbackType,
+      rating,
+      email_id: emailId,
+      created_at: new Date().toISOString()
+    };
+    
+    // Add to admin dashboard data
+    addFeedbackSubmission(feedback, `User ${waitlistUserId}`, `user${waitlistUserId}@example.com`);
+    
+    return { success: true };
+  }
+  
   try {
     const { error } = await supabase
       .from('feedback_responses')
@@ -120,6 +174,23 @@ export async function storeFeedback(
 
 // Get all users who need the next email in their feedback campaign
 export async function getUsersForNextFeedbackEmail(): Promise<{ users: WaitlistUser[]; error?: string }> {
+  if (isMockMode) {
+    // Return mock data
+    return { 
+      users: [
+        {
+          id: 1,
+          name: 'Mock User',
+          email: 'mock@example.com',
+          created_at: new Date().toISOString(),
+          feedback_campaign_started: true,
+          email_sequence_position: 1,
+          last_email_sent_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ]
+    };
+  }
+  
   try {
     const now = new Date();
 
@@ -130,7 +201,7 @@ export async function getUsersForNextFeedbackEmail(): Promise<{ users: WaitlistU
     // Third feedback (position 3) -> Final feedback (position 4): 7-14 days
     
     // Get the appropriate time threshold based on sequence position
-    function getTimeThresholdForPosition(position: number): Date {
+    const getTimeThresholdForPosition = function(position: number): Date {
       // For new signups (position 0), send first feedback email after 5 days (middle of 3-7 day range)
       if (position === 0) {
         return new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
@@ -183,6 +254,11 @@ export async function getUsersForNextFeedbackEmail(): Promise<{ users: WaitlistU
 
 // Update email sequence position for a user
 export async function updateEmailSequencePosition(userId: number, newPosition: number): Promise<{ success: boolean; error?: string }> {
+  if (isMockMode) {
+    console.log('MOCK: Updating email sequence position:', { userId, newPosition });
+    return { success: true };
+  }
+  
   try {
     const { error } = await supabase
       .from('waitlist_users')

@@ -53,17 +53,6 @@ export default function Hero() {
                 Learn More
               </a>
             </div>
-            
-            <div className="mt-8 flex items-center text-sm text-gray-500">
-              <div className="flex -space-x-2 mr-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className={`w-8 h-8 rounded-full border-2 border-white bg-indigo-${i*100} flex items-center justify-center text-white text-xs`}>
-                    {i}
-                  </div>
-                ))}
-              </div>
-              <span>Join 2,000+ students already using SchedulEd</span>
-            </div>
           </div>
           
           <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>

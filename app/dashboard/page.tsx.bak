@@ -1,0 +1,123 @@
+&apos;use client&apos;;
+
+import { useState } from &apos;react&apos;;
+import DashboardLayout from &apos;@/components/DashboardLayout&apos;;
+import StudyPlanCard from &apos;@/components/StudyPlanCard&apos;;
+import TodoApp from &apos;@/components/TodoApp&apos;;
+import StudyTimer from &apos;@/components/StudyTimer&apos;;
+
+export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState(&apos;overview&apos;);
+  
+  return (
+    <DashboardLayout>
+      <div className=&quot;mb-6&quot;>
+        <h1 className=&quot;text-2xl font-bold text-gray-800&quot;>Dashboard</h1>
+        <p className=&quot;text-gray-600&quot;>Welcome back! Here&apos;s your learning progress.</p>
+      </div>
+      
+      <div className=&quot;mb-8&quot;>
+        <div className=&quot;border-b border-gray-200&quot;>
+          <nav className=&quot;flex -mb-px&quot;>
+            {[&apos;overview&apos;, &apos;study plans&apos;, &apos;analytics&apos;, &apos;settings&apos;].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === tab
+                    ? &apos;border-indigo-500 text-indigo-600&apos;
+                    : &apos;border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300&apos;
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
+      
+      {activeTab === &apos;overview&apos; && (
+        <div className=&quot;grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6&quot;>
+          <div className=&quot;col-span-2&quot;>
+            <div className=&quot;bg-white rounded-lg shadow p-6 mb-6&quot;>
+              <h2 className=&quot;text-lg font-medium text-gray-900 mb-4&quot;>Your Active Study Plans</h2>
+              <div className=&quot;space-y-4&quot;>
+                <StudyPlanCard 
+                  title=&quot;Data Science Fundamentals&quot;
+                  description=&quot;Learn the core concepts of data science with Python&quot;
+                  duration=&quot;8 weeks&quot;
+                  difficulty=&quot;intermediate&quot;
+                  subjectArea=&quot;programming&quot;
+                  completionPercentage={65}
+                />
+                <StudyPlanCard 
+                  title=&quot;Advanced Machine Learning&quot;
+                  description=&quot;Explore cutting-edge machine learning algorithms and techniques&quot;
+                  duration=&quot;12 weeks&quot;
+                  difficulty=&quot;advanced&quot;
+                  subjectArea=&quot;programming&quot;
+                  completionPercentage={30}
+                />
+              </div>
+            </div>
+            
+            <div className=&quot;bg-white rounded-lg shadow p-6&quot;>
+              <h2 className=&quot;text-lg font-medium text-gray-900 mb-4&quot;>Recent Activity</h2>
+              <div className=&quot;space-y-4&quot;>
+                <div className=&quot;flex items-start&quot;>
+                  <div className=&quot;flex-shrink-0&quot;>
+                    <div className=&quot;w-8 h-8 rounded-full bg-green-100 flex items-center justify-center&quot;>
+                      <i className=&quot;fas fa-check text-green-600&quot;></i>
+                    </div>
+                  </div>
+                  <div className=&quot;ml-4&quot;>
+                    <p className=&quot;text-sm font-medium text-gray-900&quot;>Completed &quot;Introduction to Python&quot; chapter</p>
+                    <p className=&quot;text-xs text-gray-500&quot;>2 hours ago</p>
+                  </div>
+                </div>
+                <div className=&quot;flex items-start&quot;>
+                  <div className=&quot;flex-shrink-0&quot;>
+                    <div className=&quot;w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center&quot;>
+                      <i className=&quot;fas fa-book-open text-blue-600&quot;></i>
+                    </div>
+                  </div>
+                  <div className=&quot;ml-4&quot;>
+                    <p className=&quot;text-sm font-medium text-gray-900&quot;>Started &quot;Data Visualization&quot; module</p>
+                    <p className=&quot;text-xs text-gray-500&quot;>Yesterday</p>
+                  </div>
+                </div>
+                <div className=&quot;flex items-start&quot;>
+                  <div className=&quot;flex-shrink-0&quot;>
+                    <div className=&quot;w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center&quot;>
+                      <i className=&quot;fas fa-star text-purple-600&quot;></i>
+                    </div>
+                  </div>
+                  <div className=&quot;ml-4&quot;>
+                    <p className=&quot;text-sm font-medium text-gray-900&quot;>Earned &quot;Quick Learner&quot; badge</p>
+                    <p className=&quot;text-xs text-gray-500&quot;>2 days ago</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className=&quot;space-y-6&quot;>
+            <StudyTimer initialSeconds={1500} />
+            <TodoApp />
+          </div>
+        </div>
+      )}
+      
+      {activeTab !== &apos;overview&apos; && (
+        <div className=&quot;bg-white rounded-lg shadow p-6&quot;>
+          <div className=&quot;flex items-center justify-center h-64&quot;>
+            <div className=&quot;text-center&quot;>
+              <h3 className=&quot;text-lg font-medium text-gray-900 mb-2&quot;>Coming Soon</h3>
+              <p className=&quot;text-gray-600&quot;>This section is under development.</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </DashboardLayout>
+  );
+} 

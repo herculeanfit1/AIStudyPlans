@@ -1,0 +1,32 @@
+&apos;use client&apos;;
+
+import { useEffect } from &apos;react&apos;;
+import Header from &apos;./components/Header&apos;;
+import Hero from &apos;./components/Hero&apos;;
+import Features from &apos;./components/Features&apos;;
+import HowItWorks from &apos;./components/HowItWorks&apos;;
+import Pricing from &apos;./components/Pricing&apos;;
+import FAQ from &apos;./components/FAQ&apos;;
+import WaitlistForm from &apos;./components/WaitlistForm&apos;;
+import Footer from &apos;./components/Footer&apos;;
+import { ThemeToggle } from &apos;./components/ThemeToggle&apos;;
+import ParticlesBackground from &apos;./components/ParticlesBackground&apos;;
+
+export default function Home() {
+  return (
+    <div className=&quot;flex flex-col min-h-screen theme-transition&quot;>
+      <ParticlesBackground />
+      <ThemeToggle />
+      <Header />
+      <main className=&quot;flex-grow&quot;>
+        <Hero />
+        <HowItWorks />
+        <Features />
+        <Pricing />
+        <FAQ />
+        <WaitlistForm />
+      </main>
+      <Footer />
+    </div>
+  );
+} 

@@ -1,0 +1,71 @@
+&apos;use client&apos;;
+
+import { ReactNode } from &apos;react&apos;;
+import Image from &apos;next/image&apos;;
+import Link from &apos;next/link&apos;;
+
+interface DashboardLayoutProps {
+  children: ReactNode;
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  return (
+    <div className=&quot;min-h-screen bg-gray-50&quot;>
+      {/* Header */}
+      <header className=&quot;bg-white shadow&quot;>
+        <div className=&quot;container mx-auto px-4 py-6 flex justify-between items-center&quot;>
+          <div className=&quot;flex items-center&quot;>
+            <Link href=&quot;/&quot;>
+              <Image 
+                src=&quot;/SchedulEd_new_logo.png&quot;
+                alt=&quot;SchedulEd Logo&quot;
+                width={120}
+                height={32}
+                className=&quot;h-auto&quot;
+              />
+            </Link>
+          </div>
+          <div className=&quot;flex items-center space-x-4&quot;>
+            <div className=&quot;relative&quot;>
+              <button className=&quot;p-2 text-gray-600 hover:text-indigo-600&quot;>
+                <i className=&quot;fas fa-bell text-xl&quot; aria-hidden=&quot;true&quot;></i>
+                <span className=&quot;absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full&quot;></span>
+              </button>
+            </div>
+            <div className=&quot;flex items-center space-x-2&quot;>
+              <div className=&quot;w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center&quot;>
+                <i className=&quot;fas fa-user text-indigo-600&quot; aria-hidden=&quot;true&quot;></i>
+              </div>
+              <span className=&quot;text-gray-700 font-medium&quot;>Student</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className=&quot;container mx-auto px-4 py-8&quot;>
+        {children}
+      </main>
+
+      {/* Footer */}
+      <footer className=&quot;bg-white border-t mt-12 py-6&quot;>
+        <div className=&quot;container mx-auto px-4&quot;>
+          <div className=&quot;flex flex-col md:flex-row justify-between items-center&quot;>
+            <p className=&quot;text-gray-600 text-sm&quot;>&copy; {new Date().getFullYear()} SchedulEd. All rights reserved.</p>
+            <div className=&quot;flex space-x-4 mt-4 md:mt-0&quot;>
+              <a href=&quot;#&quot; className=&quot;text-gray-500 hover:text-indigo-600 transition&quot;>
+                <i className=&quot;fab fa-twitter&quot; aria-hidden=&quot;true&quot;></i>
+              </a>
+              <a href=&quot;#&quot; className=&quot;text-gray-500 hover:text-indigo-600 transition&quot;>
+                <i className=&quot;fab fa-instagram&quot; aria-hidden=&quot;true&quot;></i>
+              </a>
+              <a href=&quot;#&quot; className=&quot;text-gray-500 hover:text-indigo-600 transition&quot;>
+                <i className=&quot;fab fa-linkedin&quot; aria-hidden=&quot;true&quot;></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+} 

@@ -1,0 +1,94 @@
+&apos;use client&apos;;
+
+import { useState } from &apos;react&apos;;
+
+interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
+}
+
+export default function TodoApp() {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [inputValue, setInputValue] = useState(&apos;&apos;);
+
+  const handleAddTodo = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!inputValue.trim()) return;
+    
+    const newTodo: Todo = {
+      id: Date.now(),
+      text: inputValue,
+      completed: false
+    };
+    
+    setTodos([...todos, newTodo]);
+    setInputValue(&apos;&apos;);
+  };
+  
+  const handleToggleTodo = (id: number) => {
+    setTodos(
+      todos.map(todo => 
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+  
+  const handleDeleteTodo = (id: number) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+  };
+
+  return (
+    <div className=&quot;w-full max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg&quot;>
+      <h2 className=&quot;text-2xl font-bold text-gray-800 mb-6&quot;>Study Tasks</h2>
+      
+      <form onSubmit={handleAddTodo} className=&quot;mb-6&quot;>
+        <div className=&quot;flex&quot;>
+          <input
+            type=&quot;text&quot;
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder=&quot;Add a new study task...&quot;
+            className=&quot;flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500&quot;
+          />
+          <button
+            type=&quot;submit&quot;
+            className=&quot;px-4 py-2 bg-indigo-600 text-white rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500&quot;
+          >
+            <i className=&quot;fas fa-plus&quot; aria-hidden=&quot;true&quot;></i>
+          </button>
+        </div>
+      </form>
+      
+      <ul className=&quot;space-y-2&quot;>
+        {todos.map(todo => (
+          <li key={todo.id} className=&quot;flex items-center justify-between bg-indigo-50 p-3 rounded-md&quot;>
+            <div className=&quot;flex items-center&quot;>
+              <input
+                type=&quot;checkbox&quot;
+                checked={todo.completed}
+                onChange={() => handleToggleTodo(todo.id)}
+                className=&quot;mr-3 h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500&quot;
+              />
+              <span className={`${todo.completed ? &apos;line-through text-gray-500&apos; : &apos;text-gray-800&apos;}`}>
+                {todo.text}
+              </span>
+            </div>
+            <button 
+              onClick={() => handleDeleteTodo(todo.id)}
+              className=&quot;text-red-600 hover:text-red-800&quot;
+              aria-label=&quot;Delete task&quot;
+            >
+              <i className=&quot;fas fa-trash-alt&quot; aria-hidden=&quot;true&quot;></i>
+            </button>
+          </li>
+        ))}
+      </ul>
+      
+      {todos.length === 0 && (
+        <p className=&quot;text-center text-gray-500 py-4&quot;>No study tasks yet. Add your first task to get started!</p>
+      )}
+    </div>
+  );
+} 

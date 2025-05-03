@@ -1,0 +1,219 @@
+&apos;use client&apos;;
+
+import { useState, useEffect } from &apos;react&apos;;
+import Link from &apos;next/link&apos;;
+import Image from &apos;next/image&apos;;
+import { ThemeToggle } from &apos;./ThemeToggle&apos;;
+import { useTheme } from &apos;next-themes&apos;;
+
+export default function Header() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [devMenuOpen, setDevMenuOpen] = useState(false);
+  const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const [isDev, setIsDev] = useState(false);
+
+  // Wait for component to be mounted to access theme
+  useEffect(() => {
+    setMounted(true);
+    // Check if we&apos;re in development mode
+    setIsDev(process.env.NODE_ENV === &apos;development&apos;);
+  }, []);
+
+  // Determine which logo to use based on theme
+  const logoSrc = !mounted ? &apos;/SchedulEd_new_logo.png&apos; : 
+                 (theme === &apos;dark&apos; || resolvedTheme === &apos;dark&apos;) ? 
+                 &apos;/SchedulEd_logo_dark.png&apos; : &apos;/SchedulEd_new_logo.png&apos;;
+
+  return (
+    <header className=&quot;bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50 transition-colors py-2&quot;>
+      <div className=&quot;container mx-auto px-4&quot;>
+        <div className=&quot;flex flex-col md:flex-row md:items-center&quot;>
+          {/* Logo */}
+          <div className=&quot;flex justify-center md:justify-start mb-4 md:mb-0 md:mr-8&quot;>
+            <Link href=&quot;/&quot; className=&quot;flex items-center&quot;>
+              <div className=&quot;relative h-[125px] w-[462.5px] sm:h-[150px] sm:w-[550px] md:h-[175px] md:w-[650px]&quot;>
+                <Image 
+                  src={logoSrc}
+                  alt=&quot;SchedulEd Logo&quot;
+                  fill
+                  className=&quot;object-contain object-left&quot;
+                  priority
+                />
+              </div>
+            </Link>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className=&quot;hidden md:flex items-center justify-end flex-grow space-x-6 lg:space-x-8&quot;>
+            <Link 
+              href=&quot;#how-it-works&quot; 
+              className=&quot;text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap&quot;
+            >
+              How It Works
+            </Link>
+            <Link 
+              href=&quot;#features&quot; 
+              className=&quot;text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors&quot;
+            >
+              Features
+            </Link>
+            <Link 
+              href=&quot;#pricing&quot; 
+              className=&quot;text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors&quot;
+            >
+              Pricing
+            </Link>
+            
+            {/* Developer Menu (only in development) */}
+            {isDev && (
+              <div className=&quot;relative&quot;>
+                <button
+                  className=&quot;flex items-center px-3 py-1 text-sm bg-amber-100 text-amber-800 rounded-md hover:bg-amber-200 transition-colors&quot;
+                  onClick={() => setDevMenuOpen(!devMenuOpen)}
+                >
+                  <span className=&quot;mr-1&quot;>🛠️</span> Dev Tools
+                  <svg
+                    className={`ml-1 h-4 w-4 transition-transform ${devMenuOpen ? &apos;rotate-180&apos; : &apos;&apos;}`}
+                    xmlns=&quot;http://www.w3.org/2000/svg&quot;
+                    viewBox=&quot;0 0 20 20&quot;
+                    fill=&quot;currentColor&quot;
+                  >
+                    <path
+                      fillRule=&quot;evenodd&quot;
+                      d=&quot;M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z&quot;
+                      clipRule=&quot;evenodd&quot;
+                    />
+                  </svg>
+                </button>
+                
+                {/* Developer Dropdown Menu */}
+                {devMenuOpen && (
+                  <div className=&quot;absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg overflow-hidden z-50 border border-gray-200 dark:border-gray-700&quot;>
+                    <div className=&quot;py-1&quot;>
+                      <Link
+                        href=&quot;/email-setup&quot;
+                        className=&quot;flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700&quot;
+                        onClick={() => setDevMenuOpen(false)}
+                      >
+                        <span className=&quot;mr-2&quot;>📧</span> Email Setup Guide
+                      </Link>
+                      <a
+                        href=&quot;https://resend.com/dashboard&quot;
+                        target=&quot;_blank&quot;
+                        rel=&quot;noopener noreferrer&quot;
+                        className=&quot;flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700&quot;
+                      >
+                        <span className=&quot;mr-2&quot;>🔗</span> Resend Dashboard
+                      </a>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(&apos;delivered@resend.dev&apos;);
+                          setDevMenuOpen(false);
+                        }}
+                        className=&quot;flex w-full items-center px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700&quot;
+                      >
+                        <span className=&quot;mr-2&quot;>📋</span> Copy Test Email
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <ThemeToggle />
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <div className=&quot;md:hidden flex justify-center items-center gap-2&quot;>
+            {/* Developer button for mobile (only in development) */}
+            {isDev && (
+              <button
+                type=&quot;button&quot;
+                className=&quot;flex items-center px-2 py-1 text-sm bg-amber-100 text-amber-800 rounded-md mr-2&quot;
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setDevMenuOpen(!devMenuOpen);
+                }}
+              >
+                <span>🛠️</span>
+              </button>
+            )}
+            <ThemeToggle />
+            <button
+              type=&quot;button&quot;
+              className=&quot;text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors&quot;
+              onClick={() => {
+                setDevMenuOpen(false);
+                setMobileMenuOpen(!mobileMenuOpen);
+              }}
+            >
+              <i className={`fas ${mobileMenuOpen ? &apos;fa-xmark&apos; : &apos;fa-bars&apos;} text-xl`}></i>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className=&quot;md:hidden pt-4 pb-2 border-t mt-4 dark:border-gray-700&quot;>
+            <nav className=&quot;flex flex-col space-y-4&quot;>
+              <Link 
+                href=&quot;#how-it-works&quot; 
+                className=&quot;text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors&quot;
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                How It Works
+              </Link>
+              <Link 
+                href=&quot;#features&quot; 
+                className=&quot;text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors&quot;
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Features
+              </Link>
+              <Link 
+                href=&quot;#pricing&quot; 
+                className=&quot;text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors&quot;
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Pricing
+              </Link>
+            </nav>
+          </div>
+        )}
+        
+        {/* Mobile Developer Menu (only in development) */}
+        {isDev && devMenuOpen && (
+          <div className=&quot;md:hidden pt-4 pb-2 border-t mt-4 dark:border-gray-700&quot;>
+            <nav className=&quot;flex flex-col space-y-4&quot;>
+              <Link 
+                href=&quot;/email-setup&quot; 
+                className=&quot;text-amber-800 dark:text-amber-300 flex items-center&quot;
+                onClick={() => setDevMenuOpen(false)}
+              >
+                <span className=&quot;mr-2&quot;>📧</span> Email Setup Guide
+              </Link>
+              <a 
+                href=&quot;https://resend.com/dashboard&quot; 
+                target=&quot;_blank&quot; 
+                rel=&quot;noopener noreferrer&quot;
+                className=&quot;text-amber-800 dark:text-amber-300 flex items-center&quot;
+              >
+                <span className=&quot;mr-2&quot;>🔗</span> Resend Dashboard
+              </a>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(&apos;delivered@resend.dev&apos;);
+                  setDevMenuOpen(false);
+                }}
+                className=&quot;text-left text-amber-800 dark:text-amber-300 flex items-center&quot;
+              >
+                <span className=&quot;mr-2&quot;>📋</span> Copy Test Email
+              </button>
+            </nav>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+} 

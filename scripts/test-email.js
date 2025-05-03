@@ -1,13 +1,23 @@
 #!/usr/bin/env node
 
 /**
- * Email Test Script for SchedulEd
+ * Email Test Script
+ * 
+ * A simple script to test email sending functionality using Resend.
  * 
  * Usage:
- *   node scripts/test-email.js [recipient-email]
+ *   node scripts/test-email.js [template] [recipient]
  * 
- * If no recipient email is provided, it will use delivered@resend.dev
- * as the default test email.
+ * Templates:
+ *   - simple: Basic test email
+ *   - waitlist: Waitlist confirmation email
+ *   - feedback: Feedback request email
+ *   - all: Send all email templates
+ * 
+ * Examples:
+ *   node scripts/test-email.js simple user@example.com
+ *   node scripts/test-email.js waitlist user@example.com
+ *   node scripts/test-email.js all user@example.com
  */
 
 // Load environment variables from .env.local
@@ -15,115 +25,121 @@ require('dotenv').config({ path: '.env.local' });
 
 const { Resend } = require('resend');
 
-// Get API key from environment
-const resendApiKey = process.env.RESEND_API_KEY;
-const fromEmail = process.env.EMAIL_FROM || 'lindsey@aistudyplans.com';
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+// Configure email settings
+const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM_EMAIL = process.env.EMAIL_FROM || 'lindsey@aistudyplans.com';
+const REPLY_TO = process.env.EMAIL_REPLY_TO || 'support@aistudyplans.com';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-// Default test email
-const defaultTestEmail = 'delivered@resend.dev';
+// Parse command-line arguments
+const template = process.argv[2] || 'simple';
+const recipient = process.argv[3] || 'delivered@resend.dev';
 
-// Get command line arguments
-const recipientEmail = process.argv[2] || defaultTestEmail;
+// Define email templates
+const templates = {
+  simple: {
+    subject: 'AIStudyPlans Test Email',
+    html: `
+      <h1>AIStudyPlans Email Test</h1>
+      <p>This is a test email from the AIStudyPlans application.</p>
+      <p>If you're seeing this, email sending is working correctly!</p>
+      <p>
+        <a href="${APP_URL}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Visit AIStudyPlans</a>
+      </p>
+    `
+  },
+  waitlist: {
+    subject: 'Welcome to the AIStudyPlans Waitlist!',
+    html: `
+      <h1>You're on the Waitlist!</h1>
+      <p>Thank you for joining the AIStudyPlans waitlist. We're excited to have you!</p>
+      <p>We'll notify you as soon as we have a spot available for you.</p>
+      <p>In the meantime, check out our resources to get started with effective study planning:</p>
+      <ul>
+        <li><a href="${APP_URL}/resources/effective-studying">Effective Studying Techniques</a></li>
+        <li><a href="${APP_URL}/resources/time-management">Time Management for Students</a></li>
+      </ul>
+      <p>
+        <a href="${APP_URL}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Visit AIStudyPlans</a>
+      </p>
+    `
+  },
+  feedback: {
+    subject: 'We Value Your Feedback on AIStudyPlans',
+    html: `
+      <h1>How are we doing?</h1>
+      <p>We hope you're enjoying AIStudyPlans!</p>
+      <p>We'd love to hear your thoughts on your experience so far. Your feedback helps us improve.</p>
+      <p>
+        <a href="${APP_URL}/feedback?userId=123&emailId=test" style="display: inline-block; background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Share Your Feedback</a>
+      </p>
+      <p>Thank you for helping us build a better product!</p>
+    `
+  }
+};
 
-// Display configuration information
-console.log('SchedulEd Email Test Tool\n');
-console.log('Configuration:');
-console.log('──────────────────────────────────────────────────');
-
-// Check for API key
-if (!resendApiKey) {
-  console.error('❌ RESEND_API_KEY is not defined in your .env.local file');
-  console.log('\nPlease create or update .env.local with your Resend API key:');
-  console.log('RESEND_API_KEY=your_resend_api_key_here');
-  console.log('\nYou can also visit http://localhost:3000/email-setup for detailed instructions.');
-  process.exit(1);
-}
-
-// Display settings
-console.log(`✓ RESEND_API_KEY: ${resendApiKey.substring(0, 5)}...${resendApiKey.substring(resendApiKey.length - 4)}`);
-console.log(`✓ FROM ADDRESS: ${fromEmail}`);
-console.log(`✓ APP URL: ${appUrl}`);
-console.log(`✓ TESTING MODE: Using ${recipientEmail} as recipient`);
-console.log('──────────────────────────────────────────────────\n');
-
-// Initialize Resend
-const resend = new Resend(resendApiKey);
-
-// Send a test email
-async function sendTestEmail() {
-  console.log(`🚀 Sending test email to ${recipientEmail}...`);
+// Function to send an email
+async function sendEmail(type, to) {
+  const template = templates[type];
+  
+  if (!template) {
+    console.error(`Error: Unknown template "${type}"`);
+    return false;
+  }
   
   try {
-    const { data, error } = await resend.emails.send({
-      from: `SchedulEd <${fromEmail}>`,
-      to: recipientEmail,
-      subject: 'SchedulEd - Email Test',
-      html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4f46e5;">SchedulEd Email Test</h1>
-        <p>This is a test email from your SchedulEd application.</p>
-        <p>If you're seeing this, your email configuration is working correctly!</p>
-        <p><strong>Configuration:</strong></p>
-        <ul>
-          <li>From: ${fromEmail}</li>
-          <li>To: ${recipientEmail}</li>
-          <li>App URL: ${appUrl}</li>
-          <li>Sent at: ${new Date().toLocaleString()}</li>
-        </ul>
-        <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px; color: #666;">
-          This is an automated test email sent from the SchedulEd application.
-        </p>
-      </div>
-      `,
-      text: `SchedulEd Email Test
-
-This is a test email from your SchedulEd application.
-If you're seeing this, your email configuration is working correctly!
-
-Configuration:
-- From: ${fromEmail}
-- To: ${recipientEmail}
-- App URL: ${appUrl}
-- Sent at: ${new Date().toLocaleString()}
-
-This is an automated test email sent from the SchedulEd application.
-`,
+    console.log(`Sending ${type} email to ${to}...`);
+    
+    const data = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: to,
+      subject: template.subject,
+      html: template.html,
+      reply_to: REPLY_TO
     });
-
-    if (error) {
-      console.error('❌ Error sending email:', error.message);
-      console.error('\nMore details:', error);
-      process.exit(1);
-    }
-
-    console.log('✅ Success! Email sent successfully');
-    console.log(`📧 Email ID: ${data.id}`);
     
-    if (recipientEmail === defaultTestEmail) {
-      console.log('\n📝 Note: You used the Resend test email (delivered@resend.dev)');
-      console.log('   This email will appear in your Resend dashboard, but will not be delivered to an actual inbox.');
-      console.log('   To test delivery to a real inbox, use your own email address:');
-      console.log(`   node scripts/test-email.js your-email@example.com`);
-    } else {
-      console.log(`\n📝 Check ${recipientEmail} for the test email`);
-    }
-  } catch (err) {
-    console.error('❌ Exception when sending email:');
-    console.error(err);
-    
-    // Provide more context based on common errors
-    if (err.message?.includes('unauthorized')) {
-      console.log('\n💡 Your API key appears to be invalid or expired.');
-      console.log('   Generate a new key in the Resend dashboard and update your .env.local file.');
-    } else if (err.message?.includes('network')) {
-      console.log('\n💡 There appears to be a network issue.');
-      console.log('   Check your internet connection and try again.');
-    }
-    
-    process.exit(1);
+    console.log(`Email sent successfully! ID: ${data.id}`);
+    return true;
+  } catch (error) {
+    console.error(`Error sending ${type} email:`, error);
+    return false;
   }
 }
 
-// Run the test
-sendTestEmail(); 
+// Main function
+async function main() {
+  console.log('AIStudyPlans Email Test');
+  console.log('-------------------------');
+  console.log(`API Key: ${process.env.RESEND_API_KEY ? 'Configured' : 'Missing'}`);
+  console.log(`From: ${FROM_EMAIL}`);
+  console.log(`Reply-To: ${REPLY_TO}`);
+  console.log(`App URL: ${APP_URL}`);
+  console.log(`Template: ${template}`);
+  console.log(`Recipient: ${recipient}`);
+  console.log('-------------------------');
+  
+  if (!process.env.RESEND_API_KEY) {
+    console.error('Error: RESEND_API_KEY is not configured in .env.local');
+    process.exit(1);
+  }
+  
+  if (template === 'all') {
+    // Send all templates
+    for (const type of ['simple', 'waitlist', 'feedback']) {
+      await sendEmail(type, recipient);
+    }
+    console.log('All emails sent!');
+  } else {
+    // Send a specific template
+    const success = await sendEmail(template, recipient);
+    if (!success) {
+      process.exit(1);
+    }
+  }
+}
+
+// Run the script
+main().catch(error => {
+  console.error('Unexpected error:', error);
+  process.exit(1);
+}); 

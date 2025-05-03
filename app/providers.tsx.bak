@@ -1,0 +1,16 @@
+&apos;use client&apos;;
+
+import { ThemeProvider } from &apos;next-themes&apos;;
+import { ReactNode } from &apos;react&apos;;
+
+interface ProvidersProps {
+  children: ReactNode;
+}
+
+export function Providers({ children }: ProvidersProps) {
+  return (
+    <ThemeProvider attribute=&quot;class&quot; defaultTheme=&quot;light&quot; enableSystem>
+      {children}
+    </ThemeProvider>
+  );
+} 

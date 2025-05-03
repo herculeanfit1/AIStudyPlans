@@ -84,7 +84,7 @@ export default function FAQ() {
         
         <div className="text-center mt-12">
           <p className="text-gray-600">
-            Still have questions? <a href="#waitlist" className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors">Contact our support team</a>
+            Still have questions? <a href="/contact/support" className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors">Contact our support team</a>
           </p>
         </div>
       </div>

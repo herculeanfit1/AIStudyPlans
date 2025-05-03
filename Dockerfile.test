@@ -1,26 +1,93 @@
-FROM node:18-alpine
+FROM node:20-alpine as base
 
+# Set environment variable to skip browser downloads during install
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+# Install system dependencies needed for tests
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    git \
+    bash \
+    curl \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# Create app directory and set it as working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install dependencies
 COPY package.json package-lock.json ./
-
-# Set environment variables
-ENV NODE_ENV=test
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Install dependencies (including dev dependencies)
 RUN npm ci
 
-# Install additional test tools
-RUN apk add --no-cache chromium
-ENV CHROMIUM_PATH=/usr/bin/chromium-browser
-
-# Copy application files
+# Copy the rest of the application
 COPY . .
 
-# Install Playwright browsers
-RUN npx playwright install --with-deps chromium
+# Create browser stage for Playwright tests
+FROM base as playwright
+ENV CI=true
 
-# Run tests by default
-CMD ["npm", "run", "test"] 
+# Install Alpine-specific packages for browsers
+RUN apk add --no-cache \
+    chromium \
+    firefox \
+    ttf-freefont \
+    harfbuzz \
+    nss \
+    freetype \
+    ttf-liberation \
+    dbus \
+    musl \
+    libstdc++ \
+    alsa-lib \
+    pango \
+    cairo \
+    libgcc \
+    ffmpeg
+
+# Set environment variables for browser paths
+ENV PLAYWRIGHT_CHROMIUM_PATH=/usr/bin/chromium-browser
+ENV PLAYWRIGHT_FIREFOX_PATH=/usr/bin/firefox
+
+# Set up environment for running Playwright with browsers from the system
+ENV PLAYWRIGHT_BROWSERS_PATH=0
+
+# Test image with all browsers and testing tools
+FROM playwright as test-full
+# Install all tools for comprehensive testing
+RUN npm install -g \
+    jest-cli \
+    lighthouse \
+    axe-core \
+    pa11y \
+    npm-check-updates
+
+# Stage for unit and integration tests only
+FROM base as test-unit
+# Unit tests don't need browsers, so this is a lighter image
+CMD ["npm", "run", "test"]
+
+# Stage for e2e tests only
+FROM playwright as test-e2e
+# Run end-to-end tests using Playwright
+CMD ["npx", "playwright", "test"]
+
+# Stage for accessibility tests
+FROM playwright as test-a11y
+# Run accessibility tests
+CMD ["npx", "pa11y-ci"]
+
+# Stage for performance tests with Lighthouse
+FROM playwright as test-perf
+# Install Lighthouse CI
+RUN npm install -g @lhci/cli
+# Run Lighthouse CI
+CMD ["lhci", "autorun"]
+
+# Default stage runs all tests
+FROM test-full as default
+# Copy test configurations
+COPY jest.config.js jest.setup.js playwright.config.ts ./
+# Default command runs all test suites
+CMD ["npm", "run", "test:all"] 

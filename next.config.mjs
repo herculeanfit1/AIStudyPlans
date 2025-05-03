@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Only use static export in production, never in development
-  output: process.env.NODE_ENV === 'production' ? "export" : undefined,
+  // Disable static export since we have dynamic API routes
+  output: undefined,
   distDir: '.next',
   reactStrictMode: true,
   swcMinify: true,
@@ -39,5 +39,10 @@ const nextConfig = {
     },
   },
 };
+
+// In development mode, add Next-Auth specific configuration
+if (process.env.NODE_ENV !== 'production') {
+  nextConfig.output = undefined; // Ensure we're not using export in development
+}
 
 export default nextConfig; 

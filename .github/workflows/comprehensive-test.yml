@@ -1,0 +1,502 @@
+name: Comprehensive Testing
+
+on:
+  push:
+    branches: ['main', 'develop', 'feature/*']
+  pull_request:
+    branches: ['main', 'develop']
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - unit
+          - e2e
+          - visual
+          - a11y
+          - perf
+          - security
+
+jobs:
+  prepare:
+    name: Prepare Test Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      test-chunks: ${{ steps.split-tests.outputs.test-chunks }}
+      e2e-chunks: ${{ steps.split-tests.outputs.e2e-chunks }}
+      a11y-chunks: ${{ steps.split-tests.outputs.a11y-chunks }}
+      test-type: ${{ steps.determine-test-type.outputs.test-type }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Determine test type
+        id: determine-test-type
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TEST_TYPE="${{ github.event.inputs.test_type }}"
+          else
+            TEST_TYPE="all"
+          fi
+          echo "test-type=$TEST_TYPE" >> $GITHUB_OUTPUT
+      
+      - name: Split tests into chunks for parallel execution
+        id: split-tests
+        run: |
+          # Find all test files
+          UNIT_TEST_FILES=$(find __tests__ -name "*.test.*" -type f | sort)
+          E2E_TEST_FILES=$(find e2e -name "*.spec.*" -type f | grep -v "visual.spec.ts" | sort)
+          VISUAL_TEST_FILES=$(find e2e -name "visual.spec.ts" -type f | sort)
+          
+          # Count number of test files
+          UNIT_TEST_COUNT=$(echo "$UNIT_TEST_FILES" | wc -l)
+          E2E_TEST_COUNT=$(echo "$E2E_TEST_FILES" | wc -l)
+          
+          # Determine chunk size (based on test count)
+          UNIT_CHUNKS=5
+          E2E_CHUNKS=3
+          A11Y_CHUNKS=2
+          
+          if [ $UNIT_TEST_COUNT -lt $UNIT_CHUNKS ]; then
+            UNIT_CHUNKS=$UNIT_TEST_COUNT
+          fi
+          
+          if [ $E2E_TEST_COUNT -lt $E2E_CHUNKS ]; then
+            E2E_CHUNKS=$E2E_TEST_COUNT
+          fi
+          
+          # Create JSON array for unit tests
+          echo "Creating $UNIT_CHUNKS chunks for $UNIT_TEST_COUNT unit tests"
+          UNIT_TEST_MATRIX="["
+          for ((i=0; i<$UNIT_CHUNKS; i++)); do
+            if [ $i -gt 0 ]; then
+              UNIT_TEST_MATRIX="$UNIT_TEST_MATRIX,"
+            fi
+            UNIT_TEST_MATRIX="$UNIT_TEST_MATRIX{\"chunk\":$i,\"total\":$UNIT_CHUNKS}"
+          done
+          UNIT_TEST_MATRIX="$UNIT_TEST_MATRIX]"
+          
+          # Create JSON array for e2e tests
+          echo "Creating $E2E_CHUNKS chunks for $E2E_TEST_COUNT e2e tests"
+          E2E_TEST_MATRIX="["
+          for ((i=0; i<$E2E_CHUNKS; i++)); do
+            if [ $i -gt 0 ]; then
+              E2E_TEST_MATRIX="$E2E_TEST_MATRIX,"
+            fi
+            E2E_TEST_MATRIX="$E2E_TEST_MATRIX{\"chunk\":$i,\"total\":$E2E_CHUNKS}"
+          done
+          E2E_TEST_MATRIX="$E2E_TEST_MATRIX]"
+          
+          # Create JSON array for a11y tests
+          echo "Creating $A11Y_CHUNKS chunks for accessibility tests"
+          A11Y_TEST_MATRIX="["
+          for ((i=0; i<$A11Y_CHUNKS; i++)); do
+            if [ $i -gt 0 ]; then
+              A11Y_TEST_MATRIX="$A11Y_TEST_MATRIX,"
+            fi
+            A11Y_TEST_MATRIX="$A11Y_TEST_MATRIX{\"chunk\":$i,\"total\":$A11Y_CHUNKS}"
+          done
+          A11Y_TEST_MATRIX="$A11Y_TEST_MATRIX]"
+          
+          # Set outputs
+          echo "test-chunks=$UNIT_TEST_MATRIX" >> $GITHUB_OUTPUT
+          echo "e2e-chunks=$E2E_TEST_MATRIX" >> $GITHUB_OUTPUT
+          echo "a11y-chunks=$A11Y_TEST_MATRIX" >> $GITHUB_OUTPUT
+  
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    needs: prepare
+    # Only run if we are doing "all" tests or in pull request
+    if: needs.prepare.outputs.test-type == 'all' || github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Lint code
+        run: npm run lint
+      
+      - name: Type check
+        run: npm run typecheck
+  
+  unit-tests:
+    name: Unit Tests (Chunk ${{ matrix.chunk }}/${{ matrix.total }})
+    needs: [prepare, lint-and-typecheck]
+    # Run if we are doing "all" or "unit" tests
+    if: needs.prepare.outputs.test-type == 'all' || needs.prepare.outputs.test-type == 'unit' || needs.prepare.outputs.test-type == 'security'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.test-chunks) }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests for this chunk
+        run: |
+          # Find all test files
+          TEST_FILES=$(find __tests__ -name "*.test.*" -type f | sort)
+          
+          # Count tests and calculate chunk size
+          TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
+          CHUNK_SIZE=$((TEST_COUNT / ${{ matrix.total }} + 1))
+          
+          # Calculate start and end indexes for this chunk
+          START=$((${{ matrix.chunk }} * CHUNK_SIZE))
+          END=$((START + CHUNK_SIZE - 1))
+          
+          # Get the test files for this chunk
+          CHUNK_FILES=$(echo "$TEST_FILES" | sed -n "$((START+1)),$((END+1))p")
+          echo "Running tests for chunk ${{ matrix.chunk }}/${{ matrix.total }} (files $START-$END):"
+          echo "$CHUNK_FILES"
+          
+          # Run tests for only these files
+          if [ ! -z "$CHUNK_FILES" ]; then
+            echo "$CHUNK_FILES" | xargs npx jest --runInBand --ci --no-cache --coverage
+          else
+            echo "No tests to run in this chunk"
+          fi
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-results-chunk-${{ matrix.chunk }}
+          path: |
+            coverage/
+            junit.xml
+            test-results.json
+          retention-days: 7
+  
+  e2e-tests:
+    name: E2E Tests (Chunk ${{ matrix.chunk }}/${{ matrix.total }})
+    needs: [prepare, lint-and-typecheck]
+    # Run if we are doing "all" or "e2e" tests
+    if: needs.prepare.outputs.test-type == 'all' || needs.prepare.outputs.test-type == 'e2e'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.e2e-chunks) }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox
+      
+      - name: Run e2e tests for this chunk
+        run: |
+          # Find all e2e test files (excluding visual tests)
+          TEST_FILES=$(find e2e -name "*.spec.*" -type f | grep -v "visual.spec.ts" | sort)
+          
+          # Count tests and calculate chunk size
+          TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
+          CHUNK_SIZE=$((TEST_COUNT / ${{ matrix.total }} + 1))
+          
+          # Calculate start and end indexes for this chunk
+          START=$((${{ matrix.chunk }} * CHUNK_SIZE))
+          END=$((START + CHUNK_SIZE - 1))
+          
+          # Get the test files for this chunk
+          CHUNK_FILES=$(echo "$TEST_FILES" | sed -n "$((START+1)),$((END+1))p")
+          echo "Running e2e tests for chunk ${{ matrix.chunk }}/${{ matrix.total }} (files $START-$END):"
+          echo "$CHUNK_FILES"
+          
+          # Run tests for only these files
+          if [ ! -z "$CHUNK_FILES" ]; then
+            echo "$CHUNK_FILES" | xargs npx playwright test --browser=chromium
+          else
+            echo "No tests to run in this chunk"
+          fi
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-test-results-chunk-${{ matrix.chunk }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+  
+  visual-tests:
+    name: Visual Regression Tests
+    needs: [prepare, lint-and-typecheck]
+    # Run if we are doing "all" or "visual" tests
+    if: needs.prepare.outputs.test-type == 'all' || needs.prepare.outputs.test-type == 'visual'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      
+      - name: Run visual tests
+        run: npx playwright test --grep @visual
+      
+      - name: Upload visual test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: visual-test-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+  
+  a11y-tests:
+    name: Accessibility Tests (Chunk ${{ matrix.chunk }}/${{ matrix.total }})
+    needs: [prepare, lint-and-typecheck]
+    # Run if we are doing "all" or "a11y" tests
+    if: needs.prepare.outputs.test-type == 'all' || needs.prepare.outputs.test-type == 'a11y'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.a11y-chunks) }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install PA11Y
+        run: npm install -g pa11y-ci
+      
+      - name: Start server
+        run: |
+          npm run build
+          npm run start &
+          # Wait for server to start
+          sleep 10
+      
+      - name: Generate PA11Y config
+        run: node scripts/generate-pa11y-config.js
+      
+      - name: Run accessibility tests
+        run: |
+          # Get URLs from the PA11Y config
+          URLS=$(cat .pa11yci.json | jq -r '.urls[]')
+          
+          # Count URLs and calculate chunk size
+          URL_COUNT=$(echo "$URLS" | wc -l)
+          CHUNK_SIZE=$((URL_COUNT / ${{ matrix.total }} + 1))
+          
+          # Calculate start and end indexes for this chunk
+          START=$((${{ matrix.chunk }} * CHUNK_SIZE))
+          END=$((START + CHUNK_SIZE - 1))
+          
+          # Get the URLs for this chunk
+          CHUNK_URLS=$(echo "$URLS" | sed -n "$((START+1)),$((END+1))p")
+          echo "Running a11y tests for chunk ${{ matrix.chunk }}/${{ matrix.total }} (URLs $START-$END):"
+          echo "$CHUNK_URLS"
+          
+          # Run tests for only these URLs
+          if [ ! -z "$CHUNK_URLS" ]; then
+            echo "$CHUNK_URLS" | pa11y-ci --json > pa11y-results.json
+          else
+            echo "No URLs to test in this chunk"
+            echo '{"results": []}' > pa11y-results.json
+          fi
+      
+      - name: Upload a11y test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: a11y-test-results-chunk-${{ matrix.chunk }}
+          path: |
+            pa11y-results.json
+            pa11y-screenshots/
+          retention-days: 7
+  
+  perf-tests:
+    name: Performance Tests
+    needs: [prepare, lint-and-typecheck]
+    # Run if we are doing "all" or "perf" tests
+    if: needs.prepare.outputs.test-type == 'all' || needs.prepare.outputs.test-type == 'perf'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli
+      
+      - name: Build app
+        run: npm run build
+      
+      - name: Start server
+        run: |
+          npm run start &
+          # Wait for server to start
+          sleep 10
+      
+      - name: Run Lighthouse CI
+        run: lhci autorun
+      
+      - name: Upload Lighthouse results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: lighthouse-results
+          path: .lighthouseci/
+          retention-days: 7
+  
+  security-tests:
+    name: Security Tests
+    needs: [prepare, lint-and-typecheck]
+    # Run if we are doing "all" or "security" tests
+    if: needs.prepare.outputs.test-type == 'all' || needs.prepare.outputs.test-type == 'security'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+      
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true  # Don't fail the build yet
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+      
+      - name: Upload Snyk results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-results
+          path: snyk-results.json
+          retention-days: 7
+  
+  test-summary:
+    name: Summarize Test Results
+    needs: [lint-and-typecheck, unit-tests, e2e-tests, visual-tests, a11y-tests, perf-tests, security-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Download all test results
+        uses: actions/download-artifact@v3
+        with:
+          path: all-test-results
+      
+      - name: Display structure of downloaded files
+        run: ls -R all-test-results
+      
+      - name: Generate test summary
+        run: |
+          echo "# Test Results Summary" > test-summary.md
+          echo "## Unit Tests" >> test-summary.md
+          echo "- Files found in unit test results: $(find all-test-results/unit-test-results* -type f | wc -l)" >> test-summary.md
+          
+          echo "## E2E Tests" >> test-summary.md
+          echo "- Files found in e2e test results: $(find all-test-results/e2e-test-results* -type f 2>/dev/null | wc -l || echo 0)" >> test-summary.md
+          
+          echo "## Visual Regression Tests" >> test-summary.md
+          echo "- Files found in visual test results: $(find all-test-results/visual-test-results -type f 2>/dev/null | wc -l || echo 0)" >> test-summary.md
+          
+          echo "## Accessibility Tests" >> test-summary.md
+          echo "- Files found in a11y test results: $(find all-test-results/a11y-test-results* -type f 2>/dev/null | wc -l || echo 0)" >> test-summary.md
+          
+          echo "## Performance Tests" >> test-summary.md
+          echo "- Files found in lighthouse results: $(find all-test-results/lighthouse-results -type f 2>/dev/null | wc -l || echo 0)" >> test-summary.md
+          
+          echo "## Security Tests" >> test-summary.md
+          echo "- Files found in security results: $(find all-test-results/security-results -type f 2>/dev/null | wc -l || echo 0)" >> test-summary.md
+      
+      - name: Upload test summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-summary
+          path: test-summary.md
+          retention-days: 7 

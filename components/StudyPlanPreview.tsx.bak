@@ -1,0 +1,70 @@
+import React from &apos;react&apos;;
+
+interface StudyPlanPreviewProps {
+  className?: string;
+}
+
+const StudyPlanPreview: React.FC<StudyPlanPreviewProps> = ({ 
+  className = &apos;&apos; 
+}) => {
+  return (
+    <div className={`bg-white rounded-lg shadow-xl overflow-hidden ${className}`}>
+      <div className=&quot;p-6 border-b border-gray-200&quot;>
+        <h3 className=&quot;text-xl font-bold text-gray-900&quot;>Data Science Study Plan</h3>
+        <p className=&quot;text-sm text-gray-500 mt-1&quot;>Personalized for your learning style and schedule</p>
+      </div>
+      
+      <div className=&quot;p-6&quot;>
+        <div className=&quot;mb-6&quot;>
+          <div className=&quot;flex justify-between items-center mb-2&quot;>
+            <h4 className=&quot;font-medium text-gray-800&quot;>Week 1: Python Fundamentals</h4>
+            <span className=&quot;bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full&quot;>Estimated: 8 hours</span>
+          </div>
+          <ul className=&quot;space-y-2 pl-5 list-disc text-gray-600&quot;>
+            <li>Introduction to Python syntax (2h)</li>
+            <li>Data types and structures (3h)</li>
+            <li>Control flow and functions (3h)</li>
+          </ul>
+        </div>
+        
+        <div className=&quot;mb-6&quot;>
+          <div className=&quot;flex justify-between items-center mb-2&quot;>
+            <h4 className=&quot;font-medium text-gray-800&quot;>Week 2: Data Analysis</h4>
+            <span className=&quot;bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full&quot;>Estimated: 10 hours</span>
+          </div>
+          <ul className=&quot;space-y-2 pl-5 list-disc text-gray-600&quot;>
+            <li>NumPy for numerical computing (3h)</li>
+            <li>Pandas for data manipulation (4h)</li>
+            <li>Data visualization with Matplotlib (3h)</li>
+          </ul>
+        </div>
+        
+        <div>
+          <div className=&quot;flex justify-between items-center mb-2&quot;>
+            <h4 className=&quot;font-medium text-gray-800&quot;>Week 3: Machine Learning Basics</h4>
+            <span className=&quot;bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full&quot;>Estimated: 12 hours</span>
+          </div>
+          <ul className=&quot;space-y-2 pl-5 list-disc text-gray-600&quot;>
+            <li>Introduction to scikit-learn (4h)</li>
+            <li>Supervised learning algorithms (5h)</li>
+            <li>Model evaluation techniques (3h)</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div className=&quot;bg-gray-50 p-4 border-t border-gray-200&quot;>
+        <div className=&quot;flex items-center justify-between&quot;>
+          <div className=&quot;flex items-center&quot;>
+            <div className=&quot;w-2 h-2 bg-green-500 rounded-full mr-2&quot;></div>
+            <span className=&quot;text-sm text-gray-600&quot;>Progress: 25% complete</span>
+          </div>
+          <button className=&quot;text-indigo-600 hover:text-indigo-800 text-sm font-medium&quot;>
+            View full plan →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StudyPlanPreview; 

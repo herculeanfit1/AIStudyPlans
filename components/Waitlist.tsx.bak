@@ -1,0 +1,88 @@
+&apos;use client&apos;;
+
+import React, { useState } from &apos;react&apos;;
+
+const Waitlist = () => {
+  const [name, setName] = useState(&apos;&apos;);
+  const [email, setEmail] = useState(&apos;&apos;);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<{ type: &apos;success&apos; | &apos;error&apos;, text: string } | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setSubmitMessage({
+        type: &apos;success&apos;,
+        text: &apos;Thank you for joining our waitlist! We\&apos;ll notify you when we launch.&apos;
+      });
+      setName(&apos;&apos;);
+      setEmail(&apos;&apos;);
+    }, 1500);
+  };
+
+  return (
+    <section id=&quot;waitlist&quot; className=&quot;py-16 bg-indigo-600&quot;>
+      <div className=&quot;container mx-auto px-4&quot;>
+        <div className=&quot;max-w-3xl mx-auto text-center&quot;>
+          <h2 className=&quot;text-3xl font-bold text-white mb-4&quot;>Join the SchedulEd Waitlist</h2>
+          <p className=&quot;text-xl text-indigo-100 mb-8&quot;>
+            Be the first to get access when we launch. We&apos;re currently in the final stages of development.
+          </p>
+          
+          <form className=&quot;bg-white p-6 rounded-lg shadow-md&quot; onSubmit={handleSubmit}>
+            <div className=&quot;flex flex-col md:flex-row gap-4 mb-4&quot;>
+              <input 
+                type=&quot;text&quot; 
+                placeholder=&quot;Your Name&quot; 
+                className=&quot;flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500&quot;
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              <input 
+                type=&quot;email&quot; 
+                placeholder=&quot;Your Email&quot; 
+                className=&quot;flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500&quot;
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            
+            <button 
+              type=&quot;submit&quot; 
+              className=&quot;w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition-colors flex justify-center items-center&quot;
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className=&quot;animate-spin -ml-1 mr-3 h-5 w-5 text-white&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; fill=&quot;none&quot; viewBox=&quot;0 0 24 24&quot;>
+                    <circle className=&quot;opacity-25&quot; cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;10&quot; stroke=&quot;currentColor&quot; strokeWidth=&quot;4&quot;></circle>
+                    <path className=&quot;opacity-75&quot; fill=&quot;currentColor&quot; d=&quot;M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z&quot;></path>
+                  </svg>
+                  Processing...
+                </>
+              ) : &apos;Join the Waitlist&apos;}
+            </button>
+            
+            {submitMessage && (
+              <div className={`mt-4 p-3 rounded ${submitMessage.type === &apos;success&apos; ? &apos;bg-green-100 text-green-800&apos; : &apos;bg-red-100 text-red-800&apos;}`}>
+                {submitMessage.text}
+              </div>
+            )}
+            
+            <p className=&quot;text-gray-500 text-sm mt-4&quot;>
+              We&apos;ll never share your email with anyone else.
+            </p>
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Waitlist; 

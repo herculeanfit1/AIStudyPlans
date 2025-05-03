@@ -1,0 +1,81 @@
+&quot;use client&quot;;
+
+import { useState } from &apos;react&apos;;
+
+export default function FAQ() {
+  const faqs = [
+    {
+      question: &quot;How does SchedulEd create personalized study plans?&quot;,
+      answer: &quot;SchedulEd uses advanced AI algorithms to analyze your learning style, available study time, current knowledge level, and goals. It then creates a customized study plan that optimizes your learning efficiency and adapts as you progress.&quot;
+    },
+    {
+      question: &quot;Is SchedulEd suitable for all subjects?&quot;,
+      answer: &quot;Yes! SchedulEd works with a wide range of subjects from mathematics and sciences to humanities, languages, and professional certifications. Our platform is designed to be flexible and adaptable to different learning goals.&quot;
+    },
+    {
+      question: &quot;How much does SchedulEd cost?&quot;,
+      answer: &quot;We offer a free basic tier with limited features. Our premium plans start at $6/month (billed annually) with additional tiers for advanced features. Check our pricing page for detailed information on what each plan includes.&quot;
+    },
+    {
+      question: &quot;Can I use SchedulEd for group study or as a teacher?&quot;,
+      answer: &quot;We&apos;re developing special features for educators and study groups. Currently, our platform is optimized for individual use, but we plan to release collaborative features in the near future.&quot;
+    },
+    {
+      question: &quot;How does SchedulEd protect my privacy?&quot;,
+      answer: &quot;We take data privacy very seriously. All personal information is encrypted, and we never sell your data to third parties. For students under 18, we have additional safeguards in place, including parental consent requirements and limited data collection.&quot;
+    }
+  ];
+  
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  
+  const toggleFAQ = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  return (
+    <section id=&quot;faq&quot; className=&quot;py-20 bg-white&quot;>
+      <div className=&quot;container mx-auto px-4&quot;>
+        <div className=&quot;text-center mb-16&quot;>
+          <h2 className=&quot;text-3xl md:text-4xl font-bold text-gray-900 mb-4&quot;>Frequently Asked Questions</h2>
+          <p className=&quot;text-xl text-gray-600 max-w-3xl mx-auto&quot;>
+            Find answers to common questions about SchedulEd
+          </p>
+        </div>
+        
+        <div className=&quot;max-w-3xl mx-auto&quot;>
+          {faqs.map((faq, index) => (
+            <div 
+              key={index}
+              className=&quot;mb-4 border-b border-gray-200 pb-4 last:border-b-0 last:pb-0&quot;
+            >
+              <button
+                className=&quot;flex justify-between items-center w-full text-left font-medium text-gray-900 py-3 focus:outline-none&quot;
+                onClick={() => toggleFAQ(index)}
+              >
+                <span className=&quot;text-lg&quot;>{faq.question}</span>
+                <span className=&quot;text-indigo-600&quot;>
+                  <i className={`fas ${openIndex === index ? &apos;fa-minus&apos; : &apos;fa-plus&apos;}`}></i>
+                </span>
+              </button>
+              <div 
+                className={`overflow-hidden transition-all duration-300 ${
+                  openIndex === index ? &apos;max-h-96 opacity-100&apos; : &apos;max-h-0 opacity-0&apos;
+                }`}
+              >
+                <p className=&quot;py-3 text-gray-600&quot;>
+                  {faq.answer}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className=&quot;text-center mt-12&quot;>
+          <p className=&quot;text-gray-600&quot;>
+            Still have questions? <a href=&quot;#&quot; className=&quot;text-indigo-600 font-medium hover:underline&quot;>Contact our support team</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+} 

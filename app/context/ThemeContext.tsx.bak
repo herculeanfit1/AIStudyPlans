@@ -1,0 +1,68 @@
+&apos;use client&apos;;
+
+import React, { createContext, useContext, useState, useEffect, ReactNode } from &apos;react&apos;;
+
+type Theme = &apos;light&apos; | &apos;dark&apos;;
+
+interface ThemeContextType {
+  theme: Theme;
+  toggleTheme: () => void;
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+interface ThemeProviderProps {
+  children: ReactNode;
+}
+
+export function ThemeProvider({ children }: ThemeProviderProps) {
+  const [theme, setTheme] = useState<Theme>(&apos;light&apos;);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Initialize theme from local storage or system preference
+    const savedTheme = localStorage.getItem(&apos;theme&apos;) as Theme | null;
+    const systemTheme = window.matchMedia(&apos;(prefers-color-scheme: dark)&apos;).matches ? &apos;dark&apos; : &apos;light&apos;;
+    
+    setTheme(savedTheme || systemTheme);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // Skip during SSR
+    if (!mounted) return;
+    
+    // Save theme to local storage
+    localStorage.setItem(&apos;theme&apos;, theme);
+    
+    // Apply theme to document
+    if (theme === &apos;dark&apos;) {
+      document.documentElement.classList.add(&apos;dark&apos;);
+    } else {
+      document.documentElement.classList.remove(&apos;dark&apos;);
+    }
+  }, [theme, mounted]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === &apos;light&apos; ? &apos;dark&apos; : &apos;light&apos;);
+  };
+
+  // Prevent flash during SSR
+  if (!mounted) {
+    return <>{children}</>;
+  }
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error(&apos;useTheme must be used within a ThemeProvider&apos;);
+  }
+  return context;
+} 

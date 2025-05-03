@@ -59,15 +59,29 @@ function PricingTier({ name, price, period, description, features, buttonText, h
       </div>
       
       <div className="mt-8">
-        <button 
-          className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-            highlighted 
-              ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
-              : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-          }`}
-        >
-          {buttonText}
-        </button>
+        {buttonText === "Contact Sales" ? (
+          <Link href="/contact/sales">
+            <button 
+              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+                highlighted 
+                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
+                  : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              {buttonText}
+            </button>
+          </Link>
+        ) : (
+          <button 
+            className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+              highlighted 
+                ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
+                : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            {buttonText}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -193,9 +207,9 @@ export default function Pricing() {
         <div className="text-center mt-16">
           <p className="text-gray-500">
             Need a custom plan for your institution? 
-            <a href="#" className="text-indigo-600 hover:text-indigo-800 ml-1 font-medium">
+            <Link href="/contact/sales" className="text-indigo-600 hover:text-indigo-800 ml-1 font-medium">
               Contact us
-            </a>
+            </Link>
           </p>
         </div>
       </div>

@@ -1,0 +1,90 @@
+&apos;use client&apos;;
+
+import React from &apos;react&apos;;
+import Image from &apos;next/image&apos;;
+
+interface TestimonialProps {
+  quote: string;
+  author: string;
+  role: string;
+  avatarUrl: string;
+}
+
+const Testimonial: React.FC<TestimonialProps> = ({ quote, author, role, avatarUrl }) => {
+  return (
+    <div className=&quot;bg-white p-8 rounded-xl shadow-sm border border-gray-100&quot;>
+      <div className=&quot;flex items-center mb-4&quot;>
+        <i className=&quot;fa-solid fa-quote-left text-2xl text-blue-500 mr-2&quot;></i>
+      </div>
+      <p className=&quot;text-gray-600 mb-6 italic&quot;>{quote}</p>
+      <div className=&quot;flex items-center&quot;>
+        <div className=&quot;relative w-12 h-12 rounded-full overflow-hidden mr-4 bg-gray-200&quot;>
+          <Image 
+            src={avatarUrl} 
+            alt={author} 
+            fill 
+            className=&quot;object-cover&quot;
+          />
+        </div>
+        <div>
+          <h4 className=&quot;font-semibold text-gray-900&quot;>{author}</h4>
+          <p className=&quot;text-gray-500 text-sm&quot;>{role}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface TestimonialsProps {
+  className?: string;
+}
+
+const Testimonials: React.FC<TestimonialsProps> = ({ className = &apos;&apos; }) => {
+  const testimonials: TestimonialProps[] = [
+    {
+      quote: &quot;This AI study planner completely transformed how I prepare for exams. I&apos;ve improved my grades significantly while actually studying less hours overall!&quot;,
+      author: &quot;Sarah J.&quot;,
+      role: &quot;Medical Student&quot;,
+      avatarUrl: &quot;https://randomuser.me/api/portraits/women/44.jpg&quot;
+    },
+    {
+      quote: &quot;As someone juggling work and online courses, this platform has been a game-changer. The AI adapts to my busy schedule and keeps me on track.&quot;,
+      author: &quot;Michael T.&quot;,
+      role: &quot;Working Professional&quot;,
+      avatarUrl: &quot;https://randomuser.me/api/portraits/men/46.jpg&quot;
+    },
+    {
+      quote: &quot;I was skeptical about AI-generated study plans at first, but the personalization is impressive. It&apos;s like having a private tutor who knows exactly what I need.&quot;,
+      author: &quot;Aisha K.&quot;,
+      role: &quot;Computer Science Major&quot;,
+      avatarUrl: &quot;https://randomuser.me/api/portraits/women/67.jpg&quot;
+    }
+  ];
+
+  return (
+    <div className={`py-16 bg-gray-50 ${className}`}>
+      <div className=&quot;container mx-auto px-4&quot;>
+        <div className=&quot;text-center mb-12&quot;>
+          <h2 className=&quot;text-3xl font-bold text-gray-900 mb-4&quot;>What Our Users Say</h2>
+          <p className=&quot;text-xl text-gray-600 max-w-3xl mx-auto&quot;>
+            Join thousands of students who have transformed their learning experience with our AI-powered study plans.
+          </p>
+        </div>
+        
+        <div className=&quot;grid grid-cols-1 md:grid-cols-3 gap-6&quot;>
+          {testimonials.map((testimonial, index) => (
+            <Testimonial
+              key={index}
+              quote={testimonial.quote}
+              author={testimonial.author}
+              role={testimonial.role}
+              avatarUrl={testimonial.avatarUrl}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Testimonials; 

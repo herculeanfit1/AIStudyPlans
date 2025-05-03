@@ -1,0 +1,204 @@
+&apos;use client&apos;;
+
+import { useState } from &apos;react&apos;;
+import Link from &apos;next/link&apos;;
+
+interface PricingFeature {
+  title: string;
+  included: boolean;
+}
+
+interface PricingTierProps {
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: PricingFeature[];
+  buttonText: string;
+  highlighted?: boolean;
+}
+
+function PricingTier({ name, price, period, description, features, buttonText, highlighted }: PricingTierProps) {
+  return (
+    <div className={`pricing-tier ${highlighted ? &apos;popular&apos; : &apos;&apos;}`}>
+      {highlighted && (
+        <div className=&quot;absolute top-0 left-0 right-0 bg-indigo-500 text-white text-center text-sm py-1 font-medium rounded-t-xl&quot;>
+          Most Popular
+        </div>
+      )}
+      
+      <div className={`pricing-header ${highlighted ? &apos;pt-10&apos; : &apos;&apos;}`}>
+        <h3 className=&quot;text-2xl font-bold pricing-text mb-4&quot;>{name}</h3>
+        <div className=&quot;mb-6&quot;>
+          <span className=&quot;text-4xl font-bold pricing-text&quot;>{price}</span>
+          <span className=&quot;pricing-secondary text-sm ml-1&quot;>{period}</span>
+        </div>
+        <p className=&quot;pricing-description mb-6&quot;>{description}</p>
+      </div>
+      
+      <div className=&quot;pricing-features&quot;>
+        <p className=&quot;font-medium pricing-label mb-4&quot;>What&apos;s included:</p>
+        <ul className=&quot;space-y-3&quot;>
+          {features.map((feature, featureIndex) => (
+            <li key={featureIndex} className=&quot;flex items-start&quot;>
+              {feature.included ? (
+                <svg className=&quot;h-5 w-5 text-green-500 mt-0.5 mr-3 flex-shrink-0&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 20 20&quot; fill=&quot;currentColor&quot;>
+                  <path fillRule=&quot;evenodd&quot; d=&quot;M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z&quot; clipRule=&quot;evenodd&quot; />
+                </svg>
+              ) : (
+                <svg className=&quot;h-5 w-5 text-gray-400 dark:text-gray-600 mt-0.5 mr-3 flex-shrink-0&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 20 20&quot; fill=&quot;currentColor&quot;>
+                  <path fillRule=&quot;evenodd&quot; d=&quot;M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z&quot; clipRule=&quot;evenodd&quot; />
+                </svg>
+              )}
+              <span className={feature.included ? &apos;pricing-label&apos; : &apos;pricing-muted&apos;}>
+                {feature.title}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      
+      <div className=&quot;mt-8&quot;>
+        <button 
+          className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+            highlighted 
+              ? &apos;bg-indigo-600 hover:bg-indigo-700 text-white&apos; 
+              : &apos;bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600&apos;
+          }`}
+        >
+          {buttonText}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function Pricing() {
+  const [annual, setAnnual] = useState(true);
+  
+  const tiers = [
+    {
+      name: &quot;Basic&quot;,
+      price: annual ? &quot;Free&quot; : &quot;Free&quot;,
+      period: &quot;&quot;,
+      description: &quot;Perfect for getting started with study plan outlines.&quot;,
+      features: [
+        { title: &quot;3 Study Plan Outlines&quot;, included: true },
+        { title: &quot;Basic Templates&quot;, included: true },
+        { title: &quot;Community Support&quot;, included: true },
+        { title: &quot;Detailed Plan Content&quot;, included: false },
+        { title: &quot;Analytics&quot;, included: false },
+        { title: &quot;Scheduling Features&quot;, included: false },
+        { title: &quot;AI-Powered Adaptations&quot;, included: false },
+      ],
+      buttonText: &quot;Try It Free&quot;
+    },
+    {
+      name: &quot;Pro&quot;,
+      price: annual ? &quot;$6&quot; : &quot;$8&quot;,
+      period: annual ? &quot;/month, billed annually&quot; : &quot;/month&quot;,
+      description: &quot;Advanced features for serious students.&quot;,
+      features: [
+        { title: &quot;Unlimited Study Plans&quot;, included: true },
+        { title: &quot;Advanced Analytics&quot;, included: true },
+        { title: &quot;Smart Scheduling&quot;, included: true },
+        { title: &quot;Email Support&quot;, included: true },
+        { title: &quot;Resource Recommendations&quot;, included: true },
+        { title: &quot;AI-Powered Adaptations&quot;, included: true },
+        { title: &quot;Priority Support&quot;, included: false },
+      ],
+      buttonText: &quot;Get Started&quot;,
+      highlighted: true
+    },
+    {
+      name: &quot;Premium&quot;,
+      price: annual ? &quot;$8&quot; : &quot;$11&quot;,
+      period: annual ? &quot;/month, billed annually&quot; : &quot;/month&quot;,
+      description: &quot;The ultimate learning experience for maximum results.&quot;,
+      features: [
+        { title: &quot;Unlimited Study Plans&quot;, included: true },
+        { title: &quot;Advanced Analytics with Insights&quot;, included: true },
+        { title: &quot;Smart Scheduling with Calendar Integration&quot;, included: true },
+        { title: &quot;Priority Email Support&quot;, included: true },
+        { title: &quot;Curated Resource Recommendations&quot;, included: true },
+        { title: &quot;Enhanced AI-Powered Adaptations&quot;, included: true },
+        { title: &quot;1-on-1 Study Coach Sessions&quot;, included: true },
+      ],
+      buttonText: &quot;Get Premium&quot;
+    },
+    {
+      name: &quot;Enterprise / Education&quot;,
+      price: &quot;Contact Sales&quot;,
+      period: &quot;&quot;,
+      description: &quot;Custom solutions for institutions and organizations.&quot;,
+      features: [
+        { title: &quot;Unlimited Users & Study Plans&quot;, included: true },
+        { title: &quot;Centralized Administration&quot;, included: true },
+        { title: &quot;Custom Integration Options&quot;, included: true },
+        { title: &quot;Dedicated Account Manager&quot;, included: true },
+        { title: &quot;White-Label Options&quot;, included: true },
+        { title: &quot;Custom Analytics & Reporting&quot;, included: true },
+        { title: &quot;Bulk User Management&quot;, included: true },
+      ],
+      buttonText: &quot;Contact Sales&quot;
+    }
+  ];
+
+  return (
+    <section id=&quot;pricing&quot; className=&quot;py-16 md:py-24 bg-gray-50&quot;>
+      <div className=&quot;container mx-auto px-4&quot;>
+        <div className=&quot;text-center mb-12&quot;>
+          <h2 className=&quot;text-3xl md:text-4xl font-bold text-gray-800 mb-4&quot;>Simple, Transparent Pricing</h2>
+          <p className=&quot;text-xl text-gray-600 max-w-3xl mx-auto mb-8&quot;>
+            Choose the plan that works best for your learning journey.
+          </p>
+          
+          <div className=&quot;flex items-center justify-center mb-8&quot;>
+            <span className={`mr-3 text-sm ${annual ? &apos;text-gray-900 font-medium&apos; : &apos;text-gray-500&apos;}`}>Annual</span>
+            <label className=&quot;relative inline-flex items-center cursor-pointer&quot;>
+              <input 
+                type=&quot;checkbox&quot; 
+                value=&quot;&quot; 
+                className=&quot;sr-only peer&quot; 
+                checked={!annual}
+                onChange={() => setAnnual(!annual)}
+              />
+              <div className=&quot;w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[&apos;&apos;] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600&quot;></div>
+            </label>
+            <span className={`ml-3 text-sm ${!annual ? &apos;text-gray-900 font-medium&apos; : &apos;text-gray-500&apos;}`}>Monthly</span>
+          </div>
+          
+          {annual && (
+            <div className=&quot;text-sm text-indigo-600 font-medium&quot;>
+              Save up to 25% with annual billing
+            </div>
+          )}
+        </div>
+        
+        <div className=&quot;grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto&quot;>
+          {tiers.map((tier, index) => (
+            <PricingTier 
+              key={index} 
+              name={tier.name}
+              price={tier.price}
+              period={tier.period}
+              description={tier.description}
+              features={tier.features}
+              buttonText={tier.buttonText}
+              highlighted={tier.highlighted}
+            />
+          ))}
+        </div>
+        
+        <div className=&quot;text-center mt-16&quot;>
+          <p className=&quot;text-gray-500&quot;>
+            Need a custom plan for your institution? 
+            <a href=&quot;#&quot; className=&quot;text-indigo-600 hover:text-indigo-800 ml-1 font-medium&quot;>
+              Contact us
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+} 

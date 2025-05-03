@@ -1,0 +1,330 @@
+&apos;use client&apos;;
+
+import { useEffect } from &apos;react&apos;;
+import Image from &apos;next/image&apos;;
+import Header from &apos;@/app/components/Header&apos;;
+import WaitlistForm from &apos;@/app/components/WaitlistForm&apos;;
+import { initSmoothScroll } from &apos;@/lib/smoothScroll&apos;;
+
+export default function LandingPage() {
+  useEffect(() => {
+    // Initialize smooth scrolling
+    initSmoothScroll();
+  }, []);
+
+  return (
+    <div className=&quot;bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen&quot;>
+      <Header />
+
+      <main>
+        {/* Hero Section */}
+        <section className=&quot;container mx-auto px-4 py-16 md:py-24&quot;>
+          <div className=&quot;grid md:grid-cols-2 gap-12 items-center&quot;>
+            <div>
+              <h1 className=&quot;text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight mb-6&quot;>
+                Your AI Study <span className=&quot;text-indigo-600&quot;>Partner</span> for Academic Success
+              </h1>
+              <p className=&quot;text-xl text-gray-600 mb-8&quot;>
+                SchedulEd creates personalized study plans tailored to your learning style, time availability, and knowledge level. Get ready to transform your learning experience.
+              </p>
+              <div className=&quot;flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4&quot;>
+                <a href=&quot;#waitlist&quot; className=&quot;px-8 py-4 bg-indigo-600 text-white text-lg font-medium rounded-md hover:bg-indigo-700 transition text-center&quot;>
+                  Join the Waitlist
+                </a>
+                <a href=&quot;#how-it-works&quot; className=&quot;px-8 py-4 border border-gray-300 text-gray-700 text-lg font-medium rounded-md hover:bg-gray-50 transition text-center&quot;>
+                  Learn More
+                </a>
+              </div>
+            </div>
+            <div className=&quot;relative&quot;>
+              <div className=&quot;bg-white p-8 rounded-lg shadow-xl&quot;>
+                <div className=&quot;relative w-full h-[400px] flex items-center justify-center bg-slate-200 rounded-md&quot;>
+                  <div className=&quot;text-center&quot;>
+                    <h3 className=&quot;text-xl font-bold text-slate-700 mb-2&quot;>Your Personalized Study Plan</h3>
+                    <p className=&quot;text-slate-600 mb-4&quot;>Tailored to your learning style</p>
+                    <div className=&quot;w-48 h-1 bg-indigo-600 mx-auto mb-4&quot;></div>
+                    <p className=&quot;text-slate-500 text-sm&quot;>Coming soon...</p>
+                  </div>
+                </div>
+              </div>
+              <div className=&quot;absolute -bottom-6 -right-6 bg-indigo-100 p-4 rounded-lg shadow-lg&quot;>
+                <div className=&quot;flex items-center space-x-3&quot;>
+                  <div className=&quot;p-2 bg-indigo-600 rounded-full text-white&quot;>
+                    <i className=&quot;fas fa-brain&quot; aria-hidden=&quot;true&quot;></i>
+                  </div>
+                  <div>
+                    <p className=&quot;font-medium text-gray-800&quot;>AI-Powered</p>
+                    <p className=&quot;text-sm text-gray-600&quot;>Learns as you learn</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Social Proof */}
+        <section className=&quot;bg-white py-10&quot;>
+          <div className=&quot;container mx-auto px-4&quot;>
+            <p className=&quot;text-center text-gray-500 mb-8&quot;>Designed for students at all levels</p>
+            <div className=&quot;flex flex-wrap justify-center items-center gap-8 md:gap-16&quot;>
+              <span className=&quot;text-gray-400 text-xl font-medium&quot;>Middle School</span>
+              <span className=&quot;text-gray-400 text-xl font-medium&quot;>High School</span>
+              <span className=&quot;text-gray-400 text-xl font-medium&quot;>College</span>
+              <span className=&quot;text-gray-400 text-xl font-medium&quot;>Graduate School</span>
+              <span className=&quot;text-gray-400 text-xl font-medium&quot;>Professional Learning</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section id=&quot;features&quot; className=&quot;container mx-auto px-4 py-16 md:py-24&quot;>
+          <h2 className=&quot;text-3xl md:text-4xl font-bold text-center text-gray-800 mb-16&quot;>Why Choose SchedulEd?</h2>
+          <div className=&quot;grid md:grid-cols-3 gap-8&quot;>
+            <div className=&quot;bg-white p-8 rounded-lg shadow-lg&quot;>
+              <div className=&quot;w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-6&quot;>
+                <i className=&quot;fas fa-brain text-2xl text-indigo-600&quot; aria-hidden=&quot;true&quot;></i>
+              </div>
+              <h3 className=&quot;text-xl font-bold text-gray-800 mb-4&quot;>Personalized Learning Paths</h3>
+              <p className=&quot;text-gray-600&quot;>
+                Study plans tailored to your learning style (visual, auditory, kinesthetic), time availability, and knowledge level.
+              </p>
+            </div>
+            
+            <div className=&quot;bg-white p-8 rounded-lg shadow-lg&quot;>
+              <div className=&quot;w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-6&quot;>
+                <i className=&quot;fas fa-calendar-alt text-2xl text-indigo-600&quot; aria-hidden=&quot;true&quot;></i>
+              </div>
+              <h3 className=&quot;text-xl font-bold text-gray-800 mb-4&quot;>Smart Scheduling</h3>
+              <p className=&quot;text-gray-600&quot;>
+                Optimize your study time with intelligently scheduled sessions that match your availability and peak productivity hours.
+              </p>
+            </div>
+            
+            <div className=&quot;bg-white p-8 rounded-lg shadow-lg&quot;>
+              <div className=&quot;w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-6&quot;>
+                <i className=&quot;fas fa-book-open text-2xl text-indigo-600&quot; aria-hidden=&quot;true&quot;></i>
+              </div>
+              <h3 className=&quot;text-xl font-bold text-gray-800 mb-4&quot;>Curated Resources</h3>
+              <p className=&quot;text-gray-600&quot;>
+                Access high-quality educational materials specifically chosen to match your learning style and subject matter.
+              </p>
+            </div>
+            
+            <div className=&quot;bg-white p-8 rounded-lg shadow-lg&quot;>
+              <div className=&quot;w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-6&quot;>
+                <i className=&quot;fas fa-chart-line text-2xl text-indigo-600&quot; aria-hidden=&quot;true&quot;></i>
+              </div>
+              <h3 className=&quot;text-xl font-bold text-gray-800 mb-4&quot;>Progress Tracking</h3>
+              <p className=&quot;text-gray-600&quot;>
+                Monitor your learning journey with detailed progress reports and analytics to keep you motivated.
+              </p>
+            </div>
+            
+            <div className=&quot;bg-white p-8 rounded-lg shadow-lg&quot;>
+              <div className=&quot;w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-6&quot;>
+                <i className=&quot;fas fa-bell text-2xl text-indigo-600&quot; aria-hidden=&quot;true&quot;></i>
+              </div>
+              <h3 className=&quot;text-xl font-bold text-gray-800 mb-4&quot;>Smart Reminders</h3>
+              <p className=&quot;text-gray-600&quot;>
+                Never miss a study session with timely reminders and calendar integration for upcoming study sessions.
+              </p>
+            </div>
+            
+            <div className=&quot;bg-white p-8 rounded-lg shadow-lg&quot;>
+              <div className=&quot;w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-6&quot;>
+                <i className=&quot;fas fa-users text-2xl text-indigo-600&quot; aria-hidden=&quot;true&quot;></i>
+              </div>
+              <h3 className=&quot;text-xl font-bold text-gray-800 mb-4&quot;>Privacy Focused</h3>
+              <p className=&quot;text-gray-600&quot;>
+                Enhanced protection for all users with special safeguards for students under 18, including parental controls.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works */}
+        <section id=&quot;how-it-works&quot; className=&quot;bg-indigo-50 py-16 md:py-24&quot;>
+          <div className=&quot;container mx-auto px-4&quot;>
+            <h2 className=&quot;text-3xl md:text-4xl font-bold text-center text-gray-800 mb-16&quot;>How SchedulEd Works</h2>
+            <div className=&quot;grid md:grid-cols-4 gap-8&quot;>
+              <div className=&quot;text-center&quot;>
+                <div className=&quot;w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold&quot;>1</div>
+                <h3 className=&quot;text-xl font-bold text-gray-800 mb-4&quot;>Create Your Profile</h3>
+                <p className=&quot;text-gray-600&quot;>
+                  Tell us about your learning style, time availability, and current knowledge level.
+                </p>
+              </div>
+              
+              <div className=&quot;text-center&quot;>
+                <div className=&quot;w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold&quot;>2</div>
+                <h3 className=&quot;text-xl font-bold text-gray-800 mb-4&quot;>Select Your Subjects</h3>
+                <p className=&quot;text-gray-600&quot;>
+                  Choose what you want to learn and set your learning goals.
+                </p>
+              </div>
+              
+              <div className=&quot;text-center&quot;>
+                <div className=&quot;w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold&quot;>3</div>
+                <h3 className=&quot;text-xl font-bold text-gray-800 mb-4&quot;>Receive Your Plan</h3>
+                <p className=&quot;text-gray-600&quot;>
+                  Our AI generates a personalized study plan optimized for your success.
+                </p>
+              </div>
+              
+              <div className=&quot;text-center&quot;>
+                <div className=&quot;w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold&quot;>4</div>
+                <h3 className=&quot;text-xl font-bold text-gray-800 mb-4&quot;>Track & Adjust</h3>
+                <p className=&quot;text-gray-600&quot;>
+                  Follow your plan, track progress, and watch our AI adapt as you learn.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials - Aspirational */}
+        <section className=&quot;container mx-auto px-4 py-16 md:py-24&quot;>
+          <h2 className=&quot;text-3xl md:text-4xl font-bold text-center text-gray-800 mb-16&quot;>What Students Are Saying</h2>
+          <div className=&quot;grid md:grid-cols-3 gap-8&quot;>
+            <div className=&quot;bg-white p-8 rounded-lg shadow-lg&quot;>
+              <div className=&quot;flex items-center mb-4&quot;>
+                <div className=&quot;text-yellow-400 flex&quot;>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                </div>
+              </div>
+              <p className=&quot;text-gray-600 mb-6 italic&quot;>
+                &quot;As a visual learner, I&apos;ve always struggled with traditional study methods. SchedulEd&apos;s personalized approach has completely transformed how I prepare for exams.&quot;
+              </p>
+              <div className=&quot;flex items-center&quot;>
+                <div className=&quot;w-12 h-12 bg-indigo-100 rounded-full mr-4&quot;></div>
+                <div>
+                  <p className=&quot;font-medium text-gray-800&quot;>Alex J.</p>
+                  <p className=&quot;text-sm text-gray-500&quot;>College Student</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className=&quot;bg-white p-8 rounded-lg shadow-lg&quot;>
+              <div className=&quot;flex items-center mb-4&quot;>
+                <div className=&quot;text-yellow-400 flex&quot;>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                </div>
+              </div>
+              <p className=&quot;text-gray-600 mb-6 italic&quot;>
+                &quot;The smart scheduling feature has been a game-changer for me. I&apos;m a busy parent and student, and SchedulEd helps me make the most of my limited study time.&quot;
+              </p>
+              <div className=&quot;flex items-center&quot;>
+                <div className=&quot;w-12 h-12 bg-indigo-100 rounded-full mr-4&quot;></div>
+                <div>
+                  <p className=&quot;font-medium text-gray-800&quot;>Taylor M.</p>
+                  <p className=&quot;text-sm text-gray-500&quot;>Graduate Student</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className=&quot;bg-white p-8 rounded-lg shadow-lg&quot;>
+              <div className=&quot;flex items-center mb-4&quot;>
+                <div className=&quot;text-yellow-400 flex&quot;>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                  <i className=&quot;fas fa-star&quot; aria-hidden=&quot;true&quot;></i>
+                </div>
+              </div>
+              <p className=&quot;text-gray-600 mb-6 italic&quot;>
+                &quot;As a high school teacher, I&apos;ve recommended SchedulEd to my students preparing for college entrance exams. The results have been incredible.&quot;
+              </p>
+              <div className=&quot;flex items-center&quot;>
+                <div className=&quot;w-12 h-12 bg-indigo-100 rounded-full mr-4&quot;></div>
+                <div>
+                  <p className=&quot;font-medium text-gray-800&quot;>Jamie R.</p>
+                  <p className=&quot;text-sm text-gray-500&quot;>High School Teacher</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Waitlist Signup Section */}
+        <section id=&quot;waitlist&quot; className=&quot;bg-indigo-600 py-16 md:py-24&quot;>
+          <div className=&quot;container mx-auto px-4&quot;>
+            <div className=&quot;max-w-3xl mx-auto text-center&quot;>
+              <h2 className=&quot;text-3xl md:text-4xl font-bold text-white mb-8&quot;>Join the SchedulEd Waitlist</h2>
+              <p className=&quot;text-xl text-indigo-100 mb-10&quot;>
+                Be the first to get access when we launch. We&apos;re currently in the final stages of development and will be inviting users in soon.
+              </p>
+              <WaitlistForm />
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className=&quot;bg-gray-800 text-gray-300 py-12&quot;>
+        <div className=&quot;container mx-auto px-4&quot;>
+          <div className=&quot;grid md:grid-cols-4 gap-8&quot;>
+            <div>
+              <h3 className=&quot;text-xl font-bold text-white mb-4&quot;>SchedulEd</h3>
+              <p className=&quot;mb-4&quot;>
+                AI-powered study plan generator creating personalized learning paths tailored to individual learning styles.
+              </p>
+              <div className=&quot;flex space-x-4&quot;>
+                <a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>
+                  <i className=&quot;fab fa-twitter&quot; aria-hidden=&quot;true&quot;></i>
+                </a>
+                <a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>
+                  <i className=&quot;fab fa-instagram&quot; aria-hidden=&quot;true&quot;></i>
+                </a>
+                <a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>
+                  <i className=&quot;fab fa-linkedin&quot; aria-hidden=&quot;true&quot;></i>
+                </a>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className=&quot;text-lg font-medium text-white mb-4&quot;>Features</h4>
+              <ul className=&quot;space-y-2&quot;>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Personalized Study Plans</a></li>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Resource Recommendations</a></li>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Progress Tracking</a></li>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Learning Style Adaptation</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className=&quot;text-lg font-medium text-white mb-4&quot;>Company</h4>
+              <ul className=&quot;space-y-2&quot;>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>About Us</a></li>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Careers</a></li>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Blog</a></li>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Contact</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className=&quot;text-lg font-medium text-white mb-4&quot;>Legal</h4>
+              <ul className=&quot;space-y-2&quot;>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Terms of Service</a></li>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Privacy Policy</a></li>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Youth Privacy Policy</a></li>
+                <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Cookie Policy</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className=&quot;border-t border-gray-700 mt-12 pt-8 text-center text-gray-400&quot;>
+            <p>&copy; {new Date().getFullYear()} SchedulEd. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+} 

@@ -7,7 +7,9 @@
   "features": {
     "feedback": true,
     "analytics": true,
-    "debugMode": false
+    "debugMode": false,
+    "waitlist": true,
+    "feedbackCampaign": true
   },
   "logging": {
     "level": "info",
@@ -18,5 +20,12 @@
     "containerRegistry": "ghcr.io",
     "imageName": "aistudyplans",
     "appServiceName": "staging-aistudyplans"
+  },
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "${NEXT_PUBLIC_SUPABASE_URL}",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "${NEXT_PUBLIC_SUPABASE_ANON_KEY}",
+    "RESEND_API_KEY": "${RESEND_API_KEY}",
+    "EMAIL_FROM": "noreply-staging@aistudyplans.com",
+    "NEXT_PUBLIC_APP_URL": "https://staging-aistudyplans.azurewebsites.net"
   }
 } 

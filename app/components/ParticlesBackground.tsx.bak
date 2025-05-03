@@ -1,0 +1,102 @@
+&apos;use client&apos;;
+
+import { useCallback, useEffect, useState } from &apos;react&apos;;
+import { useTheme } from &apos;next-themes&apos;;
+import { Particles } from &apos;react-tsparticles&apos;;
+import { loadSlim } from &apos;tsparticles-slim&apos;;
+import type { Engine } from &apos;tsparticles-engine&apos;;
+
+export default function ParticlesBackground() {
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  const particlesInit = useCallback(async (engine: Engine) => {
+    await loadSlim(engine);
+  }, []);
+  
+  // Don&apos;t render particles until mounted to prevent hydration issues
+  if (!mounted) return null;
+  
+  // Define different particle configurations for light and dark modes
+  const isDarkMode = theme === &apos;dark&apos;;
+  
+  return (
+    <div className=&quot;fixed inset-0 -z-10&quot;>
+      <Particles
+        id=&quot;tsparticles&quot;
+        init={particlesInit}
+        options={{
+          fullScreen: {
+            enable: true,
+            zIndex: -1
+          },
+          background: {
+            color: {
+              value: &quot;transparent&quot;
+            }
+          },
+          fpsLimit: 60,
+          particles: {
+            color: {
+              value: isDarkMode ? &quot;#6d62ff&quot; : &quot;#4f46e5&quot;
+            },
+            links: {
+              color: isDarkMode ? &quot;#a5b4fc&quot; : &quot;#818cf8&quot;,
+              distance: 150,
+              enable: true,
+              opacity: 0.3,
+              width: 1
+            },
+            move: {
+              enable: true,
+              random: true,
+              speed: 1,
+              straight: false,
+              outModes: {
+                default: &quot;bounce&quot;
+              }
+            },
+            number: {
+              density: {
+                enable: true,
+                area: 800
+              },
+              value: 40
+            },
+            opacity: {
+              value: isDarkMode ? 0.4 : 0.2
+            },
+            shape: {
+              type: &quot;circle&quot;
+            },
+            size: {
+              value: { min: 1, max: 3 }
+            }
+          },
+          detectRetina: true,
+          interactivity: {
+            events: {
+              onHover: {
+                enable: true,
+                mode: &quot;grab&quot;
+              },
+              resize: true
+            },
+            modes: {
+              grab: {
+                distance: 180,
+                links: {
+                  opacity: 0.5
+                }
+              }
+            }
+          }
+        }}
+      />
+    </div>
+  );
+} 

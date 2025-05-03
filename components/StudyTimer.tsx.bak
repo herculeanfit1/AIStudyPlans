@@ -1,0 +1,146 @@
+&apos;use client&apos;;
+
+import { useState, useEffect } from &apos;react&apos;;
+
+interface TimerProps {
+  initialMinutes?: number;
+  initialSeconds?: number;
+  onTimerComplete?: () => void;
+}
+
+export default function StudyTimer({
+  initialMinutes = 25,
+  initialSeconds = 0,
+  onTimerComplete
+}: TimerProps) {
+  const [minutes, setMinutes] = useState(initialMinutes);
+  const [seconds, setSeconds] = useState(initialSeconds);
+  const [isActive, setIsActive] = useState(false);
+  const [mode, setMode] = useState<&apos;focus&apos; | &apos;break&apos;>(&apos;focus&apos;);
+  const [totalFocusTime, setTotalFocusTime] = useState(0); // In seconds
+
+  // Effect to handle the timer countdown
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (isActive) {
+      interval = setInterval(() => {
+        if (seconds === 0) {
+          if (minutes === 0) {
+            clearInterval(interval as NodeJS.Timeout);
+            setIsActive(false);
+            
+            // Handle timer completion
+            if (onTimerComplete) {
+              onTimerComplete();
+            }
+            
+            // Switch modes
+            if (mode === &apos;focus&apos;) {
+              setMode(&apos;break&apos;);
+              setMinutes(5); // 5-minute break
+              setSeconds(0);
+            } else {
+              setMode(&apos;focus&apos;);
+              setMinutes(25); // 25-minute focus session
+              setSeconds(0);
+            }
+          } else {
+            setMinutes(minutes - 1);
+            setSeconds(59);
+          }
+        } else {
+          setSeconds(seconds - 1);
+        }
+        
+        // Track total focus time
+        if (mode === &apos;focus&apos; && isActive) {
+          setTotalFocusTime(prev => prev + 1);
+        }
+      }, 1000);
+    } else if (interval) {
+      clearInterval(interval);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isActive, minutes, seconds, mode, onTimerComplete]);
+
+  // Format time as MM:SS
+  const formatTime = (mins: number, secs: number) => {
+    return `${mins.toString().padStart(2, &apos;0&apos;)}:${secs.toString().padStart(2, &apos;0&apos;)}`;
+  };
+  
+  // Format total time in HH:MM:SS
+  const formatTotalTime = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    
+    return `${hours.toString().padStart(2, &apos;0&apos;)}:${mins.toString().padStart(2, &apos;0&apos;)}:${secs.toString().padStart(2, &apos;0&apos;)}`;
+  };
+
+  const toggleTimer = () => {
+    setIsActive(!isActive);
+  };
+
+  const resetTimer = () => {
+    setIsActive(false);
+    setMode(&apos;focus&apos;);
+    setMinutes(initialMinutes);
+    setSeconds(initialSeconds);
+  };
+
+  return (
+    <div className=&quot;bg-white p-6 rounded-lg shadow-lg&quot;>
+      <h2 className=&quot;text-2xl font-bold text-gray-800 mb-6&quot;>Study Timer</h2>
+      
+      <div className=&quot;flex justify-center items-center mb-8&quot;>
+        <div className={`text-6xl font-mono ${mode === &apos;focus&apos; ? &apos;text-indigo-600&apos; : &apos;text-green-600&apos;}`}>
+          {formatTime(minutes, seconds)}
+        </div>
+      </div>
+      
+      <div className=&quot;flex justify-center mb-6 space-x-2&quot;>
+        <button 
+          onClick={toggleTimer}
+          className={`px-6 py-2 rounded-md transition ${
+            isActive 
+              ? &apos;bg-red-600 hover:bg-red-700 text-white&apos; 
+              : &apos;bg-indigo-600 hover:bg-indigo-700 text-white&apos;
+          }`}
+        >
+          {isActive ? (
+            <><i className=&quot;fas fa-pause mr-2&quot; aria-hidden=&quot;true&quot;></i>Pause</>
+          ) : (
+            <><i className=&quot;fas fa-play mr-2&quot; aria-hidden=&quot;true&quot;></i>Start</>
+          )}
+        </button>
+        
+        <button 
+          onClick={resetTimer}
+          className=&quot;px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition&quot;
+        >
+          <i className=&quot;fas fa-redo-alt mr-2&quot; aria-hidden=&quot;true&quot;></i>Reset
+        </button>
+      </div>
+      
+      <div className=&quot;flex justify-between items-center px-4 py-3 bg-gray-100 rounded-md&quot;>
+        <div>
+          <span className=&quot;text-sm font-medium text-gray-700&quot;>Mode:</span>
+          <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+            mode === &apos;focus&apos; ? &apos;bg-indigo-100 text-indigo-800&apos; : &apos;bg-green-100 text-green-800&apos;
+          }`}>
+            {mode === &apos;focus&apos; ? &apos;Focus&apos; : &apos;Break&apos;}
+          </span>
+        </div>
+        
+        <div>
+          <span className=&quot;text-sm font-medium text-gray-700&quot;>Total Focus Time:</span>
+          <span className=&quot;ml-2 text-sm text-indigo-700&quot;>{formatTotalTime(totalFocusTime)}</span>
+        </div>
+      </div>
+    </div>
+  );
+} 

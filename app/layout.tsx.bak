@@ -1,0 +1,50 @@
+import &apos;./globals.css&apos;;
+import type { Metadata } from &apos;next&apos;;
+import { Inter } from &apos;next/font/google&apos;;
+import { Providers } from &apos;./providers&apos;;
+
+const inter = Inter({ subsets: [&apos;latin&apos;] });
+
+export const metadata: Metadata = {
+  title: &apos;SchedulEd - Smart Academic Planning for Students&apos;,
+  description: &apos;SchedulEd helps students plan their academic journey with AI-powered tools for course selection, scheduling, and degree planning.&apos;,
+  icons: {
+    icon: &apos;/favicon.svg&apos;,
+    shortcut: &apos;/favicon.svg&apos;,
+    apple: &apos;/favicon.svg&apos;,
+  }
+};
+
+export const viewport = {
+  width: &apos;device-width&apos;,
+  initialScale: 1,
+  maximumScale: 1,
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang=&quot;en&quot; suppressHydrationWarning>
+      <head>
+        <link
+          rel=&quot;stylesheet&quot;
+          href=&quot;https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css&quot;
+          integrity=&quot;sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==&quot;
+          crossOrigin=&quot;anonymous&quot;
+          referrerPolicy=&quot;no-referrer&quot;
+        />
+        <link href=&quot;https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap&quot; rel=&quot;stylesheet&quot; />
+        <link rel=&quot;icon&quot; href=&quot;/favicon.ico&quot; sizes=&quot;any&quot; />
+        <link rel=&quot;icon&quot; href=&quot;/favicon.svg&quot; type=&quot;image/svg+xml&quot; />
+      </head>
+      <body className={`${inter.className} antialiased`}>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
+    </html>
+  );
+} 

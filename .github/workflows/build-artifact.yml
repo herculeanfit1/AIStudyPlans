@@ -81,7 +81,57 @@ jobs:
             type=sha,format=short
             ${{ steps.vars.outputs.ENVIRONMENT }}-${{ steps.vars.outputs.SHORT_SHA }}
       
+      # Create .env file for the specified environment
+      - name: Create environment file
+        run: |
+          ENV_NAME="${{ steps.vars.outputs.ENVIRONMENT }}"
+          echo "Creating .env file for $ENV_NAME"
+          
+          # Create basic environment settings
+          cat > .env.$ENV_NAME << EOF
+          NODE_ENV=$ENV_NAME
+          EOF
+          
+          # Add Supabase settings
+          if [[ -n "${{ secrets[format('NEXT_PUBLIC_SUPABASE_URL_{0}', steps.vars.outputs.ENVIRONMENT)] }}" ]]; then
+            echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets[format('NEXT_PUBLIC_SUPABASE_URL_{0}', steps.vars.outputs.ENVIRONMENT)] }}" >> .env.$ENV_NAME
+          fi
+          
+          if [[ -n "${{ secrets[format('NEXT_PUBLIC_SUPABASE_ANON_KEY_{0}', steps.vars.outputs.ENVIRONMENT)] }}" ]]; then
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets[format('NEXT_PUBLIC_SUPABASE_ANON_KEY_{0}', steps.vars.outputs.ENVIRONMENT)] }}" >> .env.$ENV_NAME
+          fi
+          
+          if [[ -n "${{ secrets[format('SUPABASE_SERVICE_ROLE_KEY_{0}', steps.vars.outputs.ENVIRONMENT)] }}" ]]; then
+            echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets[format('SUPABASE_SERVICE_ROLE_KEY_{0}', steps.vars.outputs.ENVIRONMENT)] }}" >> .env.$ENV_NAME
+          fi
+          
+          # Add Email settings
+          if [[ -n "${{ secrets[format('RESEND_API_KEY_{0}', steps.vars.outputs.ENVIRONMENT)] }}" ]]; then
+            echo "RESEND_API_KEY=${{ secrets[format('RESEND_API_KEY_{0}', steps.vars.outputs.ENVIRONMENT)] }}" >> .env.$ENV_NAME
+          fi
+          
+          # Add application URL
+          if [[ "$ENV_NAME" == "production" ]]; then
+            echo "NEXT_PUBLIC_APP_URL=https://aistudyplans.com" >> .env.$ENV_NAME
+            echo "EMAIL_FROM=noreply@aistudyplans.com" >> .env.$ENV_NAME
+          elif [[ "$ENV_NAME" == "staging" ]]; then
+            echo "NEXT_PUBLIC_APP_URL=https://staging-aistudyplans.azurewebsites.net" >> .env.$ENV_NAME
+            echo "EMAIL_FROM=noreply-staging@aistudyplans.com" >> .env.$ENV_NAME
+          else
+            echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> .env.$ENV_NAME
+            echo "EMAIL_FROM=noreply-dev@aistudyplans.com" >> .env.$ENV_NAME
+          fi
+          
+          # Enable feature flags
+          echo "ENABLE_FEEDBACK_CAMPAIGN=true" >> .env.$ENV_NAME
+          echo "ENABLE_WAITLIST=true" >> .env.$ENV_NAME
+          
+          # Display non-sensitive environment variables
+          echo "Created environment file (showing non-sensitive values):"
+          grep -v "KEY\|SECRET\|PASSWORD" .env.$ENV_NAME || true
+      
       - name: Build Docker image
+        id: build
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -92,6 +142,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           build-args: |
             NODE_ENV=${{ steps.vars.outputs.ENVIRONMENT }}
+            ENVIRONMENT_FILE=.env.${{ steps.vars.outputs.ENVIRONMENT }}
       
       # Save image digest for later use in deployments
       - name: Save image digest

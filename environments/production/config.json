@@ -7,7 +7,9 @@
   "features": {
     "feedback": true,
     "analytics": true,
-    "debugMode": false
+    "debugMode": false,
+    "waitlist": true,
+    "feedbackCampaign": true
   },
   "logging": {
     "level": "error",
@@ -20,5 +22,12 @@
     "appServiceName": "aistudyplans-prod",
     "canaryEnabled": true,
     "canaryPercentage": 10
+  },
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "${NEXT_PUBLIC_SUPABASE_URL}",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "${NEXT_PUBLIC_SUPABASE_ANON_KEY}",
+    "RESEND_API_KEY": "${RESEND_API_KEY}",
+    "EMAIL_FROM": "noreply@aistudyplans.com",
+    "NEXT_PUBLIC_APP_URL": "https://aistudyplans.com"
   }
 } 

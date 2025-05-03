@@ -58,7 +58,7 @@ export async function sendEmail({
       subject,
       html,
       text,
-      reply_to: replyToEmail,
+      replyTo: replyToEmail,
     });
 
     if (error) {

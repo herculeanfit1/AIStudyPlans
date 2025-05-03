@@ -1,0 +1,140 @@
+&apos;use client&apos;;
+
+import React from &apos;react&apos;;
+
+interface StepCardProps {
+  number: number;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+const StepCard: React.FC<StepCardProps> = ({ number, title, description, icon }) => {
+  return (
+    <div className=&quot;relative group&quot;>
+      {/* Connection line between cards (hidden on mobile) */}
+      {number < 4 && (
+        <div className=&quot;hidden lg:block absolute top-1/2 left-full w-full h-0.5 bg-gray-200 -z-10 transform -translate-y-1/2&quot;></div>
+      )}
+      
+      <div className=&quot;bg-white rounded-2xl p-8 shadow-xl border border-gray-100 
+                     transform transition-all duration-300 
+                     group-hover:shadow-2xl group-hover:-translate-y-2 
+                     h-full flex flex-col relative z-10&quot;>
+        {/* Numbered badge */}
+        <div className=&quot;absolute -top-5 -right-3 w-12 h-12 rounded-full bg-blue-600 text-white
+                      flex items-center justify-center font-bold text-xl border-4 border-white shadow-lg&quot;>
+          {number}
+        </div>
+        
+        {/* Icon */}
+        <div className=&quot;w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 mb-6&quot;>
+          <i className={`${icon} text-2xl`}></i>
+        </div>
+        
+        {/* Content */}
+        <h3 className=&quot;text-xl font-bold text-gray-900 mb-3&quot;>{title}</h3>
+        <p className=&quot;text-gray-600 mb-4 flex-grow&quot;>{description}</p>
+        
+        {/* Animated arrow */}
+        <div className=&quot;text-blue-600 group-hover:translate-x-2 transition-transform duration-300&quot;>
+          <i className=&quot;fas fa-arrow-right&quot;></i>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface HowItWorksCardsProps {
+  className?: string;
+}
+
+const HowItWorksCards: React.FC<HowItWorksCardsProps> = ({ className = &apos;&apos; }) => {
+  const steps: StepCardProps[] = [
+    {
+      number: 1,
+      title: &quot;Create Your Profile&quot;,
+      description: &quot;Tell us about your learning style, schedule, and current knowledge level so we can personalize your experience.&quot;,
+      icon: &quot;fa-solid fa-user-pen&quot;
+    },
+    {
+      number: 2,
+      title: &quot;Select Your Subjects&quot;,
+      description: &quot;Choose what you want to learn and set specific goals for each subject. Add deadlines if you have them.&quot;,
+      icon: &quot;fa-solid fa-book-open&quot;
+    },
+    {
+      number: 3,
+      title: &quot;Get Your Personalized Plan&quot;,
+      description: &quot;Our AI generates a study plan optimized for your learning style, schedule, and goals.&quot;,
+      icon: &quot;fa-solid fa-brain&quot;
+    },
+    {
+      number: 4,
+      title: &quot;Track & Improve&quot;,
+      description: &quot;Follow your plan and track progress. Our AI adapts to your performance, continuously optimizing your study strategy.&quot;,
+      icon: &quot;fa-solid fa-chart-line&quot;
+    }
+  ];
+
+  return (
+    <div className={`py-16 ${className}`}>
+      <div className=&quot;container mx-auto px-4&quot;>
+        <div className=&quot;text-center mb-16&quot;>
+          <h2 className=&quot;text-3xl md:text-4xl font-bold text-gray-900 mb-4&quot;>
+            How It Works
+          </h2>
+          <p className=&quot;text-xl text-gray-600 max-w-3xl mx-auto&quot;>
+            From signup to success in four simple steps
+          </p>
+        </div>
+        
+        <div className=&quot;grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-6 relative&quot;>
+          {steps.map((step) => (
+            <StepCard
+              key={step.number}
+              number={step.number}
+              title={step.title}
+              description={step.description}
+              icon={step.icon}
+            />
+          ))}
+        </div>
+        
+        {/* Bottom image/decoration */}
+        <div className=&quot;mt-20 max-w-4xl mx-auto relative&quot;>
+          <div className=&quot;bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 shadow-lg&quot;>
+            <div className=&quot;flex flex-col md:flex-row items-center justify-between&quot;>
+              <div className=&quot;md:w-1/2 mb-6 md:mb-0&quot;>
+                <h3 className=&quot;text-2xl font-bold text-gray-900 mb-2&quot;>Ready to transform your study habits?</h3>
+                <p className=&quot;text-gray-600 mb-4&quot;>
+                  Join our waitlist and be the first to experience the future of personalized learning.
+                </p>
+                <a href=&quot;#waitlist&quot; className=&quot;inline-flex items-center justify-center py-3 px-6 rounded-lg bg-blue-600 text-white font-medium transition-colors hover:bg-blue-700&quot;>
+                  Join the Waitlist
+                </a>
+              </div>
+              
+              <div className=&quot;md:w-1/2 flex justify-center&quot;>
+                <div className=&quot;w-64 h-64 bg-white rounded-full shadow-lg flex items-center justify-center animate-float&quot;>
+                  <div className=&quot;w-48 h-48 rounded-full bg-blue-600 flex items-center justify-center text-white&quot;>
+                    <div className=&quot;text-center&quot;>
+                      <div className=&quot;text-5xl font-bold&quot;>AI</div>
+                      <div className=&quot;mt-1 text-blue-100&quot;>Powered Learning</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Decorative elements */}
+          <div className=&quot;absolute -top-6 -left-6 w-12 h-12 bg-yellow-200 rounded-lg transform rotate-12 opacity-70&quot;></div>
+          <div className=&quot;absolute -bottom-8 -right-8 w-20 h-20 bg-blue-200 rounded-full transform opacity-70&quot;></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default HowItWorksCards; 

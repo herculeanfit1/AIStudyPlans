@@ -1,0 +1,62 @@
+&apos;use client&apos;;
+
+export default function HowItWorks() {
+  const steps = [
+    {
+      number: 1,
+      title: &quot;Create Your Profile&quot;,
+      description: &quot;Tell us about your learning style, time availability, and current knowledge level.&quot;
+    },
+    {
+      number: 2,
+      title: &quot;Select Your Subjects&quot;,
+      description: &quot;Choose what you want to learn and set your learning goals.&quot;
+    },
+    {
+      number: 3,
+      title: &quot;Receive Your Plan&quot;,
+      description: &quot;Our AI generates a personalized study plan optimized for your success.&quot;
+    },
+    {
+      number: 4,
+      title: &quot;Track & Adjust&quot;,
+      description: &quot;Follow your plan, track progress, and watch our AI adapt as you learn.&quot;
+    }
+  ];
+
+  return (
+    <section id=&quot;how-it-works&quot; className=&quot;py-20 bg-indigo-50&quot;>
+      <div className=&quot;container mx-auto px-4&quot;>
+        <div className=&quot;text-center mb-16&quot;>
+          <h2 className=&quot;text-3xl md:text-4xl font-bold text-gray-900 mb-4&quot;>How SchedulEd Works</h2>
+          <p className=&quot;text-xl text-gray-600 max-w-3xl mx-auto&quot;>
+            Getting started is easy with our simple four-step process
+          </p>
+        </div>
+        
+        <div className=&quot;relative&quot;>
+          {/* Connector line (desktop only) */}
+          <div className=&quot;hidden md:block absolute top-24 left-0 w-full h-0.5 bg-indigo-200 z-0&quot;></div>
+          
+          <div className=&quot;grid md:grid-cols-4 gap-8&quot;>
+            {steps.map((step) => (
+              <div key={step.number} className=&quot;relative z-10&quot;>
+                <div className=&quot;flex flex-col items-center&quot;>
+                  <div className=&quot;w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-6&quot;>
+                    {step.number}
+                  </div>
+                  <h3 className=&quot;text-xl font-semibold text-gray-900 mb-3 text-center&quot;>
+                    {step.title}
+                  </h3>
+                  <p className=&quot;text-gray-600 text-center&quot;>
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+} 

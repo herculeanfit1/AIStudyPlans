@@ -1,17 +1,21 @@
-version: '3.8'
-
 services:
   email-test:
     image: node:20-alpine
-    container_name: scheduled-email-test
+    container_name: aistudyplans-email-test
     working_dir: /app
     volumes:
       - .:/app
     environment:
       - RESEND_API_KEY=${RESEND_API_KEY}
-      - EMAIL_FROM=${EMAIL_FROM:-Lindsey <lindsey@aistudyplans.com>}
+      - EMAIL_FROM=${EMAIL_FROM:-lindsey@aistudyplans.com}
       - EMAIL_REPLY_TO=${EMAIL_REPLY_TO:-support@aistudyplans.com}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
     command: >
       sh -c "npm install resend dotenv && 
-             node test-email-local.js ${EMAIL_TO:-delivered@resend.dev}" 
+             node scripts/test-email.js ${TEMPLATE:-simple} ${EMAIL_TO:-delivered@resend.dev}"
+    stop_signal: SIGINT
+    stop_grace_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 256M 

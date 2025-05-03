@@ -1,0 +1,84 @@
+&apos;use client&apos;;
+
+import { motion } from &apos;framer-motion&apos;;
+import { useInView } from &apos;react-intersection-observer&apos;;
+import AnimatedFeature from &apos;./AnimatedFeature&apos;;
+
+export default function Features() {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  const features = [
+    {
+      icon: <i className=&quot;fas fa-brain text-indigo-600 dark:text-indigo-400 text-2xl&quot;></i>,
+      title: &quot;AI-Powered Plans&quot;,
+      description: &quot;Our AI algorithm creates personalized study plans based on your learning style, goals, and schedule.&quot;
+    },
+    {
+      icon: <i className=&quot;fas fa-clock text-indigo-600 dark:text-indigo-400 text-2xl&quot;></i>,
+      title: &quot;Time Optimization&quot;,
+      description: &quot;Maximize your study efficiency with scientifically-proven time management techniques.&quot;
+    },
+    {
+      icon: <i className=&quot;fas fa-chart-line text-indigo-600 dark:text-indigo-400 text-2xl&quot;></i>,
+      title: &quot;Progress Tracking&quot;,
+      description: &quot;Monitor your improvement with detailed analytics and adjustable goals.&quot;
+    },
+    {
+      icon: <i className=&quot;fas fa-puzzle-piece text-indigo-600 dark:text-indigo-400 text-2xl&quot;></i>,
+      title: &quot;Adaptive Learning&quot;,
+      description: &quot;Your plan evolves based on your performance, focusing more time on challenging areas.&quot;
+    },
+    {
+      icon: <i className=&quot;fas fa-bell text-indigo-600 dark:text-indigo-400 text-2xl&quot;></i>,
+      title: &quot;Smart Reminders&quot;,
+      description: &quot;Stay on track with personalized notifications and study session reminders.&quot;
+    },
+    {
+      icon: <i className=&quot;fas fa-users text-indigo-600 dark:text-indigo-400 text-2xl&quot;></i>,
+      title: &quot;Collaborative Study&quot;,
+      description: &quot;Connect with peers studying similar subjects for group sessions and knowledge sharing.&quot;
+    }
+  ];
+
+  return (
+    <section id=&quot;features&quot; className=&quot;py-20 bg-gray-50 dark:bg-gray-900&quot;>
+      <div className=&quot;container mx-auto px-4&quot;>
+        <motion.div 
+          className=&quot;text-center max-w-3xl mx-auto mb-16&quot;
+          ref={ref}
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.span 
+            className=&quot;text-indigo-600 dark:text-indigo-400 font-semibold text-sm uppercase tracking-wider&quot;
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            The SchedulEd Difference
+          </motion.span>
+          <h2 className=&quot;text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mt-2 mb-4&quot;>Features Designed for Student Success</h2>
+          <p className=&quot;text-xl text-gray-600 dark:text-gray-300&quot;>
+            Our platform combines cutting-edge AI with proven study techniques to help you achieve academic excellence.
+          </p>
+        </motion.div>
+        
+        <div className=&quot;grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto&quot;>
+          {features.map((feature, index) => (
+            <AnimatedFeature
+              key={index}
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              index={index}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+} 

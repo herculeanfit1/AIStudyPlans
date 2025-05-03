@@ -64,7 +64,7 @@ const feedbackEmailTemplate = {
       <h1 style="color: #4F46E5;">We Value Your Feedback</h1>
       <p>Thank you for your interest in AIStudyPlans.</p>
       <p>We'd love to hear your thoughts about our service. Please take a moment to share your feedback.</p>
-      <p><a href="https://aistudyplans.com/feedback" style="background: #4F46E5; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Share Feedback</a></p>
+      <p><a href="http://localhost:3000/feedback?userId=123&emailId=feedback1" style="background: #4F46E5; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Share Feedback</a></p>
       <p>Best regards,<br/>The AIStudyPlans Team</p>
     </div>
   `,

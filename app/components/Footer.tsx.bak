@@ -1,0 +1,66 @@
+&apos;use client&apos;;
+
+import Link from &apos;next/link&apos;;
+
+export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className=&quot;bg-gray-900 text-gray-300 py-12&quot;>
+      <div className=&quot;container mx-auto px-4&quot;>
+        <div className=&quot;grid grid-cols-1 md:grid-cols-4 gap-8&quot;>
+          <div>
+            <h3 className=&quot;text-lg font-bold text-white mb-4&quot;>SchedulEd</h3>
+            <p className=&quot;mb-4&quot;>
+              AI-powered study plan generator creating personalized learning paths tailored to individual learning styles.
+            </p>
+            <div className=&quot;flex space-x-4&quot;>
+              <a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>
+                <i className=&quot;fab fa-twitter&quot; aria-hidden=&quot;true&quot;></i>
+              </a>
+              <a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>
+                <i className=&quot;fab fa-linkedin&quot; aria-hidden=&quot;true&quot;></i>
+              </a>
+              <a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>
+                <i className=&quot;fab fa-instagram&quot; aria-hidden=&quot;true&quot;></i>
+              </a>
+            </div>
+          </div>
+          
+          <div>
+            <h4 className=&quot;text-lg font-medium text-white mb-4&quot;>Features</h4>
+            <ul className=&quot;space-y-2&quot;>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Personalized Plans</a></li>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Smart Scheduling</a></li>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Progress Tracking</a></li>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Resource Recommendations</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className=&quot;text-lg font-medium text-white mb-4&quot;>Company</h4>
+            <ul className=&quot;space-y-2&quot;>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>About Us</a></li>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Blog</a></li>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Careers</a></li>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Contact</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className=&quot;text-lg font-medium text-white mb-4&quot;>Legal</h4>
+            <ul className=&quot;space-y-2&quot;>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Terms of Service</a></li>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Privacy Policy</a></li>
+              <li><a href=&quot;#&quot; className=&quot;text-gray-400 hover:text-white transition&quot;>Cookie Policy</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className=&quot;border-t border-gray-800 mt-8 pt-8 text-center text-gray-400&quot;>
+          <p>&copy; {currentYear} SchedulEd. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  );
+} 
