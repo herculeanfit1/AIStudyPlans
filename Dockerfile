@@ -46,10 +46,18 @@ RUN if [ -f "$ENVIRONMENT_FILE" ]; then \
       echo "No environment file found at $ENVIRONMENT_FILE"; \
     fi
 
-# Use CI build script for production builds in CI environment
+# Create the CI build script for Docker environment - necessary because COPY can be inconsistent with script files
+RUN echo '#!/bin/sh' > docker-ci-build.sh && \
+    echo 'set -e' >> docker-ci-build.sh && \
+    echo 'echo "Running Docker-specific CI build script..."' >> docker-ci-build.sh && \
+    echo 'export SKIP_AUTH=true' >> docker-ci-build.sh && \
+    echo 'NODE_ENV=production npm run build' >> docker-ci-build.sh && \
+    chmod +x docker-ci-build.sh
+
+# Use Docker CI build script for production builds in CI environment
 RUN if [ "$NODE_ENV" = "production" ]; then \
-      echo "Running production build with CI build script"; \
-      chmod +x ci-build.sh && ./ci-build.sh; \
+      echo "Running production build with Docker CI build script"; \
+      ./docker-ci-build.sh; \
     else \
       echo "Running standard development build"; \
       npm run build; \
