@@ -1,5 +1,6 @@
 name: Azure Static Web Apps CI/CD
-# Adding comment to trigger workflow run
+# Main deployment workflow for AI Study Plans static website
+# This workflow builds and deploys the static site directly to Azure Static Web Apps
 
 on:
   push:
@@ -9,10 +10,11 @@ on:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
@@ -66,6 +68,7 @@ jobs:
           ./ci-build.sh
         env:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://aistudyplans.com' }}
+          # Add any other environment variables needed for the build here
 
       - name: Build And Deploy
         id: builddeploy
@@ -75,11 +78,20 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "out" # Only deploy the output directory
           api_location: "api" # Use the dedicated API directory
           skip_app_build: true # Skip build as we already built the app
           ###### End of Repository/Build Configurations ######
+
+      - name: Report deployment status
+        if: always()
+        run: |
+          if [ "${{ steps.builddeploy.outcome }}" == "success" ]; then
+            echo "✅ Deployment succeeded"
+          else
+            echo "❌ Deployment failed"
+            echo "Please check the logs for more information"
+          fi
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
