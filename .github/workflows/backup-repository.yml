@@ -23,26 +23,10 @@ jobs:
 
       - name: Debug Secrets
         run: |
-          echo "BACKUP_REPO is set: ${{ secrets.BACKUP_REPO != '' }}"
           echo "BACKUP_PAT is set: ${{ secrets.BACKUP_PAT != '' }}"
           
-          # Check if BACKUP_REPO secret is actually set
-          if [ "${{ secrets.BACKUP_REPO != '' }}" = "true" ]; then
-            # Print first character and length to diagnose format issues
-            REPO_LENGTH=$(echo "${{ secrets.BACKUP_REPO }}" | wc -c)
-            FIRST_CHAR=$(echo "${{ secrets.BACKUP_REPO }}" | cut -c1)
-            LAST_CHAR=$(echo "${{ secrets.BACKUP_REPO }}" | cut -c$((REPO_LENGTH-1)))
-            echo "BACKUP_REPO format check: starts with '${FIRST_CHAR}', ends with '${LAST_CHAR}', length: ${REPO_LENGTH} chars"
-            
-            # Check if it contains a slash (username/repo format)
-            if echo "${{ secrets.BACKUP_REPO }}" | grep -q "/"; then
-              echo "BACKUP_REPO contains a slash - good format"
-            else
-              echo "BACKUP_REPO does NOT contain a slash - BAD FORMAT, should be 'username/repository'"
-            fi
-          else
-            echo "BACKUP_REPO is not set correctly!"
-          fi
+          # Check backup repo info
+          echo "Using explicit backup repository: herculeanfit1/aistudyplans-backups"
 
       - name: Push to Backup Repository
         run: |
@@ -71,9 +55,8 @@ jobs:
           git commit -m "Backup from main repository - $(date)"
           
           # Show the repo URL we're pushing to (with any token part masked)
-          echo "Backup Repository value: [${{ secrets.BACKUP_REPO }}]"
-          echo "Pushing to: https://[token]@github.com/${{ secrets.BACKUP_REPO }}.git"
+          echo "Pushing to: https://***@github.com/herculeanfit1/aistudyplans-backups.git"
           
           # Push to backup repository (force to overwrite history)
-          git remote add backup https://${{ secrets.BACKUP_PAT }}@github.com/${{ secrets.BACKUP_REPO }}.git
+          git remote add backup https://${{ secrets.BACKUP_PAT }}@github.com/herculeanfit1/aistudyplans-backups.git
           git push backup main:main --force 
