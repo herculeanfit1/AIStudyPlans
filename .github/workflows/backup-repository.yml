@@ -59,4 +59,4 @@ jobs:
           
           # Push to backup repository (force to overwrite history)
           git remote add backup https://${{ secrets.BACKUP_PAT }}@github.com/herculeanfit1/aistudyplans-backups.git
-          git push backup main:main --force 
+          git push backup main:main --force

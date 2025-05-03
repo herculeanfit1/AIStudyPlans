@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disable static export since we have dynamic API routes
-  output: undefined,
+  // Enable static export for production builds (needed for Azure Static Web Apps)
+  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
   distDir: '.next',
   reactStrictMode: true,
   swcMinify: true,
