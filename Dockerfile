@@ -46,7 +46,14 @@ RUN if [ -f "$ENVIRONMENT_FILE" ]; then \
       echo "No environment file found at $ENVIRONMENT_FILE"; \
     fi
 
-RUN npm run build
+# Use build-static.sh script for production builds, otherwise use standard build
+RUN if [ "$NODE_ENV" = "production" ]; then \
+      echo "Running production build with build-static.sh"; \
+      chmod +x build-static.sh && ./build-static.sh; \
+    else \
+      echo "Running standard development build"; \
+      npm run build; \
+    fi
 
 # Production image, copy all the files and run next
 FROM base AS runner

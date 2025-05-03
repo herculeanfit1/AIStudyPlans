@@ -1,10 +1,12 @@
 #!/bin/bash
 set -e
 
-echo "Creating static build with API routes included..."
+# Verify all API routes have proper generateStaticParams
+echo "Verifying API routes for static export compatibility..."
+node scripts/verify-api-routes.js
 
-# Run the build
-echo "Running Next.js build..."
-npm run build
+# Build the app
+echo "Building Next.js static export..."
+NODE_ENV=production npm run build
 
-echo "Build completed successfully with API routes included!" 
+echo "Static build completed successfully!" 
