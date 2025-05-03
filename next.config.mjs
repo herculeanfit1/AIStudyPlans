@@ -29,14 +29,17 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Include the API routes in the static export
+  // Include the API routes in the static export, but exclude auth routes
   trailingSlash: true,
   experimental: {
-    // This will copy the /api directory to the output folder
+    // This will copy the /api directory to the output folder, excluding auth
     outputFileTracingIncludes: {
       '/api/**/*': ['./app/api/**/*'],
     },
   },
+  // Explicitly exclude the NextAuth routes from static export
+  skipTrailingSlashRedirect: true,
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
 };
 
 // In development mode, add Next-Auth specific configuration

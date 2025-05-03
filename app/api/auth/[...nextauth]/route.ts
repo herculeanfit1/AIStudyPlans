@@ -1,12 +1,18 @@
 import NextAuth from "next-auth";
 import AzureAD from "next-auth/providers/azure-ad";
 
+// This is required for static export in Next.js when using output: 'export'
+export function generateStaticParams() {
+  // Return an empty array since we don't want to pre-render any NextAuth routes
+  return [];
+}
+
 const handler = NextAuth({
   providers: [
     AzureAD({
-      clientId: process.env.AZURE_AD_CLIENT_ID!,
-      clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
-      tenantId: process.env.AZURE_AD_TENANT_ID!,
+      clientId: process.env.AZURE_AD_CLIENT_ID || "",
+      clientSecret: process.env.AZURE_AD_CLIENT_SECRET || "",
+      tenantId: process.env.AZURE_AD_TENANT_ID || "",
     }),
   ],
   callbacks: {
@@ -41,10 +47,5 @@ const handler = NextAuth({
     maxAge: 24 * 60 * 60, // 24 hours
   },
 });
-
-// This is required for static export in Next.js
-export function generateStaticParams() {
-  return [];
-}
 
 export { handler as GET, handler as POST }; 
