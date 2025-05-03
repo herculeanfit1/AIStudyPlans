@@ -31,7 +31,6 @@ const nextConfig = {
   },
   // Include the API routes in the static export
   trailingSlash: true,
-  // Exclude API routes from static export requirements
   experimental: {
     // This will copy the /api directory to the output folder
     outputFileTracingIncludes: {
@@ -43,24 +42,6 @@ const nextConfig = {
 // In development mode, add Next-Auth specific configuration
 if (process.env.NODE_ENV !== 'production') {
   nextConfig.output = undefined; // Ensure we're not using export in development
-}
-
-// Exclude API routes from static generation validation
-if (process.env.NODE_ENV === 'production') {
-  // Azure Static Web Apps needs exportPathMap to exclude NextAuth routes
-  nextConfig.exportPathMap = async function (defaultPathMap, { dev, dir, outDir, distDir, buildId }) {
-    // Filter out API routes from static export
-    const filteredPaths = {};
-    
-    // Copy all non-API routes to the filtered paths
-    Object.keys(defaultPathMap).forEach(path => {
-      if (!path.startsWith('/api/')) {
-        filteredPaths[path] = defaultPathMap[path];
-      }
-    });
-    
-    return filteredPaths;
-  };
 }
 
 export default nextConfig; 
