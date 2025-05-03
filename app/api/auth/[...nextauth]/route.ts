@@ -42,4 +42,11 @@ const handler = NextAuth({
   },
 });
 
+// This is required for static export in Next.js when using output: 'export'
+export function generateStaticParams() {
+  // Return an empty array since we don't want to pre-render any NextAuth routes
+  // The exportPathMap in next.config.mjs will filter out these routes
+  return [];
+}
+
 export { handler as GET, handler as POST }; 

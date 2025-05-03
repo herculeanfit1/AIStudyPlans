@@ -5,6 +5,12 @@ import { addToWaitlist, startFeedbackCampaign } from '@/lib/supabase';
 // Use edge runtime instead of nodejs for static export compatibility
 export const runtime = 'edge';
 
+// This is required for static export in Next.js when using output: 'export'
+export function generateStaticParams() {
+  // Return an empty array since we don't want to pre-render any API routes
+  return [];
+}
+
 /**
  * API route handler for waitlist signups
  */
