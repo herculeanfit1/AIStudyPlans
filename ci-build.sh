@@ -21,6 +21,18 @@ node scripts/verify-api-routes.js
 echo "Building Next.js static export..."
 NODE_ENV=production npm run build
 
+# Verify the output directory exists
+if [ -d "out" ]; then
+  echo "Static export directory 'out' was created successfully."
+  # List contents for debugging
+  ls -la out/
+else
+  echo "ERROR: Static export directory 'out' was not created!"
+  echo "Current directory contents:"
+  ls -la
+  exit 1
+fi
+
 # Restore NextAuth route if it was moved
 if [ -f "temp_backup/route.ts" ]; then
   echo "Restoring NextAuth route"

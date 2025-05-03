@@ -7,6 +7,18 @@ export function generateStaticParams() {
   return [];
 }
 
+// Extend the Session interface to include the isAdmin property
+declare module "next-auth" {
+  interface Session {
+    user: {
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      isAdmin?: boolean;
+    }
+  }
+}
+
 const handler = NextAuth({
   providers: [
     AzureAD({
@@ -48,4 +60,4 @@ const handler = NextAuth({
   },
 });
 
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST };
