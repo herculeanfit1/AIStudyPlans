@@ -5,6 +5,12 @@ import { getUsersForNextFeedbackEmail, updateEmailSequencePosition } from '@/lib
 // Set max runtime for this endpoint - feedback emails may take time to send
 export const maxDuration = 300; // 5 minutes in seconds
 
+// This is required for static export in Next.js when using output: 'export'
+export function generateStaticParams() {
+  // Return an empty array since we don't want to pre-render this API route
+  return [];
+}
+
 /**
  * API route handler for processing feedback campaign emails
  * This should be triggered by a cron job (e.g., GitHub Actions, Azure Functions timer)

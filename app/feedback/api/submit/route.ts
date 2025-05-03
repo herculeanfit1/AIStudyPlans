@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { storeFeedback } from '@/lib/supabase';
 
+// This is required for static export in Next.js when using output: 'export'
+export function generateStaticParams() {
+  // Return an empty array since we don't want to pre-render this API route
+  return [];
+}
+
 export async function POST(request: Request) {
   try {
     const { userId, feedbackText, feedbackType, rating, emailId } = await request.json();
