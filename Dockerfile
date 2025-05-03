@@ -46,10 +46,10 @@ RUN if [ -f "$ENVIRONMENT_FILE" ]; then \
       echo "No environment file found at $ENVIRONMENT_FILE"; \
     fi
 
-# Use build-static.sh script for production builds, otherwise use standard build
+# Use CI build script for production builds in CI environment
 RUN if [ "$NODE_ENV" = "production" ]; then \
-      echo "Running production build with build-static.sh"; \
-      chmod +x build-static.sh && ./build-static.sh; \
+      echo "Running production build with CI build script"; \
+      chmod +x ci-build.sh && ./ci-build.sh; \
     else \
       echo "Running standard development build"; \
       npm run build; \

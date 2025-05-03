@@ -1,6 +1,16 @@
 #!/bin/bash
 set -e
 
+# Determine if we should skip auth functionality for static export
+echo "Determining build configuration..."
+if [ -f "app/api/auth/[...nextauth]/route.ts" ]; then
+  echo "NextAuth functionality detected - disabling static export"
+  export SKIP_AUTH=false
+else
+  echo "NextAuth functionality not detected - enabling static export"
+  export SKIP_AUTH=true
+fi
+
 # Verify all API routes have proper generateStaticParams
 echo "Verifying API routes for static export compatibility..."
 node scripts/verify-api-routes.js

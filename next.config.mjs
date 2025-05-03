@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable static export for production builds (needed for Azure Static Web Apps)
-  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
+  // but disable it if we're building with auth enabled
+  output: process.env.SKIP_AUTH === 'true' && process.env.NODE_ENV === 'production' ? 'export' : undefined,
   distDir: '.next',
   reactStrictMode: true,
   swcMinify: true,
