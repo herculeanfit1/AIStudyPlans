@@ -50,9 +50,8 @@ jobs:
       
       - name: Download artifact
         if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.image_tag == '' }}
-        uses: dawidd6/action-download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
-          workflow: build-artifact.yml
           name: docker-image-info-${{ steps.set-env.outputs.environment }}
           path: artifacts
           
@@ -74,10 +73,10 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
