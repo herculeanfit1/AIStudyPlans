@@ -1,0 +1,95 @@
+name: Azure Static Web Apps CI/CD
+# Adding comment to trigger workflow run
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+jobs:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    steps:
+      # Remove any existing .git/config extraheader
+      - name: Configure Git
+        shell: bash
+        run: |
+          # Ensure Git is properly initialized with safe directories and no extraheader
+          git config --global --add safe.directory '*'
+          git config --global core.longpaths true
+          
+          # First check if the extraheader exists before trying to remove it
+          if git config --global --get http.https://github.com/.extraheader > /dev/null 2>&1; then
+            echo "Removing existing extraheader..."
+            git config --global --unset-all http.https://github.com/.extraheader
+          else
+            echo "No extraheader found to remove"
+          fi
+          
+          # Display current git config for debugging
+          echo "Current Git configuration:"
+          git config --global --list
+      
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Setup Git config
+        run: |
+          git config --global core.longpaths true
+          git config --list
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup caching
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies and build
+        run: |
+          npm ci
+          chmod +x build-static.sh
+          ./build-static.sh
+        env:
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://aistudyplans.com' }}
+
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          action: "upload"
+          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
+          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
+          app_location: "out" # Only deploy the output directory
+          api_location: "api" # Use the dedicated API directory
+          skip_app_build: true # Skip build as we already built the app
+          ###### End of Repository/Build Configurations ######
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "close"
+          app_location: "/" # App source code path 
