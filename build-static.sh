@@ -20,7 +20,7 @@ if [ -f "app/api/auth/[...nextauth]/route.ts" ]; then
     fi
   fi
   
-  # Make sure generateStaticParams is defined first in the file
+  # Completely rewrite the file to ensure proper format
   TEMP_FILE=$(mktemp)
   cat > "$TEMP_FILE" << 'EOL'
 import NextAuth from "next-auth";
@@ -32,14 +32,53 @@ export function generateStaticParams() {
   return [];
 }
 
+const handler = NextAuth({
+  providers: [
+    AzureAD({
+      clientId: process.env.AZURE_AD_CLIENT_ID || "",
+      clientSecret: process.env.AZURE_AD_CLIENT_SECRET || "",
+      tenantId: process.env.AZURE_AD_TENANT_ID || "",
+    }),
+  ],
+  callbacks: {
+    async signIn({ user, account }) {
+      // Allow only specific users based on their email
+      const allowedEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+      if (!user.email) return false;
+      
+      return allowedEmails.includes(user.email) || false;
+    },
+    async jwt({ token, user }) {
+      // Pass information to the token
+      if (user) {
+        token.isAdmin = true;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Pass information to the client session
+      if (session.user) {
+        session.user.isAdmin = token.isAdmin as boolean;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/admin/login",
+    error: "/admin/login",
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 24 * 60 * 60, // 24 hours
+  },
+});
+
+export { handler as GET, handler as POST };
 EOL
-  
-  # Append the rest of the file without the generateStaticParams function
-  grep -v "export function generateStaticParams" "app/api/auth/[...nextauth]/route.ts" | grep -v "return \[\];" >> "$TEMP_FILE"
   
   # Replace the original file
   mv "$TEMP_FILE" "app/api/auth/[...nextauth]/route.ts"
-  echo "NextAuth route updated for static export."
+  echo "NextAuth route file completely rewritten for static export."
 fi
 
 # Build the app
