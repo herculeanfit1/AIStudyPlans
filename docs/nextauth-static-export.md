@@ -61,6 +61,18 @@ If you encounter build failures related to NextAuth:
 3. For static exports, use the `ci-build.sh` script
 4. For Docker builds, check the Dockerfile uses the internal script creation approach
 
+### Common Issues and Solutions
+
+#### GitHub Actions Backup Repository Failure
+
+If you see an error like `remote: Repository not found`, ensure:
+
+1. The backup repository exists with the exact name specified in the workflow
+2. The `BACKUP_PAT` secret is correctly set in your repository settings
+3. The PAT token has the necessary permissions to push to the backup repository
+
+The backup workflow has been modified to use the correct repository name: `AIStudyPlans-backup`.
+
 ## Technical Implementation Details
 
 ### NextAuth Route Requirements

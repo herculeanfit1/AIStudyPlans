@@ -1,34 +1,25 @@
-name: Backup to Separate Repository
+name: Backup Repository
 
 on:
-  workflow_run:
-    workflows: ["Azure Static Web Apps CI/CD"]
-    branches: [main]
-    types:
-      - completed
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   backup:
     runs-on: ubuntu-latest
-    name: Backup Repository
-    # Only run if the Azure workflow completed successfully
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
-      - name: Checkout Source Repository
+      - name: Checkout current repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           path: source-repo
 
-      - name: Debug Secrets
-        run: |
-          echo "BACKUP_PAT is set: ${{ secrets.BACKUP_PAT != '' }}"
-          
-          # Check backup repo info
-          echo "Using explicit backup repository: herculeanfit1/aistudyplans-backups"
-
-      - name: Push to Backup Repository
+      - name: Backup to secondary repository
+        env:
+          BACKUP_PAT: ${{ secrets.BACKUP_PAT }}
         run: |
           cd source-repo
           
@@ -55,8 +46,8 @@ jobs:
           git commit -m "Backup from main repository - $(date)"
           
           # Show the repo URL we're pushing to (with any token part masked)
-          echo "Pushing to: https://***@github.com/herculeanfit1/aistudyplans-backups.git"
+          echo "Pushing to: https://***@github.com/herculeanfit1/AIStudyPlans-backup.git"
           
           # Push to backup repository (force to overwrite history)
-          git remote add backup https://${{ secrets.BACKUP_PAT }}@github.com/herculeanfit1/aistudyplans-backups.git
+          git remote add backup https://${BACKUP_PAT}@github.com/herculeanfit1/AIStudyPlans-backup.git
           git push backup main:main --force
