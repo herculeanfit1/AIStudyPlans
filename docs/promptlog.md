@@ -100,4 +100,17 @@ Consolidated and removed redundant documentation:
 - Updated `TODO.md` to mark the comprehensive documentation task as completed
 - Created `promptlog.md` to track user prompts and interactions
 
-The documentation now follows a clean, consistent format with appropriate markdown formatting, code examples, and tables. Each document provides specific, focused information about its area while maintaining connections to the broader system architecture. 
+The documentation now follows a clean, consistent format with appropriate markdown formatting, code examples, and tables. Each document provides specific, focused information about its area while maintaining connections to the broader system architecture.
+
+## May 4, 2025 - Implemented Local LLM Development with MCP
+
+**User**: Setup global MCP server configuration to connect Cursor with local Qwen3 Coder model at http://10.1.10.98:1234/v1 to avoid Claude token costs
+
+**Action**: Implemented and configured a secure MCP integration with the following components:
+- Global MCP configuration in `~/Library/Application Support/Cursor/User/settings.json`
+- Added documentation for MCP server usage in the main README.md
+- Added section in docs/README.md about local LLM development workflow
+- Integrated the local LLM development approach into the PRD
+- Ensured all new configurations include appropriate documentation/comments
+
+**Result**: Successfully set up a direct connection to the local Qwen3 Coder model via Cursor's MCP protocol, eliminating cloud token usage and enabling local AI-powered development. 

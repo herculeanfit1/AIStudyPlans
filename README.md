@@ -41,6 +41,10 @@ A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan 
   - [Playwright](https://playwright.dev/) for end-to-end testing
   - [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) for performance testing
 - **Containerization**: Docker & Docker Compose
+- **AI Development**:
+  - Local Qwen3 Coder model for development
+  - MCP (Model Context Protocol) integration with Cursor
+  - Zero-token cost development workflow
 
 ## Getting Started
 
@@ -63,6 +67,23 @@ A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan 
    ```
 
 4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+### Setting Up Local AI Development
+
+For development, we use a local Qwen3 Coder model instead of cloud-based models:
+
+1. Start your local LLM server (e.g., using LM Studio) at http://10.1.10.98:1234/v1
+   
+2. The global MCP configuration is already set up at:
+   ```
+   ~/Library/Application Support/Cursor/User/settings.json
+   ```
+
+3. Restart Cursor and select "Local Qwen3" in Settings → MCP Servers
+   
+4. Use Cursor's AI features as normal - all interactions will use your local model
+
+See [complete documentation](./docs/README.md#development-with-local-llm) for troubleshooting.
 
 ### Using Docker
 
@@ -476,3 +497,29 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 When using the default recipient (`delivered@resend.dev`), emails won't be delivered to an actual inbox but will appear in your [Resend dashboard](https://resend.com/dashboard).
 
 To test delivery to a real inbox, use your own email address as the recipient.
+
+## MCP Server for Local Development
+
+This repository includes a secure Model Context Protocol (MCP) server that enables Cursor to connect with your local Qwen3 Coder model. This allows you to use Cursor's AI features with your local model instead of relying on cloud-based services.
+
+### Features
+
+- Server-Sent Events (SSE) transport with secure configuration
+- Input validation with JSON Schema
+- Comprehensive logging and monitoring
+- Secure headers and CORS protection
+
+### Usage
+
+1. Configure the MCP Server:
+
+```bash
+cd mcp-server
+npm ci
+npm run build
+npm start
+```
+
+2. In Cursor, you should now see "Local Qwen3" available as an MCP server in the settings.
+
+For more details, see [mcp-server/README.md](mcp-server/README.md).

@@ -112,6 +112,39 @@ The application is currently in the initial development phase. Key features plan
 
 For a complete list of planned tasks, see the [TODO List](./TODO.md).
 
+## Development with Local LLM
+
+### Using Local Qwen3 Model with Cursor
+
+For development of this project, we use the local Qwen3 Coder model instead of cloud-based models like Claude 3.7. This approach:
+
+1. **Eliminates token costs**: No charges for cloud API usage
+2. **Improves privacy**: Code doesn't leave your machine
+3. **Reduces latency**: Direct communication with local model
+4. **Works offline**: No internet connection required for AI assistance
+
+#### Setup Instructions
+
+1. **Launch your local Qwen3 model** at http://10.1.10.98:1234/v1 (using LM Studio or similar)
+
+2. **Use the global MCP configuration** in Cursor, which is already set up at:
+   ```
+   ~/Library/Application Support/Cursor/User/settings.json
+   ```
+
+3. **Restart Cursor** and ensure "Local Qwen3" is selected in Settings → MCP Servers
+
+4. **Use Cursor as normal** - all AI interactions will now use your local model
+
+#### Troubleshooting
+
+If the MCP server connection fails:
+- Verify your local LLM is running at the configured address
+- Check Cursor's logs for connection errors
+- Restart Cursor after making configuration changes
+
+For additional setup options, see the [MCP configuration documentation](https://cursor.sh/docs/mcp).
+
 ## Contact
 
 For questions about the documentation or the project, please contact the development team at support@aistudyplans.com. 
