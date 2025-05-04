@@ -70,6 +70,12 @@ jobs:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://aistudyplans.com' }}
           # Add any other environment variables needed for the build here
 
+      # Create a simple test file in the output directory
+      - name: Add test file
+        run: |
+          echo "This is a test file to verify deployment" > out/test.txt
+          ls -la out/
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -80,7 +86,9 @@ jobs:
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           app_location: "out" # Only deploy the output directory
           api_location: "api" # Use the dedicated API directory
+          output_location: "" # No additional output dir, we're already in the output
           skip_app_build: true # Skip build as we already built the app
+          is_static_export: true # Explicitly tell Azure this is a static export
           ###### End of Repository/Build Configurations ######
 
       - name: Report deployment status
