@@ -7,14 +7,66 @@
       "allowedRoles": ["anonymous"]
     },
     {
+      "route": "/about",
+      "rewrite": "/about/index.html"
+    },
+    {
+      "route": "/contact",
+      "rewrite": "/contact/index.html"
+    },
+    {
+      "route": "/contact/sales",
+      "rewrite": "/contact/sales/index.html"
+    },
+    {
+      "route": "/contact/support",
+      "rewrite": "/contact/support/index.html"
+    },
+    {
+      "route": "/dashboard",
+      "rewrite": "/dashboard/index.html"
+    },
+    {
+      "route": "/feedback",
+      "rewrite": "/feedback/index.html"
+    },
+    {
+      "route": "/landing",
+      "rewrite": "/landing/index.html"
+    },
+    {
+      "route": "/parents",
+      "rewrite": "/parents/index.html"
+    },
+    {
+      "route": "/pricing",
+      "rewrite": "/pricing/index.html"
+    },
+    {
+      "route": "/privacy",
+      "rewrite": "/privacy/index.html"
+    },
+    {
+      "route": "/services",
+      "rewrite": "/services/index.html"
+    },
+    {
+      "route": "/terms",
+      "rewrite": "/terms/index.html"
+    },
+    {
+      "route": "/",
+      "rewrite": "/index.html"
+    },
+    {
       "route": "/*",
-      "serve": "/index.html",
-      "statusCode": 200
+      "rewrite": "/404.html",
+      "statusCode": 404
     }
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/images/*", "/css/*", "/js/*", "/*.ico", "/*.png", "/*.svg", "/api/*"]
+    "exclude": ["/images/*", "/_next/*", "/css/*", "/js/*", "/*.ico", "/*.png", "/*.svg", "/api/*"]
   },
   "responseOverrides": {
     "404": {
