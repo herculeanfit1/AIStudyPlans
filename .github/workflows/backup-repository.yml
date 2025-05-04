@@ -46,8 +46,8 @@ jobs:
           git commit -m "Backup from main repository - $(date)"
           
           # Show the repo URL we're pushing to (with any token part masked)
-          echo "Pushing to: https://***@github.com/herculeanfit1/AIStudyPlans-backup.git"
+          echo "Pushing to: https://***@github.com/herculeanfit1/aistudyplans-backups.git"
           
           # Push to backup repository (force to overwrite history)
-          git remote add backup https://${BACKUP_PAT}@github.com/herculeanfit1/AIStudyPlans-backup.git
+          git remote add backup https://${BACKUP_PAT}@github.com/herculeanfit1/aistudyplans-backups.git
           git push backup main:main --force
