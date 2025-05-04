@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "Local Qwen3": {
-      "transport": "http",
-      "llmBaseUrl": "http://10.1.10.98:1234/v1",
-      "llmApiKey": "local-test"
-    }
-  }
-} 
