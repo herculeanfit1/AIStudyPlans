@@ -5,62 +5,6 @@
       "methods": ["GET", "POST", "PUT", "DELETE"],
       "rewrite": "/api/$1",
       "allowedRoles": ["anonymous"]
-    },
-    {
-      "route": "/about",
-      "rewrite": "/about/index.html"
-    },
-    {
-      "route": "/contact",
-      "rewrite": "/contact/index.html"
-    },
-    {
-      "route": "/contact/sales",
-      "rewrite": "/contact/sales/index.html"
-    },
-    {
-      "route": "/contact/support",
-      "rewrite": "/contact/support/index.html"
-    },
-    {
-      "route": "/dashboard",
-      "rewrite": "/dashboard/index.html"
-    },
-    {
-      "route": "/feedback",
-      "rewrite": "/feedback/index.html"
-    },
-    {
-      "route": "/landing",
-      "rewrite": "/landing/index.html"
-    },
-    {
-      "route": "/parents",
-      "rewrite": "/parents/index.html"
-    },
-    {
-      "route": "/pricing",
-      "rewrite": "/pricing/index.html"
-    },
-    {
-      "route": "/privacy",
-      "rewrite": "/privacy/index.html"
-    },
-    {
-      "route": "/services",
-      "rewrite": "/services/index.html"
-    },
-    {
-      "route": "/terms",
-      "rewrite": "/terms/index.html"
-    },
-    {
-      "route": "/",
-      "rewrite": "/index.html"
-    },
-    {
-      "route": "/*",
-      "rewrite": "/404.html"
     }
   ],
   "navigationFallback": {

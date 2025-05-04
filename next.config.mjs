@@ -31,9 +31,8 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Configure how URLs are handled for static export
-  trailingSlash: false,
-  skipTrailingSlashRedirect: false,
+  // Enable trailing slashes for Azure Static Web Apps compatibility
+  trailingSlash: true,
   // Include the API routes in the static export, but exclude auth routes
   experimental: {
     // This will copy the /api directory to the output folder, excluding auth
