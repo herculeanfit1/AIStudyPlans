@@ -13,12 +13,13 @@ const customJestConfig = {
     // Handle module aliases (this config points all imports without @ to app/)
     '^@/components/(.*)$': '<rootDir>/app/components/$1',
     '^@/app/(.*)$': '<rootDir>/app/$1',
-    '^@/lib/(.*)$': '<rootDir>/app/lib/$1',
+    '^@/lib/(.*)$': '<rootDir>/lib/$1',
   },
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/.next/',
     '<rootDir>/e2e/',
+    '<rootDir>/__tests__/utils/test-utils.tsx',
   ],
   collectCoverageFrom: [
     'app/**/*.{js,jsx,ts,tsx}',
