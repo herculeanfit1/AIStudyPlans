@@ -17,6 +17,31 @@ jobs:
         with:
           path: source-repo
           
+      - name: Check App ID Secret
+        run: |
+          if [[ -z "${{ secrets.BACKUP_APP_ID }}" ]]; then
+            echo "❌ BACKUP_APP_ID secret is not set!"
+            exit 1
+          else
+            echo "✅ BACKUP_APP_ID secret is configured"
+            echo "App ID should be 1243050"
+          fi
+          
+      - name: Check Private Key Secret
+        run: |
+          if [[ -z "${{ secrets.BACKUP_APP_PRIVATE_KEY }}" ]]; then
+            echo "❌ BACKUP_APP_PRIVATE_KEY secret is not set!"
+            exit 1
+          else
+            # Check if it has the proper format (starts with BEGIN line)
+            if [[ "${{ secrets.BACKUP_APP_PRIVATE_KEY }}" == *"BEGIN"* ]]; then
+              echo "✅ BACKUP_APP_PRIVATE_KEY appears to be properly formatted"
+            else
+              echo "⚠️ BACKUP_APP_PRIVATE_KEY may not be properly formatted. Ensure it contains BEGIN/END lines"
+              exit 1
+            fi
+          fi
+          
       - name: Generate GitHub App token
         id: generate-token
         uses: actions/create-github-app-token@v1
@@ -25,6 +50,15 @@ jobs:
           private-key: ${{ secrets.BACKUP_APP_PRIVATE_KEY }}
           owner: herculeanfit1
           repositories: AIStudyPlans-Backups
+          
+      - name: Verify generated token
+        run: |
+          if [[ -z "${{ steps.generate-token.outputs.token }}" ]]; then
+            echo "❌ Failed to generate GitHub App token!"
+            exit 1
+          else
+            echo "✅ GitHub App token generated successfully"
+          fi
 
       - name: Backup to secondary repository
         env:
@@ -53,6 +87,17 @@ jobs:
           git config user.email "action@github.com"
           git add .
           git commit -m "Backup from main repository - $(date)"
+          
+          # Test access with a simple operation before pushing
+          echo "Testing repository access with token..."
+          GIT_TRACE=1 git ls-remote --exit-code https://${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git > /dev/null 2>&1
+          
+          if [ $? -ne 0 ]; then
+            echo "❌ Cannot access repository with token - authentication issue!"
+            exit 1
+          else
+            echo "✅ Repository access with token successful"
+          fi
           
           # Show the repo URL we're pushing to (with token masked)
           echo "Pushing to: https://***@github.com/herculeanfit1/AIStudyPlans-Backups.git"

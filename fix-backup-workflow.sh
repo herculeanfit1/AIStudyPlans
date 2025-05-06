@@ -1,69 +1,27 @@
 #!/bin/bash
 
-# Create the fixed backup workflow file
-cat > .github/workflows/backup-repository.yml << 'EOL'
-name: Backup to Separate Repository
+# Test script for GitHub App authentication
+# This script will test parts of the GitHub App authentication process
 
-on:
-  workflow_run:
-    workflows: ["Azure Static Web Apps CI/CD"]
-    branches: [main]
-    types:
-      - completed
-  workflow_dispatch:
+echo "===== GitHub App Authentication Test ====="
+echo "The App ID showing in the screenshot is: 1243050"
+echo "Testing repository access..."
 
-jobs:
-  backup:
-    runs-on: ubuntu-latest
-    name: Backup Repository
-    # Only run if the Azure workflow completed successfully
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-    steps:
-      - name: Checkout Source Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          path: source-repo
+# Check if repository exists
+echo "Testing access to AIStudyPlans-Backups repository..."
+git ls-remote https://github.com/herculeanfit1/AIStudyPlans-Backups.git > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo "✅ Repository exists and is accessible"
+else
+  echo "❌ Cannot access repository - check repository name or visibility settings"
+  exit 1
+fi
 
-      - name: Debug Secrets
-        run: |
-          echo "BACKUP_PAT is set: ${{ secrets.BACKUP_PAT != '' }}"
-          
-          # Check backup repo info
-          echo "Using explicit backup repository: herculeanfit1/aistudyplans-backups"
-
-      - name: Push to Backup Repository
-        run: |
-          cd source-repo
-          
-          # Configure Git
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          
-          # Create a temporary directory for the filtered content
-          mkdir -p ../filtered-repo
-          
-          # Copy everything except .github directory to the filtered directory
-          rsync -av --exclude='.github' ./ ../filtered-repo/
-          
-          # Add a special .gitignore to the backup repo to prevent workflow triggers
-          echo "# Ignore GitHub workflows to prevent duplicate runs" > ../filtered-repo/.github-actions-ignore
-          echo ".github/" >> ../filtered-repo/.github-actions-ignore
-          
-          # Set up the new remote repository
-          cd ../filtered-repo
-          git init
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          git add .
-          git commit -m "Backup from main repository - $(date)"
-          
-          # Show the repo URL we're pushing to (with any token part masked)
-          echo "Pushing to: https://***@github.com/herculeanfit1/aistudyplans-backups.git"
-          
-          # Push to backup repository (force to overwrite history)
-          git remote add backup https://${{ secrets.BACKUP_PAT }}@github.com/herculeanfit1/aistudyplans-backups.git
-          git push backup main:main --force
-EOL
-
-echo "Fixed backup workflow file created successfully"
+echo ""
+echo "===== Next Steps ====="
+echo "1. Verify the App ID is correctly set as 1243050 in GitHub Secrets"
+echo "2. Check that the private key is properly formatted (includes BEGIN/END lines)"
+echo "3. Confirm the app is installed on the AIStudyPlans-Backups repository"
+echo "4. Make sure the app has 'Contents: Read and write' permission"
+echo ""
+echo "Once confirmed, try running the backup workflow again"

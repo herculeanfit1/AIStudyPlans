@@ -158,7 +158,14 @@ jobs:
       - name: Install Azure Functions dependencies
         run: |
           cd azure-functions
-          npm ci
+          # Check if package-lock.json exists, if not, create it with npm install
+          if [ ! -f "package-lock.json" ]; then
+            echo "package-lock.json not found, creating it with npm install..."
+            npm install
+          else
+            # Use npm ci if package-lock.json exists
+            npm ci
+          fi
 
       - name: Deploy Azure Functions
         run: |
