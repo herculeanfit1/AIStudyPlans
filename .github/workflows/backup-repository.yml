@@ -81,24 +81,51 @@ jobs:
         env:
           TOKEN: ${{ steps.generate-token.outputs.token }}
 
-      - name: Test API access with token
+      - name: Test GitHub API Access - Source Repo
         run: |
-          echo "Testing GitHub API access with token..."
+          echo "Testing GitHub API access to current repository..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }})
+            
+          echo "API Response Status (current repo): $STATUS"
+          
+          if [[ "$STATUS" == "200" ]]; then
+            echo "✅ Successfully authenticated to current repo API"
+          else
+            echo "❌ Failed to authenticate to current repo API - Status: $STATUS"
+          fi
+
+      - name: Test GitHub API Access - Backup Repo
+        run: |
+          echo "Testing GitHub API access to backup repository..."
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups)
             
-          echo "API Response Status: $STATUS"
+          echo "API Response Status (backup repo): $STATUS"
           
           if [[ "$STATUS" == "200" ]]; then
-            echo "✅ Successfully authenticated to GitHub API"
+            echo "✅ Successfully authenticated to backup repo API"
           else
-            echo "❌ Failed to authenticate to GitHub API - Status: $STATUS"
+            echo "❌ Failed to authenticate to backup repo API - Status: $STATUS"
             echo "This suggests the token has invalid permissions or scope"
-            exit 1
+            
+            # Get general user info to check permissions
+            echo "Checking what user/app the token represents..."
+            curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/user
+              
+            # List installations for debugging
+            echo "Checking app installations that this token can access..."
+            curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/installation/repositories
           fi
 
       - name: Backup to secondary repository
+        if: success()
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
@@ -128,7 +155,7 @@ jobs:
           
           # Test access with a simple operation before pushing
           echo "Testing repository access with token..."
-          GIT_TRACE=2 git ls-remote --exit-code https://${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git
+          GIT_TRACE=2 git ls-remote --exit-code https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git
           
           if [ $? -ne 0 ]; then
             echo "❌ Cannot access repository with token - authentication issue!"
@@ -137,9 +164,6 @@ jobs:
             echo "✅ Repository access with token successful"
           fi
           
-          # Show the repo URL we're pushing to (with token masked)
-          echo "Pushing to: https://***@github.com/herculeanfit1/AIStudyPlans-Backups.git"
-          
           # Push to backup repository (force to overwrite history)
-          git remote add backup https://${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git
+          git remote add backup https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git
           git push backup main:main --force
