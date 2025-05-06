@@ -20,14 +20,12 @@ jobs:
         with:
           app-id: ${{ secrets.GH_APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          owner: herculeanfit1
-          repositories: AIStudyPlans-Backups
       
       - name: Debug token access
         run: |
           echo "Testing token access to repositories..."
           
-          # Check both repositories for debugging
+          # Check backup repo access
           echo "Checking backup repo access:"
           STATUS_BACKUP=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
                  "https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups")
