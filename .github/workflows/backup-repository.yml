@@ -16,18 +16,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: source-repo
-
-      - name: Configure Git with OAuth token
-        run: |
-          # Create a temporary OAuth token using client credentials
-          OAUTH_TOKEN=$(curl -s -X POST \
-            -H "Accept: application/json" \
-            -d "client_id=${{ secrets.OAUTH_CLIENT_ID }}&client_secret=${{ secrets.OAUTH_CLIENT_SECRET }}&scope=repo" \
-            https://github.com/login/oauth/access_token | grep -o 'access_token=[^&]*' | cut -d= -f2)
           
-          echo "OAUTH_TOKEN=${OAUTH_TOKEN}" >> $GITHUB_ENV
+      - name: Generate GitHub App token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.BACKUP_APP_ID }}
+          private-key: ${{ secrets.BACKUP_APP_PRIVATE_KEY }}
+          owner: herculeanfit1
+          repositories: AIStudyPlans-Backups
 
       - name: Backup to secondary repository
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
           cd source-repo
           
@@ -57,5 +58,5 @@ jobs:
           echo "Pushing to: https://***@github.com/herculeanfit1/AIStudyPlans-Backups.git"
           
           # Push to backup repository (force to overwrite history)
-          git remote add backup https://${{ env.OAUTH_TOKEN }}@github.com/herculeanfit1/AIStudyPlans-Backups.git
+          git remote add backup https://${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git
           git push backup main:main --force
