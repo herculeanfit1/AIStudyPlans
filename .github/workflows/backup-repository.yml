@@ -66,7 +66,39 @@ jobs:
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           owner: herculeanfit1
           repositories: AIStudyPlans-Backups
-           
+      
+      - name: Debug token access
+        run: |
+          echo "Testing token access to repositories..."
+          
+          # Check both repositories for debugging
+          echo "Checking primary repo access:"
+          STATUS_PRIMARY=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }})
+          echo "Primary repo API status: $STATUS_PRIMARY"
+          
+          echo "Checking backup repo access:"
+          STATUS_BACKUP=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups)
+          echo "Backup repo API status: $STATUS_BACKUP"
+          
+          # List all accessible repositories
+          echo "Listing all repositories accessible with this token:"
+          curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/installation/repositories | jq -r '.repositories[].full_name'
+          
+          # Check if the backup repo exists at all using a PAT if available
+          if [[ -n "${{ secrets.GITHUB_TOKEN }}" ]]; then
+            echo "Checking if backup repo exists with workflow token:"
+            BACKUP_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups)
+            echo "Backup repo exists check: $BACKUP_EXISTS"
+          fi
+      
       - name: Verify generated token
         run: |
           if [[ -z "${{ steps.generate-token.outputs.token }}" ]]; then
@@ -159,7 +191,46 @@ jobs:
           
           if [ $? -ne 0 ]; then
             echo "❌ Cannot access repository with token - authentication issue!"
-            exit 1
+            
+            # Extra debug: Try with credentials from query to ensure repo exists
+            echo "Checking if repository exists with GitHub CLI..."
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              "https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups")
+            
+            if [ "$STATUS" != "200" ]; then
+              echo "Repository not found! Status code: $STATUS"
+              echo "Please ensure the repository herculeanfit1/AIStudyPlans-Backups exists and the GitHub App has access."
+              
+              # Create the repository if it doesn't exist and token has sufficient permissions
+              echo "Attempting to create backup repository..."
+              CREATE_RESPONSE=$(curl -s -X POST \
+                -H "Accept: application/vnd.github.v3+json" \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                "https://api.github.com/user/repos" \
+                -d '{"name":"AIStudyPlans-Backups","private":true,"description":"Backup repository for AIStudyPlans"}')
+              
+              # Check if creation was successful
+              if echo "$CREATE_RESPONSE" | grep -q "full_name"; then
+                echo "✅ Successfully created backup repository"
+                # Try ls-remote again after repo creation
+                git ls-remote --exit-code https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git
+                if [ $? -eq 0 ]; then
+                  echo "✅ Can now access repository after creation"
+                else
+                  echo "❌ Still cannot access repository after creation"
+                  exit 1
+                fi
+              else
+                echo "❌ Failed to create backup repository: $CREATE_RESPONSE"
+                exit 1
+              fi
+            else
+              echo "Repository exists but token doesn't have access."
+              echo "Please check GitHub App installation and permissions."
+              exit 1
+            fi
           else
             echo "✅ Repository access with token successful"
           fi
