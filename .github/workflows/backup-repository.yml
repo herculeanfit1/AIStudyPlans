@@ -27,33 +27,33 @@ jobs:
           
       - name: Check App ID Secret
         run: |
-          if [[ -z "${{ secrets.BACKUP_APP_ID }}" ]]; then
-            echo "❌ BACKUP_APP_ID secret is not set!"
+          if [[ -z "${{ secrets.GH_APP_ID }}" ]]; then
+            echo "❌ GH_APP_ID secret is not set!"
             exit 1
           else
-            echo "✅ BACKUP_APP_ID secret is configured"
+            echo "✅ GH_APP_ID secret is configured"
             echo "App ID should be 1243050"
           fi
           
       - name: Check Private Key Secret
         run: |
-          if [[ -z "${{ secrets.BACKUP_APP_PRIVATE_KEY }}" ]]; then
-            echo "❌ BACKUP_APP_PRIVATE_KEY secret is not set!"
+          if [[ -z "${{ secrets.GH_APP_PRIVATE_KEY }}" ]]; then
+            echo "❌ GH_APP_PRIVATE_KEY secret is not set!"
             exit 1
           else
             # Check if it has the proper format (starts with BEGIN line)
-            if [[ "${{ secrets.BACKUP_APP_PRIVATE_KEY }}" == *"BEGIN"* ]]; then
-              echo "✅ BACKUP_APP_PRIVATE_KEY appears to be properly formatted (starts with BEGIN)"
-              echo "✓ Private key length: $(echo "${{ secrets.BACKUP_APP_PRIVATE_KEY }}" | wc -c) characters"
+            if [[ "${{ secrets.GH_APP_PRIVATE_KEY }}" == *"BEGIN"* ]]; then
+              echo "✅ GH_APP_PRIVATE_KEY appears to be properly formatted (starts with BEGIN)"
+              echo "✓ Private key length: $(echo "${{ secrets.GH_APP_PRIVATE_KEY }}" | wc -c) characters"
               
               # Check for newlines (indirectly)
-              if [[ $(echo "${{ secrets.BACKUP_APP_PRIVATE_KEY }}" | grep -c "END") -gt 0 ]]; then
+              if [[ $(echo "${{ secrets.GH_APP_PRIVATE_KEY }}" | grep -c "END") -gt 0 ]]; then
                 echo "✓ Private key appears to contain END marker"
               else
                 echo "⚠️ Private key might be missing END marker or newlines"
               fi
             else
-              echo "⚠️ BACKUP_APP_PRIVATE_KEY may not be properly formatted. Ensure it contains BEGIN/END lines"
+              echo "⚠️ GH_APP_PRIVATE_KEY may not be properly formatted. Ensure it contains BEGIN/END lines"
               exit 1
             fi
           fi
@@ -62,8 +62,8 @@ jobs:
         id: generate-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.BACKUP_APP_ID }}
-          private-key: ${{ secrets.BACKUP_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           owner: herculeanfit1
           repositories: AIStudyPlans-Backups
            

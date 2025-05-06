@@ -145,32 +145,60 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
-      - name: Setup Azure Functions Core Tools
-        run: npm install -g azure-functions-core-tools@4
+      # Use the official Azure Functions Action instead of installing Core Tools manually
+      - name: 'Deploy Azure Functions'
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}
+          package: './azure-functions'
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+      
+      # Backup method - Only run if the primary deployment method fails
+      - name: Install Azure Functions Core Tools (if needed)
+        if: failure()
+        run: |
+          echo "Primary deployment method failed. Attempting alternative method..."
+          npm install -g azure-functions-core-tools@4 --unsafe-perm false
+          echo "Azure Functions Core Tools installed successfully"
+          func --version
 
-      - name: Login to Azure
+      - name: Login to Azure (if needed)
+        if: failure()
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Install Azure Functions dependencies
+      - name: Install Azure Functions dependencies (if needed)
+        if: failure()
         run: |
           cd azure-functions
-          # Check if package-lock.json exists, if not, create it with npm install
-          if [ ! -f "package-lock.json" ]; then
-            echo "package-lock.json not found, creating it with npm install..."
-            npm install
+          npm install
+          echo "Function app dependencies installed successfully"
+          ls -la
+
+      - name: Verify Azure Function App (if needed)
+        if: failure()
+        run: |
+          echo "Verifying Azure Function App..."
+          FUNCTION_APP_NAME="${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}"
+          az functionapp show --name "$FUNCTION_APP_NAME" --resource-group "${{ secrets.AZURE_RESOURCE_GROUP || 'AIStudyPlans-RG1' }}" --query "name" -o tsv
+          
+          if [ $? -ne 0 ]; then
+            echo "❌ Function App '$FUNCTION_APP_NAME' not found or not accessible."
+            echo "Please ensure it exists and the credentials have proper access."
+            exit 1
           else
-            # Use npm ci if package-lock.json exists
-            npm ci
+            echo "✅ Function App '$FUNCTION_APP_NAME' verified successfully."
           fi
 
-      - name: Deploy Azure Functions
+      - name: Deploy Azure Functions (alternative method)
+        if: failure()
         run: |
           cd azure-functions
-          func azure functionapp publish ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}
+          echo "Deploying function app using alternative method..."
+          func azure functionapp publish ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }} --force
         env:
           AZURE_FUNCTIONAPP_NAME: ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}
 

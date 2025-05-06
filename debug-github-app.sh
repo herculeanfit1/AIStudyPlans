@@ -20,172 +20,103 @@ for cmd in jq curl; do
   fi
 done
 
-# Read GitHub App credentials
-read -p "Enter GitHub App ID (e.g., 1243050): " APP_ID
-
-# Ask for private key file
-read -p "Enter path to GitHub App private key file: " PRIVATE_KEY_FILE
-if [ ! -f "$PRIVATE_KEY_FILE" ]; then
-  echo "❌ Private key file not found: $PRIVATE_KEY_FILE"
-  exit 1
-fi
-
-# Verify private key format
-if ! grep -q "BEGIN RSA PRIVATE KEY" "$PRIVATE_KEY_FILE" || ! grep -q "END RSA PRIVATE KEY" "$PRIVATE_KEY_FILE"; then
-  echo "⚠️ Private key file doesn't appear to be in the correct format."
-  echo "It should contain 'BEGIN RSA PRIVATE KEY' and 'END RSA PRIVATE KEY' markers."
-  read -p "Continue anyway? (y/n): " continue_anyway
-  if [ "$continue_anyway" != "y" ]; then
+# Check if the required environment variables are set
+if [ -z "$GH_APP_ID" ] || [ -z "$GH_APP_PRIVATE_KEY" ] || [ -z "$GH_APP_INSTALLATION_ID" ]; then
+    echo "Error: Required environment variables are not set."
+    echo "Please ensure the following are defined:"
+    echo "  - GH_APP_ID"
+    echo "  - GH_APP_PRIVATE_KEY (path to private key file)"
+    echo "  - GH_APP_INSTALLATION_ID"
     exit 1
-  fi
 fi
 
-# Function to generate a JWT token for GitHub App authentication
-generate_jwt() {
-  # This is simplified JWT generation - in real scenarios use a proper JWT library
-  echo "Generating JWT for GitHub App authentication..."
-  
-  # Use Node.js to generate the token
-  node -e "
-    const fs = require('fs');
-    const crypto = require('crypto');
-    
-    // Read private key
-    const privateKey = fs.readFileSync('$PRIVATE_KEY_FILE', 'utf8');
-    
-    // Create JWT header
-    const header = {
-      alg: 'RS256',
-      typ: 'JWT'
-    };
-    
-    // Create JWT payload
-    const now = Math.floor(Date.now() / 1000);
-    const payload = {
-      iat: now - 60,                // issued 60 seconds ago
-      exp: now + 10 * 60,           // expires in 10 minutes
-      iss: '$APP_ID'                // GitHub App ID
-    };
-    
-    // Encode header and payload
-    const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-    
-    // Create signature
-    const signatureBase = encodedHeader + '.' + encodedPayload;
-    const signer = crypto.createSign('RSA-SHA256');
-    signer.update(signatureBase);
-    const signature = signer.sign(privateKey, 'base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-    
-    // Create JWT
-    const jwt = signatureBase + '.' + signature;
-    console.log(jwt);
-  "
-}
+echo "Step 1: Generating JWT for GitHub App authentication..."
+# Generate JWT token for GitHub App
+now=$(date +%s)
+iat=$now
+exp=$((now + 600)) # 10 minutes expiration
 
-# Generate JWT token
-JWT=$(generate_jwt)
-echo "✅ JWT generated successfully"
+# Create JWT header
+header=$(echo -n '{"alg":"RS256","typ":"JWT"}' | base64 | tr -d '=' | tr '/+' '_-')
 
-# Check GitHub App metadata
-echo ""
-echo "Checking GitHub App details..."
-APP_INFO=$(curl -s -H "Authorization: Bearer $JWT" \
-  -H "Accept: application/vnd.github.v3+json" \
-  https://api.github.com/app)
+# Create JWT payload
+payload=$(echo -n '{"iat":'"$iat"',"exp":'"$exp"',"iss":'"$GH_APP_ID"'}' | base64 | tr -d '=' | tr '/+' '_-')
 
-# Extract app name and owner from response
-APP_NAME=$(echo "$APP_INFO" | jq -r '.name // "Unknown"')
-APP_OWNER=$(echo "$APP_INFO" | jq -r '.owner.login // "Unknown"')
-APP_HTML_URL=$(echo "$APP_INFO" | jq -r '.html_url // "Unknown"')
-
-if [ "$APP_NAME" != "Unknown" ]; then
-  echo "✅ GitHub App authenticated successfully!"
-  echo "App Name: $APP_NAME"
-  echo "App Owner: $APP_OWNER"
-  echo "App URL: $APP_HTML_URL"
+# Sign with private key
+if [ -f "$GH_APP_PRIVATE_KEY" ]; then
+    signature=$(echo -n "$header.$payload" | openssl dgst -sha256 -sign "$GH_APP_PRIVATE_KEY" | base64 | tr -d '=' | tr '/+' '_-')
+    jwt="$header.$payload.$signature"
+    echo "✅ JWT token generated successfully"
 else
-  echo "❌ Failed to authenticate with GitHub App"
-  echo "Response: $APP_INFO"
-  exit 1
+    echo "❌ Error: Private key file not found at $GH_APP_PRIVATE_KEY"
+    exit 1
 fi
 
-# List installations
-echo ""
-echo "Checking App installations..."
-INSTALLATIONS=$(curl -s -H "Authorization: Bearer $JWT" \
-  -H "Accept: application/vnd.github.v3+json" \
-  https://api.github.com/app/installations)
-
-INSTALLATION_COUNT=$(echo "$INSTALLATIONS" | jq length)
-echo "App is installed in $INSTALLATION_COUNT location(s)"
-
-# Get installation details
-echo ""
-echo "Installation details:"
-echo "$INSTALLATIONS" | jq -r '.[] | "ID: \(.id), Account: \(.account.login), Target Type: \(.target_type), Repository Selection: \(.repository_selection)"'
-
-# For each installation, get an access token and check repositories
-echo ""
-echo "Checking repositories for each installation..."
-echo "$INSTALLATIONS" | jq -r '.[] | .id' | while read -r INSTALLATION_ID; do
-  ACCOUNT=$(echo "$INSTALLATIONS" | jq -r ".[] | select(.id == $INSTALLATION_ID) | .account.login")
-  echo ""
-  echo "Installation ID $INSTALLATION_ID (Account: $ACCOUNT)"
-  
-  # Get an installation token
-  TOKEN_RESPONSE=$(curl -s -X POST \
-    -H "Authorization: Bearer $JWT" \
+echo "Step 2: Getting installation token..."
+# Get installation token using JWT
+response=$(curl -s -X POST \
+    -H "Authorization: Bearer $jwt" \
     -H "Accept: application/vnd.github.v3+json" \
-    https://api.github.com/app/installations/$INSTALLATION_ID/access_tokens)
-  
-  INSTALLATION_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.token // "error"')
-  
-  if [ "$INSTALLATION_TOKEN" = "error" ]; then
-    echo "❌ Failed to get installation token"
-    echo "Response: $TOKEN_RESPONSE"
-    continue
-  fi
-  
-  echo "✅ Generated installation token"
-  
-  # List accessible repositories
-  REPOS=$(curl -s \
-    -H "Authorization: token $INSTALLATION_TOKEN" \
+    "https://api.github.com/app/installations/$GH_APP_INSTALLATION_ID/access_tokens")
+
+# Extract token from response
+if echo "$response" | grep -q "token"; then
+    installation_token=$(echo "$response" | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+    echo "✅ Installation token obtained successfully"
+else
+    echo "❌ Error getting installation token:"
+    echo "$response"
+    exit 1
+fi
+
+echo "Step 3: Checking accessible repositories..."
+# List repositories accessible to the app
+repo_response=$(curl -s \
+    -H "Authorization: token $installation_token" \
     -H "Accept: application/vnd.github.v3+json" \
-    https://api.github.com/installation/repositories)
-  
-  REPO_COUNT=$(echo "$REPOS" | jq '.repositories | length')
-  echo "This installation can access $REPO_COUNT repositories:"
-  echo "$REPOS" | jq -r '.repositories[] | "- \(.full_name) (\(.private ? "private" : "public"))"'
-  
-  # Specifically check for the AIStudyPlans-Backups repository
-  if echo "$REPOS" | jq -r '.repositories[].full_name' | grep -q "AIStudyPlans-Backups"; then
-    echo "✅ Installation has access to the AIStudyPlans-Backups repository!"
-    
-    # Test a Git operation with the token
-    echo ""
-    echo "Testing Git operations with the installation token..."
-    TEMP_DIR=$(mktemp -d)
-    pushd "$TEMP_DIR" > /dev/null
-    
-    # Try to access the repository
-    GIT_RESULT=$(GIT_TRACE=1 git ls-remote https://x-access-token:$INSTALLATION_TOKEN@github.com/herculeanfit1/AIStudyPlans-Backups.git 2>&1) || true
-    
-    if echo "$GIT_RESULT" | grep -q "ERROR\|fatal\|not found\|denied"; then
-      echo "❌ Git operation failed:"
-      echo "$GIT_RESULT"
-    else
-      echo "✅ Git operation succeeded"
-    fi
-    
-    popd > /dev/null
-    rm -rf "$TEMP_DIR"
-  else
-    echo "❌ Installation does NOT have access to the AIStudyPlans-Backups repository!"
-    echo "Please make sure the app is installed on that repository."
-  fi
-done
+    "https://api.github.com/installation/repositories")
+
+# Check if we got a list of repositories
+if echo "$repo_response" | grep -q "repositories"; then
+    echo "✅ App has access to the following repositories:"
+    echo "$repo_response" | grep -o '"full_name":"[^"]*' | cut -d'"' -f4
+else
+    echo "❌ Error listing repositories or no repositories found:"
+    echo "$repo_response"
+fi
+
+echo "Step 4: Checking AIStudyPlans-Backups repository..."
+# Check if the target repository exists and is accessible
+target_repo="herculeanfit1/AIStudyPlans-Backups"
+repo_check=$(curl -s \
+    -H "Authorization: token $installation_token" \
+    -H "Accept: application/vnd.github.v3+json" \
+    "https://api.github.com/repos/$target_repo")
+
+# Check if the repository exists and is accessible
+if echo "$repo_check" | grep -q "id"; then
+    echo "✅ Repository $target_repo exists and is accessible"
+else
+    echo "❌ Repository not found or not accessible: $target_repo"
+    echo "$repo_check"
+fi
+
+echo "Step 5: Checking installation permissions..."
+# Get the app's permissions
+perm_response=$(curl -s \
+    -H "Authorization: Bearer $jwt" \
+    -H "Accept: application/vnd.github.v3+json" \
+    "https://api.github.com/app/installations/$GH_APP_INSTALLATION_ID")
+
+echo "Installation permissions:"
+echo "$perm_response" | grep -o '"permissions":{[^}]*}' | tr ',' '\n' | tr -d '{'
+
+echo -e "\nDebug complete. If issues persist, verify:"
+echo "1. The repository exists at github.com/$target_repo"
+echo "2. The GitHub App is installed on the target repository"
+echo "3. The GitHub App has appropriate permissions (contents: write)"
+echo "4. The installation ID is correct"
+echo "5. The private key is valid and correctly formatted"
 
 echo ""
 echo "===== Debugging Summary ====="
