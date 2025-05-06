@@ -75,7 +75,7 @@ If you prefer to manually set up resources:
 1. Use the existing Azure Resource Group (AIStudyPlans-RG1)
 2. Create an Azure Storage Account in AIStudyPlans-RG1
 3. Use the existing Azure Key Vault (aistudyplansvault) in AIStudyPlans-RG1
-4. Create an Azure Function App in AIStudyPlans-RG1
+4. Create an Azure Function App in AIStudyPlans-RG1 with name aistudyplans-function
 5. Enable managed identity for the Function App
 6. Grant the Function App's managed identity access to Key Vault secrets
 7. Add the Resend API key to Key Vault

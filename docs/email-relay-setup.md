@@ -36,7 +36,7 @@ This script will:
 - Use the existing Azure Resource Group (AIStudyPlans-RG1)
 - Create an Azure Storage Account (if it doesn't exist) within AIStudyPlans-RG1
 - Use the existing Azure Key Vault (aistudyplansvault) in AIStudyPlans-RG1
-- Create an Azure Function App (if it doesn't exist) within AIStudyPlans-RG1
+- Create an Azure Function App (if it doesn't exist) within AIStudyPlans-RG1 with the name aistudyplans-function
 - Enable Managed Identity for the Function App
 - Set Key Vault access policies to allow the Function App to access secrets
 - Store the Resend API key in Key Vault (if it's not already there)
