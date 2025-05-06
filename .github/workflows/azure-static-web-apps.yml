@@ -170,40 +170,26 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Remove conflicting app settings (if needed)
+        if: failure()
+        run: |
+          echo "Checking for and removing conflicting app settings..."
+          az functionapp config appsettings list --name "aistudyplans-function" --resource-group "AIStudyPlans-RG1" --query "[?name=='WEBSITE_RUN_FROM_PACKAGE'].name" -o tsv | xargs -r az functionapp config appsettings delete --name "aistudyplans-function" --resource-group "AIStudyPlans-RG1" --setting-names
+          echo "App settings cleanup completed"
+
       - name: Install Azure Functions dependencies (if needed)
         if: failure()
         run: |
           cd azure-functions
           npm install
-          echo "Function app dependencies installed successfully"
-          ls -la
 
-      - name: Verify Azure Function App (if needed)
-        if: failure()
-        run: |
-          echo "Verifying Azure Function App..."
-          FUNCTION_APP_NAME="${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}"
-          az functionapp show --name "$FUNCTION_APP_NAME" --resource-group "${{ secrets.AZURE_RESOURCE_GROUP || 'AIStudyPlans-RG1' }}" --query "name" -o tsv
-          
-          if [ $? -ne 0 ]; then
-            echo "❌ Function App '$FUNCTION_APP_NAME' not found or not accessible."
-            echo "Please ensure it exists and the credentials have proper access."
-            exit 1
-          else
-            echo "✅ Function App '$FUNCTION_APP_NAME' verified successfully."
-            # Get and display runtime information
-            RUNTIME=$(az functionapp show --name "$FUNCTION_APP_NAME" --resource-group "${{ secrets.AZURE_RESOURCE_GROUP || 'AIStudyPlans-RG1' }}" --query "siteConfig.linuxFxVersion" -o tsv)
-            echo "Function App Runtime: $RUNTIME"
-          fi
-
-      - name: Deploy Azure Functions (alternative method)
+      # Deploy with force flag to ensure the deployment works even with existing app settings
+      - name: Deploy Azure Functions (if needed)
         if: failure()
         run: |
           cd azure-functions
           echo "Deploying function app using alternative method..."
-          func azure functionapp publish ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }} --javascript --force
-        env:
-          AZURE_FUNCTIONAPP_NAME: ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}
+          func azure functionapp publish aistudyplans-function --javascript --force
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

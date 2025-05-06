@@ -1,63 +1,19 @@
 name: Backup Repository
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # Daily at midnight UTC
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout current repository
+      - name: Checkout source repository
         uses: actions/checkout@v4
         with:
           path: source-repo
-          
-      - name: Debug Environment
-        run: |
-          echo "Running backup workflow on branch: ${{ github.ref }}"
-          echo "Event name: ${{ github.event_name }}"
-          echo "Actor: ${{ github.actor }}"
-          echo "Repository: ${{ github.repository }}"
-          echo "Target Repository: herculeanfit1/AIStudyPlans-Backups"
-          
-      - name: Check App ID Secret
-        run: |
-          if [[ -z "${{ secrets.GH_APP_ID }}" ]]; then
-            echo "❌ GH_APP_ID secret is not set!"
-            exit 1
-          else
-            echo "✅ GH_APP_ID secret is configured"
-            echo "App ID should be 1243050"
-          fi
-          
-      - name: Check Private Key Secret
-        run: |
-          if [[ -z "${{ secrets.GH_APP_PRIVATE_KEY }}" ]]; then
-            echo "❌ GH_APP_PRIVATE_KEY secret is not set!"
-            exit 1
-          else
-            # Check if it has the proper format (starts with BEGIN line)
-            if [[ "${{ secrets.GH_APP_PRIVATE_KEY }}" == *"BEGIN"* ]]; then
-              echo "✅ GH_APP_PRIVATE_KEY appears to be properly formatted (starts with BEGIN)"
-              echo "✓ Private key length: $(echo "${{ secrets.GH_APP_PRIVATE_KEY }}" | wc -c) characters"
-              
-              # Check for newlines (indirectly)
-              if [[ $(echo "${{ secrets.GH_APP_PRIVATE_KEY }}" | grep -c "END") -gt 0 ]]; then
-                echo "✓ Private key appears to contain END marker"
-              else
-                echo "⚠️ Private key might be missing END marker or newlines"
-              fi
-            else
-              echo "⚠️ GH_APP_PRIVATE_KEY may not be properly formatted. Ensure it contains BEGIN/END lines"
-              exit 1
-            fi
-          fi
-          
+
       - name: Generate GitHub App token
         id: generate-token
         uses: actions/create-github-app-token@v1
@@ -72,88 +28,23 @@ jobs:
           echo "Testing token access to repositories..."
           
           # Check both repositories for debugging
-          echo "Checking primary repo access:"
-          STATUS_PRIMARY=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }})
-          echo "Primary repo API status: $STATUS_PRIMARY"
-          
           echo "Checking backup repo access:"
           STATUS_BACKUP=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups)
-          echo "Backup repo API status: $STATUS_BACKUP"
+                 "https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups")
+          echo "API Response code: $STATUS_BACKUP"
           
-          # List all accessible repositories
-          echo "Listing all repositories accessible with this token:"
-          curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/installation/repositories | jq -r '.repositories[].full_name'
-          
-          # Check if the backup repo exists at all using a PAT if available
-          if [[ -n "${{ secrets.GITHUB_TOKEN }}" ]]; then
-            echo "Checking if backup repo exists with workflow token:"
-            BACKUP_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups)
-            echo "Backup repo exists check: $BACKUP_EXISTS"
-          fi
-      
-      - name: Verify generated token
-        run: |
-          if [[ -z "${{ steps.generate-token.outputs.token }}" ]]; then
-            echo "❌ Failed to generate GitHub App token!"
-            exit 1
+          if [ "$STATUS_BACKUP" == "404" ]; then
+            echo "Backup repository not found. Will attempt to create it."
+            CREATE_RESPONSE=$(curl -s -X POST -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
+                          -H "Accept: application/vnd.github+json" \
+                          -H "X-GitHub-Api-Version: 2022-11-28" \
+                          https://api.github.com/user/repos \
+                          -d '{"name":"AIStudyPlans-Backups","private":true,"description":"Backup repository for AIStudyPlans"}')
+            echo "Repository creation response: $CREATE_RESPONSE"
+          elif [ "$STATUS_BACKUP" == "200" ]; then
+            echo "Backup repository exists and token has access."
           else
-            echo "✅ GitHub App token generated successfully"
-            echo "✓ Token length: ${#TOKEN} characters" 
-            # Print first 4 characters of token (safe to show)
-            echo "✓ Token starts with: ${TOKEN:0:4}..."
-          fi
-        env:
-          TOKEN: ${{ steps.generate-token.outputs.token }}
-
-      - name: Test GitHub API Access - Source Repo
-        run: |
-          echo "Testing GitHub API access to current repository..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }})
-            
-          echo "API Response Status (current repo): $STATUS"
-          
-          if [[ "$STATUS" == "200" ]]; then
-            echo "✅ Successfully authenticated to current repo API"
-          else
-            echo "❌ Failed to authenticate to current repo API - Status: $STATUS"
-          fi
-
-      - name: Test GitHub API Access - Backup Repo
-        run: |
-          echo "Testing GitHub API access to backup repository..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups)
-            
-          echo "API Response Status (backup repo): $STATUS"
-          
-          if [[ "$STATUS" == "200" ]]; then
-            echo "✅ Successfully authenticated to backup repo API"
-          else
-            echo "❌ Failed to authenticate to backup repo API - Status: $STATUS"
-            echo "This suggests the token has invalid permissions or scope"
-            
-            # Get general user info to check permissions
-            echo "Checking what user/app the token represents..."
-            curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              https://api.github.com/user
-              
-            # List installations for debugging
-            echo "Checking app installations that this token can access..."
-            curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              https://api.github.com/installation/repositories
+            echo "Unexpected status code: $STATUS_BACKUP"
           fi
 
       - name: Backup to secondary repository
@@ -175,66 +66,20 @@ jobs:
           
           # Add a special .gitignore to the backup repo to prevent workflow triggers
           echo "# Ignore GitHub workflows to prevent duplicate runs" > ../filtered-repo/.github-actions-ignore
-          echo ".github/" >> ../filtered-repo/.github-actions-ignore
+          echo ".github/workflows/" >> ../filtered-repo/.github-actions-ignore
           
-          # Set up the new remote repository
+          # Initialize git in the filtered directory
           cd ../filtered-repo
           git init
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
           git add .
           git commit -m "Backup from main repository - $(date)"
           
-          # Test access with a simple operation before pushing
+          # Print debug info about token permissions
           echo "Testing repository access with token..."
-          GIT_TRACE=2 git ls-remote --exit-code https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git
-          
-          if [ $? -ne 0 ]; then
-            echo "❌ Cannot access repository with token - authentication issue!"
-            
-            # Extra debug: Try with credentials from query to ensure repo exists
-            echo "Checking if repository exists with GitHub CLI..."
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
-              "https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups")
-            
-            if [ "$STATUS" != "200" ]; then
-              echo "Repository not found! Status code: $STATUS"
-              echo "Please ensure the repository herculeanfit1/AIStudyPlans-Backups exists and the GitHub App has access."
-              
-              # Create the repository if it doesn't exist and token has sufficient permissions
-              echo "Attempting to create backup repository..."
-              CREATE_RESPONSE=$(curl -s -X POST \
-                -H "Accept: application/vnd.github.v3+json" \
-                -H "Authorization: Bearer ${GH_TOKEN}" \
-                "https://api.github.com/user/repos" \
-                -d '{"name":"AIStudyPlans-Backups","private":true,"description":"Backup repository for AIStudyPlans"}')
-              
-              # Check if creation was successful
-              if echo "$CREATE_RESPONSE" | grep -q "full_name"; then
-                echo "✅ Successfully created backup repository"
-                # Try ls-remote again after repo creation
-                git ls-remote --exit-code https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git
-                if [ $? -eq 0 ]; then
-                  echo "✅ Can now access repository after creation"
-                else
-                  echo "❌ Still cannot access repository after creation"
-                  exit 1
-                fi
-              else
-                echo "❌ Failed to create backup repository: $CREATE_RESPONSE"
-                exit 1
-              fi
-            else
-              echo "Repository exists but token doesn't have access."
-              echo "Please check GitHub App installation and permissions."
-              exit 1
-            fi
-          else
-            echo "✅ Repository access with token successful"
+          GIT_TRACE=1 git ls-remote --exit-code https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git || echo "Could not reach repository"
+
+          # Push to backup repository
+          if ! git push -f https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git main:main; then
+            echo "Push failed. Retrying with more verbose output:"
+            GIT_TRACE=1 git push -f https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git main:main || echo "Push failed again"
           fi
-          
-          # Push to backup repository (force to overwrite history)
-          git remote add backup https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git
-          git push backup main:main --force
