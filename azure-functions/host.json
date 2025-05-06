@@ -1,0 +1,55 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    },
+    "logLevel": {
+      "default": "Information",
+      "Function": "Information",
+      "Host.Results": "Information",
+      "Host.Aggregator": "Information"
+    }
+  },
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[3.*, 4.0.0)"
+  },
+  "extensions": {
+    "http": {
+      "routePrefix": "api",
+      "cors": {
+        "allowedOrigins": [
+          "https://aistudyplans.com",
+          "https://www.aistudyplans.com",
+          "https://scheduledapp.com",
+          "https://www.scheduledapp.com",
+          "https://scheduled-app.azurewebsites.net",
+          "https://scheduled-app-staging.azurewebsites.net",
+          "http://localhost:3000",
+          "http://localhost:4280"
+        ],
+        "allowedMethods": ["GET", "POST", "PUT", "OPTIONS"],
+        "allowedHeaders": [
+          "Content-Type", 
+          "Authorization", 
+          "X-CSRF-Token", 
+          "X-Requested-With",
+          "Accept", 
+          "Origin"
+        ],
+        "exposedHeaders": [
+          "Content-Type",
+          "Cache-Control",
+          "Expires",
+          "Pragma"
+        ],
+        "maxAge": 86400,
+        "allowCredentials": true
+      }
+    }
+  }
+} 

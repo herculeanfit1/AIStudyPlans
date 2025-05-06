@@ -76,6 +76,39 @@ jobs:
           echo "This is a test file to verify deployment" > out/test.txt
           ls -la out/
 
+      # Ensure staticwebapp.config.json is in the output directory
+      - name: Verify staticwebapp.config.json
+        run: |
+          if [ ! -f "out/staticwebapp.config.json" ]; then
+            echo "staticwebapp.config.json not found in output directory. Copying from root."
+            cp staticwebapp.config.json out/
+          fi
+          echo "Content of staticwebapp.config.json:"
+          cat out/staticwebapp.config.json
+
+      # Update API route in staticwebapp.config.json for Email Relay
+      - name: Update API routes in staticwebapp.config.json
+        run: |
+          cat > out/staticwebapp.config.json << EOL
+          {
+            "navigationFallback": {
+              "rewrite": "/index.html"
+            },
+            "mimeTypes": {
+              ".json": "application/json"
+            },
+            "routes": [
+              {
+                "route": "/api/waitlist",
+                "allowedRoles": ["anonymous"],
+                "rewrite": "https://${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}.azurewebsites.net/api/waitlist"
+              }
+            ]
+          }
+          EOL
+          echo "Updated staticwebapp.config.json with Azure Functions API routes"
+          cat out/staticwebapp.config.json
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -100,6 +133,39 @@ jobs:
             echo "❌ Deployment failed"
             echo "Please check the logs for more information"
           fi
+
+  deploy_azure_functions:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    name: Deploy Azure Functions
+    needs: build_and_deploy_job
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup Azure Functions Core Tools
+        run: npm install -g azure-functions-core-tools@4
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install Azure Functions dependencies
+        run: |
+          cd azure-functions
+          npm ci
+
+      - name: Deploy Azure Functions
+        run: |
+          cd azure-functions
+          func azure functionapp publish ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}
+        env:
+          AZURE_FUNCTIONAPP_NAME: ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
