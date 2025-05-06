@@ -17,9 +17,17 @@ jobs:
         with:
           path: source-repo
 
+      - name: Configure Git with OAuth token
+        run: |
+          # Create a temporary OAuth token using client credentials
+          OAUTH_TOKEN=$(curl -s -X POST \
+            -H "Accept: application/json" \
+            -d "client_id=${{ secrets.OAUTH_CLIENT_ID }}&client_secret=${{ secrets.OAUTH_CLIENT_SECRET }}&scope=repo" \
+            https://github.com/login/oauth/access_token | grep -o 'access_token=[^&]*' | cut -d= -f2)
+          
+          echo "OAUTH_TOKEN=${OAUTH_TOKEN}" >> $GITHUB_ENV
+
       - name: Backup to secondary repository
-        env:
-          BACKUP_PAT: ${{ secrets.BACKUP_PAT }}
         run: |
           cd source-repo
           
@@ -45,9 +53,9 @@ jobs:
           git add .
           git commit -m "Backup from main repository - $(date)"
           
-          # Show the repo URL we're pushing to (with any token part masked)
-          echo "Pushing to: https://***@github.com/herculeanfit1/aistudyplans-backups.git"
+          # Show the repo URL we're pushing to (with token masked)
+          echo "Pushing to: https://***@github.com/herculeanfit1/AIStudyPlans-Backups.git"
           
           # Push to backup repository (force to overwrite history)
-          git remote add backup https://${BACKUP_PAT}@github.com/herculeanfit1/aistudyplans-backups.git
+          git remote add backup https://${{ env.OAUTH_TOKEN }}@github.com/herculeanfit1/AIStudyPlans-Backups.git
           git push backup main:main --force
