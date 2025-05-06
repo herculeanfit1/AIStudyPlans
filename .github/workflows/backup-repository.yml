@@ -17,6 +17,14 @@ jobs:
         with:
           path: source-repo
           
+      - name: Debug Environment
+        run: |
+          echo "Running backup workflow on branch: ${{ github.ref }}"
+          echo "Event name: ${{ github.event_name }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Target Repository: herculeanfit1/AIStudyPlans-Backups"
+          
       - name: Check App ID Secret
         run: |
           if [[ -z "${{ secrets.BACKUP_APP_ID }}" ]]; then
@@ -35,7 +43,15 @@ jobs:
           else
             # Check if it has the proper format (starts with BEGIN line)
             if [[ "${{ secrets.BACKUP_APP_PRIVATE_KEY }}" == *"BEGIN"* ]]; then
-              echo "✅ BACKUP_APP_PRIVATE_KEY appears to be properly formatted"
+              echo "✅ BACKUP_APP_PRIVATE_KEY appears to be properly formatted (starts with BEGIN)"
+              echo "✓ Private key length: $(echo "${{ secrets.BACKUP_APP_PRIVATE_KEY }}" | wc -c) characters"
+              
+              # Check for newlines (indirectly)
+              if [[ $(echo "${{ secrets.BACKUP_APP_PRIVATE_KEY }}" | grep -c "END") -gt 0 ]]; then
+                echo "✓ Private key appears to contain END marker"
+              else
+                echo "⚠️ Private key might be missing END marker or newlines"
+              fi
             else
               echo "⚠️ BACKUP_APP_PRIVATE_KEY may not be properly formatted. Ensure it contains BEGIN/END lines"
               exit 1
@@ -50,7 +66,7 @@ jobs:
           private-key: ${{ secrets.BACKUP_APP_PRIVATE_KEY }}
           owner: herculeanfit1
           repositories: AIStudyPlans-Backups
-          
+           
       - name: Verify generated token
         run: |
           if [[ -z "${{ steps.generate-token.outputs.token }}" ]]; then
@@ -58,6 +74,28 @@ jobs:
             exit 1
           else
             echo "✅ GitHub App token generated successfully"
+            echo "✓ Token length: ${#TOKEN} characters" 
+            # Print first 4 characters of token (safe to show)
+            echo "✓ Token starts with: ${TOKEN:0:4}..."
+          fi
+        env:
+          TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      - name: Test API access with token
+        run: |
+          echo "Testing GitHub API access with token..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups)
+            
+          echo "API Response Status: $STATUS"
+          
+          if [[ "$STATUS" == "200" ]]; then
+            echo "✅ Successfully authenticated to GitHub API"
+          else
+            echo "❌ Failed to authenticate to GitHub API - Status: $STATUS"
+            echo "This suggests the token has invalid permissions or scope"
+            exit 1
           fi
 
       - name: Backup to secondary repository
@@ -90,7 +128,7 @@ jobs:
           
           # Test access with a simple operation before pushing
           echo "Testing repository access with token..."
-          GIT_TRACE=1 git ls-remote --exit-code https://${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git > /dev/null 2>&1
+          GIT_TRACE=2 git ls-remote --exit-code https://${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git
           
           if [ $? -ne 0 ]; then
             echo "❌ Cannot access repository with token - authentication issue!"
