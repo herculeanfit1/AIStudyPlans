@@ -51,6 +51,8 @@ The third-party email delivery service that handles the actual sending of emails
 
 ## Deployment
 
+All Azure resources for this system are deployed in the **AIStudyPlans-RG1** resource group.
+
 The email relay system can be deployed using the provided deployment script:
 
 ```bash
@@ -58,20 +60,22 @@ The email relay system can be deployed using the provided deployment script:
 ```
 
 This script performs the following actions:
-1. Creates or updates required Azure resources (Resource Group, Storage Account, Key Vault, Function App)
-2. Enables managed identity for the Function App
-3. Sets up Key Vault access policies
-4. Configures environment variables for the Function App
-5. Deploys the Function code
+1. Uses the existing Resource Group (AIStudyPlans-RG1)
+2. Creates or updates required Azure resources (Storage Account, Function App)
+3. Uses the existing Key Vault (aistudyplansvault)
+4. Enables managed identity for the Function App
+5. Sets up Key Vault access policies
+6. Configures environment variables for the Function App
+7. Deploys the Function code
 
 ### Manual Setup
 
 If you prefer to manually set up resources:
 
-1. Create an Azure Resource Group
-2. Create an Azure Storage Account
-3. Create an Azure Key Vault
-4. Create an Azure Function App
+1. Use the existing Azure Resource Group (AIStudyPlans-RG1)
+2. Create an Azure Storage Account in AIStudyPlans-RG1
+3. Use the existing Azure Key Vault (aistudyplansvault) in AIStudyPlans-RG1
+4. Create an Azure Function App in AIStudyPlans-RG1
 5. Enable managed identity for the Function App
 6. Grant the Function App's managed identity access to Key Vault secrets
 7. Add the Resend API key to Key Vault
@@ -86,7 +90,7 @@ The Function App requires the following application settings:
 
 | Setting | Description |
 |---------|-------------|
-| KEY_VAULT_NAME | Name of the Azure Key Vault |
+| KEY_VAULT_NAME | Name of the Azure Key Vault (aistudyplansvault) |
 | EMAIL_FROM | Sender email address (e.g., "Lindsey <lindsey@aistudyplans.com>") |
 | EMAIL_REPLY_TO | Reply-to email address (e.g., "support@aistudyplans.com") |
 | NEXT_PUBLIC_APP_URL | Base URL of the application |
@@ -124,7 +128,7 @@ Common issues and their solutions:
 
 **Symptom**: Function returns a 500 error with "Failed to initialize Key Vault client"
 **Solutions**:
-- Verify the KEY_VAULT_NAME setting is correct
+- Verify the KEY_VAULT_NAME setting is correct (should be "aistudyplansvault")
 - Check that the Function App's managed identity is enabled
 - Ensure the Key Vault access policy is correctly configured
 

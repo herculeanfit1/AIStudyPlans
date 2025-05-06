@@ -11,6 +11,8 @@ The email relay system consists of:
 3. **Azure Static Web App**: The main web application that redirects API requests to the Function App
 4. **Resend**: The email delivery service used to send transactional emails
 
+All Azure resources for this system are deployed in the **AIStudyPlans-RG1** resource group.
+
 ## Setup Instructions
 
 Follow these steps to deploy the email relay functionality to production:
@@ -31,10 +33,10 @@ Run the deployment script from the project root:
 ```
 
 This script will:
-- Create an Azure Resource Group (if it doesn't exist)
-- Create an Azure Storage Account (if it doesn't exist)
-- Create an Azure Key Vault (if it doesn't exist)
-- Create an Azure Function App (if it doesn't exist)
+- Use the existing Azure Resource Group (AIStudyPlans-RG1)
+- Create an Azure Storage Account (if it doesn't exist) within AIStudyPlans-RG1
+- Use the existing Azure Key Vault (aistudyplansvault) in AIStudyPlans-RG1
+- Create an Azure Function App (if it doesn't exist) within AIStudyPlans-RG1
 - Enable Managed Identity for the Function App
 - Set Key Vault access policies to allow the Function App to access secrets
 - Store the Resend API key in Key Vault (if it's not already there)
@@ -136,7 +138,7 @@ To update a secret in Key Vault:
 az login
 
 # Update a secret
-az keyvault secret set --vault-name aistudyplans-kv --name "resend-api-key" --value "new-api-key-value"
+az keyvault secret set --vault-name aistudyplansvault --name "resend-api-key" --value "new-api-key-value"
 ```
 
 ### Updating Email Templates
