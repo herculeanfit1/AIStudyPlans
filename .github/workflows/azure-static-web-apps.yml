@@ -191,6 +191,9 @@ jobs:
             exit 1
           else
             echo "✅ Function App '$FUNCTION_APP_NAME' verified successfully."
+            # Get and display runtime information
+            RUNTIME=$(az functionapp show --name "$FUNCTION_APP_NAME" --resource-group "${{ secrets.AZURE_RESOURCE_GROUP || 'AIStudyPlans-RG1' }}" --query "siteConfig.linuxFxVersion" -o tsv)
+            echo "Function App Runtime: $RUNTIME"
           fi
 
       - name: Deploy Azure Functions (alternative method)
@@ -198,7 +201,7 @@ jobs:
         run: |
           cd azure-functions
           echo "Deploying function app using alternative method..."
-          func azure functionapp publish ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }} --force
+          func azure functionapp publish ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }} --javascript --force
         env:
           AZURE_FUNCTIONAPP_NAME: ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}
 
