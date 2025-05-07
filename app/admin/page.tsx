@@ -25,36 +25,43 @@ export default function AdminDashboard() {
     }
   };
   
+  // Authentication check
   useEffect(() => {
-    // Check if user is authenticated
-    try {
-      // Try multiple auth storage methods for cross-browser compatibility
-      let isAdmin = false;
-      
-      // Try localStorage first
+    const checkAuth = () => {
       try {
-        isAdmin = localStorage.getItem('isAdmin') === 'true';
-      } catch (e) {
-        console.warn('LocalStorage not available:', e);
-      }
-      
-      // If localStorage failed, try cookies
-      if (!isAdmin) {
-        isAdmin = getCookie('isAdmin') === 'true';
-      }
-      
-      if (!isAdmin) {
-        console.log('Not authenticated, redirecting to login');
+        // Try localStorage first
+        let isAdmin = false;
+        
+        try {
+          isAdmin = localStorage.getItem('isAdmin') === 'true';
+        } catch (err) {
+          console.warn('LocalStorage access error:', err);
+        }
+        
+        // If localStorage failed, try cookies
+        if (!isAdmin) {
+          isAdmin = getCookie('isAdmin') === 'true';
+        }
+        
+        if (!isAdmin) {
+          console.log('Not authenticated, redirecting to login');
+          router.push('/admin/login');
+          return false;
+        }
+        
+        return true;
+      } catch (err) {
+        console.error('Auth check error:', err);
         router.push('/admin/login');
-        return;
+        return false;
       }
-      
-      setIsAuthenticated(true);
-      // Load real feedback stats
+    };
+    
+    const authResult = checkAuth();
+    setIsAuthenticated(authResult);
+    
+    if (authResult) {
       loadStats();
-    } catch (err) {
-      console.error('Auth check error:', err);
-      router.push('/admin/login');
     }
   }, [router]);
   
@@ -73,8 +80,14 @@ export default function AdminDashboard() {
     }
   };
 
+  // Show nothing while checking authentication
   if (!isAuthenticated) {
-    return null;
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"></div>
+        <p className="ml-3 text-gray-600">Loading...</p>
+      </div>
+    );
   }
 
   return (

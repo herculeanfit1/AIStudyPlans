@@ -151,6 +151,18 @@ jobs:
         with:
           node-version: '22'
 
+      # Pre-emptively check and remove WEBSITE_RUN_FROM_PACKAGE to avoid deployment errors
+      - name: Login to Azure and clean app settings
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+      - name: Remove WEBSITE_RUN_FROM_PACKAGE app setting
+        run: |
+          echo "Checking for and removing WEBSITE_RUN_FROM_PACKAGE app setting..."
+          az functionapp config appsettings list --name "${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}" --resource-group "AIStudyPlans-RG1" --query "[?name=='WEBSITE_RUN_FROM_PACKAGE'].name" -o tsv | xargs -r az functionapp config appsettings delete --name "${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}" --resource-group "AIStudyPlans-RG1" --setting-names
+          echo "App settings cleanup completed"
+
       # Use the official Azure Functions Action instead of installing Core Tools manually
       - name: 'Deploy Azure Functions'
         uses: Azure/functions-action@v1
@@ -168,19 +180,6 @@ jobs:
           echo "Azure Functions Core Tools installed successfully"
           func --version
 
-      - name: Login to Azure (if needed)
-        if: failure()
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Remove conflicting app settings (if needed)
-        if: failure()
-        run: |
-          echo "Checking for and removing conflicting app settings..."
-          az functionapp config appsettings list --name "aistudyplans-function" --resource-group "AIStudyPlans-RG1" --query "[?name=='WEBSITE_RUN_FROM_PACKAGE'].name" -o tsv | xargs -r az functionapp config appsettings delete --name "aistudyplans-function" --resource-group "AIStudyPlans-RG1" --setting-names
-          echo "App settings cleanup completed"
-
       - name: Install Azure Functions dependencies (if needed)
         if: failure()
         run: |
@@ -193,7 +192,7 @@ jobs:
         run: |
           cd azure-functions
           echo "Deploying function app using alternative method..."
-          func azure functionapp publish aistudyplans-function --javascript --force
+          func azure functionapp publish ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }} --javascript --force
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
