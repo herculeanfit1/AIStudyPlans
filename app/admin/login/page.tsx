@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
@@ -15,6 +15,7 @@ export default function AdminLogin() {
   const [callbackUrl, setCallbackUrl] = useState('/admin');
   const [isSafari, setIsSafari] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
   
   // Browser detection
   useEffect(() => {
@@ -95,8 +96,8 @@ export default function AdminLogin() {
     e.preventDefault();
     setError('');
     
-    // Security: Very basic but functional for development
-    if (username === 'admin' && password === 'adminpass') {
+    // Security: Use provided dev credentials
+    if (username === 'adminbridgingtrustaitk' && password === 'Movingondownthelineuntil1gettotheend!') {
       if (setSecureAuth(true)) {
         router.push('/admin');
       } else {
@@ -126,6 +127,21 @@ export default function AdminLogin() {
       setIsLoading(false);
     }
   };
+  
+  useEffect(() => {
+    // Check for dev admin flag in localStorage or cookies
+    let isDevAdmin = false;
+    try {
+      isDevAdmin = localStorage.getItem('isAdmin') === 'true';
+    } catch {}
+    if (!isDevAdmin) {
+      isDevAdmin = document.cookie.includes('isAdmin=true');
+    }
+    // Only redirect if truly authenticated
+    if ((session?.user?.isAdmin || isDevAdmin) && status !== 'loading') {
+      router.replace('/admin');
+    }
+  }, [session, status, router]);
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -232,7 +248,7 @@ export default function AdminLogin() {
               
               <div className="mt-4 text-center">
                 <p className="text-xs text-gray-500">
-                  For development: username "admin" / password "adminpass"
+                  For development: username "adminbridgingtrustaitk" / password "Movingondownthelineuntil1gettotheend!"
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
                   {!safeStorageAvailable() && "Warning: Local storage is disabled in your browser."}

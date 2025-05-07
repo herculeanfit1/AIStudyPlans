@@ -1,0 +1,117 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import crypto from 'crypto';
+
+// Constants
+const CSRF_COOKIE_NAME = 'X-CSRF-Token';
+const CSRF_HEADER_NAME = 'X-CSRF-Token';
+const CSRF_TOKEN_LENGTH = 32;
+const CSRF_COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours in seconds
+
+/**
+ * Generate a secure random CSRF token
+ * @returns A cryptographically secure random token
+ */
+export function generateCsrfToken(): string {
+  return crypto.randomBytes(CSRF_TOKEN_LENGTH).toString('hex');
+}
+
+/**
+ * Set CSRF token in cookies
+ * @returns The generated CSRF token
+ */
+export function setCsrfToken(): string {
+  const token = generateCsrfToken();
+  
+  // Set the CSRF token in a cookie with secure attributes
+  cookies().set({
+    name: CSRF_COOKIE_NAME,
+    value: token,
+    httpOnly: true, // Not accessible via JavaScript
+    secure: process.env.NODE_ENV === 'production', // Only sent over HTTPS in production
+    sameSite: 'strict', // Only sent for same-site requests
+    maxAge: CSRF_COOKIE_MAX_AGE,
+    path: '/',
+  });
+  
+  return token;
+}
+
+/**
+ * Get the CSRF token from cookies
+ * @returns The CSRF token or null if not found
+ */
+export function getCsrfToken(): string | null {
+  const csrfCookie = cookies().get(CSRF_COOKIE_NAME);
+  return csrfCookie?.value || null;
+}
+
+/**
+ * Validate CSRF token from request against cookie
+ * @param request NextRequest object
+ * @returns Boolean indicating if the token is valid
+ */
+export function validateCsrfToken(request: NextRequest): boolean {
+  // Get the token from cookie
+  const cookieToken = cookies().get(CSRF_COOKIE_NAME)?.value;
+  
+  if (!cookieToken) {
+    return false;
+  }
+  
+  // Get the token from header (or form body as fallback)
+  const headerToken = request.headers.get(CSRF_HEADER_NAME);
+  
+  // If no token was provided in the header, check form data
+  if (!headerToken) {
+    // We'll need to parse the request body, but this can only be done once
+    // This should be handled in the actual API route
+    return false;
+  }
+  
+  // Compare tokens with constant-time comparison to prevent timing attacks
+  return crypto.timingSafeEqual(
+    Buffer.from(cookieToken),
+    Buffer.from(headerToken)
+  );
+}
+
+/**
+ * CSRF protection middleware for API routes
+ * @param request NextRequest object
+ * @returns NextResponse or null to continue
+ */
+export function csrfProtection(request: NextRequest): NextResponse | null {
+  // Skip CSRF validation for GET and HEAD requests (they should be idempotent)
+  const method = request.method.toUpperCase();
+  if (method === 'GET' || method === 'HEAD') {
+    return null;
+  }
+  
+  // For other methods (POST, PUT, DELETE, etc.), validate CSRF token
+  if (!validateCsrfToken(request)) {
+    return NextResponse.json(
+      { error: 'Invalid CSRF token' },
+      { status: 403 }
+    );
+  }
+  
+  // Continue processing the request
+  return null;
+}
+
+/**
+ * React hook to get CSRF token for forms
+ * This needs to be called from a client component or a server action
+ * @returns Object with CSRF token and header name
+ */
+export function useCsrfToken() {
+  // This function should be called from a server component
+  // or from getServerSideProps
+  const token = getCsrfToken() || setCsrfToken();
+  
+  return {
+    token,
+    headerName: CSRF_HEADER_NAME
+  };
+} 

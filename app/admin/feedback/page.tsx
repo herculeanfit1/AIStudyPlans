@@ -17,8 +17,14 @@ import {
 } from '@/components/admin/FeedbackChart';
 import FeedbackTable from '@/components/admin/FeedbackTable';
 import FeedbackFilters from '@/components/admin/FeedbackFilters';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function FeedbackDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [devAdmin, setDevAdmin] = useState(false);
+
   // State for feedback data
   const [feedback, setFeedback] = useState<FeedbackWithUser[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -41,6 +47,25 @@ export default function FeedbackDashboard() {
     endDate: '',
     searchTerm: '',
   });
+
+  useEffect(() => {
+    // Check for dev admin flag in localStorage or cookies
+    let isDevAdmin = false;
+    try {
+      isDevAdmin = localStorage.getItem('isAdmin') === 'true';
+    } catch {}
+    if (!isDevAdmin) {
+      isDevAdmin = document.cookie.includes('isAdmin=true');
+    }
+    setDevAdmin(isDevAdmin);
+  }, []);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!(session?.user?.isAdmin || devAdmin)) {
+      router.replace('/admin/login?error=AccessDenied');
+    }
+  }, [session, status, devAdmin, router]);
 
   // Load feedback data with current page and filters
   const loadFeedback = async () => {

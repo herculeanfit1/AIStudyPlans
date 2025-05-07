@@ -1,0 +1,116 @@
+name: Dependency Security Scan
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.npmrc'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.npmrc'
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sundays
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  security_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+        
+      - name: Verify .npmrc settings
+        run: |
+          echo "Checking .npmrc for secure settings..."
+          if [ -f .npmrc ]; then
+            echo "Found .npmrc file:"
+            cat .npmrc
+            
+            # Check for important security settings
+            if ! grep -q "save-exact" .npmrc; then
+              echo "⚠️ Warning: save-exact is not set in .npmrc"
+            fi
+            
+            if ! grep -q "ignore-scripts" .npmrc; then
+              echo "⚠️ Warning: ignore-scripts is not set in .npmrc"
+            fi
+            
+            if grep -q "legacy-peer-deps" .npmrc; then
+              echo "❌ Error: legacy-peer-deps is set in .npmrc which can lead to security issues"
+              exit 1
+            fi
+          else
+            echo "⚠️ Warning: No .npmrc file found"
+          fi
+
+      - name: Verify auth dependency compatibility
+        run: |
+          echo "Checking authentication dependency compatibility..."
+          
+          # Check if next-auth is installed
+          if grep -q "next-auth" package.json; then
+            NEXT_AUTH_VERSION=$(node -e "console.log(require('./package.json').dependencies['next-auth'])")
+            AUTH_CORE_VERSION=$(node -e "console.log(require('./package.json').dependencies['@auth/core'])")
+            
+            echo "Found next-auth@$NEXT_AUTH_VERSION and @auth/core@$AUTH_CORE_VERSION"
+            
+            # Check for specific version compatibility
+            if [[ "$NEXT_AUTH_VERSION" == "^4.24.11" && "$AUTH_CORE_VERSION" != "^0.34.2" ]]; then
+              echo "❌ Error: Incompatible versions. next-auth@4.24.11 requires @auth/core@0.34.2"
+              exit 1
+            fi
+          else
+            echo "next-auth not found in dependencies"
+          fi
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Run Snyk to check for vulnerabilities
+        run: snyk test --severity-threshold=medium
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      - name: Install OWASP Dependency-Check
+        run: |
+          mkdir -p $HOME/OWASP
+          curl -L https://github.com/jeremylong/DependencyCheck/releases/download/v7.4.4/dependency-check-7.4.4-release.zip -o $HOME/OWASP/dependency-check.zip
+          unzip $HOME/OWASP/dependency-check.zip -d $HOME/OWASP
+
+      - name: Run OWASP Dependency-Check
+        run: |
+          $HOME/OWASP/dependency-check/bin/dependency-check.sh --scan . --out dependency-reports --format "HTML" --enableExperimental
+        continue-on-error: true
+
+      - name: Upload scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-security-reports
+          path: dependency-reports/
+          retention-days: 7
+
+      - name: Check for legacy-peer-deps in scripts
+        run: |
+          echo "Checking for legacy-peer-deps in scripts..."
+          if grep -r --include="*.sh" --include="*.js" "legacy-peer-deps" .; then
+            echo "⚠️ Warning: Found legacy-peer-deps in scripts"
+            echo "Consider refactoring these scripts to use proper dependency resolution"
+          else
+            echo "✅ No legacy-peer-deps found in scripts"
+          fi 

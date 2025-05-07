@@ -3,22 +3,35 @@
 import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function AdminSettings() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [isClearingData, setIsClearingData] = useState(false);
   const [isSubmittingTest, setIsSubmittingTest] = useState(false);
   const [isLocalAuth, setIsLocalAuth] = useState(false);
+  const [devAdmin, setDevAdmin] = useState(false);
   
   useEffect(() => {
+    // Check for dev admin flag in localStorage or cookies
+    let isDevAdmin = false;
     try {
-      // Check localStorage auth (fallback)
-      const localIsAdmin = localStorage.getItem('isAdmin') === 'true';
-      setIsLocalAuth(localIsAdmin);
-    } catch (err) {
-      console.error('Auth check error:', err);
+      isDevAdmin = localStorage.getItem('isAdmin') === 'true';
+    } catch {}
+    if (!isDevAdmin) {
+      isDevAdmin = document.cookie.includes('isAdmin=true');
     }
+    setDevAdmin(isDevAdmin);
+    setIsLocalAuth(isDevAdmin);
   }, []);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!(session?.user?.isAdmin || devAdmin)) {
+      router.replace('/admin/login?error=AccessDenied');
+    }
+  }, [session, status, devAdmin, router]);
   
   // Handle clearing all feedback data
   const handleClearData = async () => {

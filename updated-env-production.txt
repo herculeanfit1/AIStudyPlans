@@ -1,0 +1,29 @@
+# Basic environment configuration
+NODE_ENV=production
+NEXT_TELEMETRY_DISABLED=1
+
+# Resend API Configuration
+RESEND_API_KEY=@Microsoft.KeyVault(SecretUri=https://aistudyplansvault.vault.azure.net/secrets/resend-api-key/)
+
+# Email Configuration
+EMAIL_FROM=lindsey@aistudyplans.com
+EMAIL_REPLY_TO=support@aistudyplans.com
+
+# Application URL
+NEXT_PUBLIC_APP_URL=https://aistudyplans.com
+
+# Azure Function for server-side operations
+NEXT_PUBLIC_FUNCTIONS_URL=https://aistudyplans-functions.azurewebsites.net/api/waitlist
+
+# Admin access (change these for production!)
+NEXT_PUBLIC_ADMIN_USERNAME=admin
+NEXT_PUBLIC_ADMIN_PASSWORD=adminpass
+
+# Optional: Application Insights for Azure monitoring
+APPLICATIONINSIGHTS_CONNECTION_STRING=your_application_insights_connection_string
+
+# Optional: Feature flags
+FEATURE_WAITLIST_ENABLED=true
+
+# Optional: CORS configuration
+ALLOWED_ORIGINS=https://aistudyplans.com,https://www.aistudyplans.com% 

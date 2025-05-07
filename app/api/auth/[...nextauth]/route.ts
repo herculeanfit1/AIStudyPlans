@@ -29,16 +29,17 @@ const handler = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }) {
-      // Allow only specific users based on their email
-      const allowedEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+      // Allow only the specific admin email for Azure AD
+      const allowedEmails = ["btaiadmin@bridgingtrustai.onmicrosoft.com"];
       if (!user.email) return false;
-      
-      return allowedEmails.includes(user.email) || false;
+      return allowedEmails.includes(user.email);
     },
     async jwt({ token, user }) {
       // Pass information to the token
-      if (user) {
+      if (user && user.email === "btaiadmin@bridgingtrustai.onmicrosoft.com") {
         token.isAdmin = true;
+      } else {
+        token.isAdmin = false;
       }
       return token;
     },
