@@ -248,74 +248,37 @@ This project uses GitHub Actions for continuous integration and deployment with 
 
 2. **Test Workflow** (.github/workflows/test.yml)
    - Runs unit and E2E tests in parallel
-   - Aggregates test results
-   - Provides test summary
 
-3. **Lint Workflow** (.github/workflows/lint.yml)
-   - Validates code quality
-   - Checks TypeScript types
-   - Lints Dockerfiles
-   - Validates GitHub workflow files
+## Dependency Management
 
-4. **Deployment Workflow** (.github/workflows/deploy.yml)
-   - Deploys the application to target environments
-   - Supports canary deployments
-   - Provides rollback capability
+This project follows strict dependency management practices to ensure security, stability, and reproducibility across environments.
 
-5. **Auto-Rollback** (.github/workflows/auto-rollback.yml)
-   - Monitors deployment health
-   - Automatically rolls back failing deployments
+### Key Principles
 
-### Environment Configuration
+- **Exact Versioning**: All dependencies use exact versions (no `^` or `~`) to ensure consistent builds
+- **Shrinkwrap Locking**: We use npm-shrinkwrap.json to lock all transitive dependencies
+- **Security First**: Automatic security audits run on every dependency change
 
-The application supports multiple environments:
-- Development
-- Staging 
-- Production
+### Dependency Tools
 
-Environment-specific configurations are stored in the `environments/` directory:
+We've built several specialized tools to help manage dependencies:
 
-```
-environments/
-├── development/
-│   └── config.json
-├── staging/
-│   └── config.json
-├── production/
-│   └── config.json
-└── README.md
-```
+| Command | Description |
+|---------|-------------|
+| `npm run validate:deps` | Verify dependencies follow our standards |
+| `npm run fix:deps` | Interactive tool to fix common dependency issues |
+| `npm run dependencies:check` | Check for outdated dependencies |
+| `npm run dependencies:update` | Update dependencies (with caution) |
 
-Each environment has its own set of secrets that should be configured as GitHub repository secrets following this naming convention:
+### Adding New Dependencies
 
-```
-VARIABLE_NAME_ENVIRONMENT
-```
+When adding new dependencies:
 
-For example:
-- `NEXT_PUBLIC_SUPABASE_URL_DEVELOPMENT`
-- `NEXT_PUBLIC_SUPABASE_URL_STAGING`
-- `NEXT_PUBLIC_SUPABASE_URL_PRODUCTION`
+1. Always use exact versions: `npm install package-name --save-exact`
+2. Run `npm shrinkwrap` after adding dependencies
+3. Commit both package.json and npm-shrinkwrap.json
 
-See the [environments/README.md](./environments/README.md) file for more details.
-
-### Running CI Locally
-
-You can test the CI processes locally using act:
-
-```bash
-# Install act (if not already installed)
-brew install act
-
-# Run the build workflow
-act -j build
-
-# Run the lint workflow
-act -j lint
-
-# Run the test workflow
-act -j unit-tests
-```
+See [our full dependency documentation](./docs/dependency-management.md) for more details.
 
 ## Docker Infrastructure
 
@@ -523,3 +486,38 @@ npm start
 2. In Cursor, you should now see "Local Qwen3" available as an MCP server in the settings.
 
 For more details, see [mcp-server/README.md](mcp-server/README.md).
+
+## Azure Resource Migration Utilities
+
+This repository includes scripts to help with migrating Azure resources between resource groups.
+
+### Application Insights Migration
+
+Since Application Insights resources can't be directly moved between resource groups (due to deny assignments), we provide utilities to create a new resource and update your application configuration:
+
+1. **Create a new Application Insights in your target resource group:**
+   ```bash
+   # Install Azure CLI if needed
+   # brew install azure-cli (macOS) or follow https://docs.microsoft.com/en-us/cli/azure/install-azure-cli
+
+   # Login to Azure
+   az login
+
+   # Run the Application Insights creation script
+   node scripts/azure-create-app-insights.js
+   ```
+
+2. **Update your application configuration with the new connection string:**
+   ```bash
+   # After creating the new Application Insights resource,
+   # use the migration script to update all configuration files
+   node scripts/migrate-app-insights.js "OLD_CONNECTION_STRING" "NEW_CONNECTION_STRING"
+   ```
+
+3. **Verify functionality:**
+   - Start the development server: `npm run dev`
+   - Check the monitoring endpoints work correctly
+   - Update CI/CD workflows with the new connection string
+
+4. **Delete the old resource:**
+   Once everything is working with the new Application Insights resource, you can safely delete the old one.
