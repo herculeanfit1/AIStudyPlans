@@ -3,23 +3,53 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getFeedbackStats, FeedbackStats } from '@/lib/admin-supabase';
+import { getFeedbackStats } from '@/lib/admin-supabase';
+import { FeedbackStats } from '@/lib/types';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<FeedbackStats | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Utility to check cookies for auth
+  const getCookie = (name: string): string | null => {
+    try {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+      return null;
+    } catch (e) {
+      console.error('Cookie parse error:', e);
+      return null;
+    }
+  };
   
   useEffect(() => {
     // Check if user is authenticated
     try {
-      const isAdmin = localStorage.getItem('isAdmin') === 'true';
+      // Try multiple auth storage methods for cross-browser compatibility
+      let isAdmin = false;
+      
+      // Try localStorage first
+      try {
+        isAdmin = localStorage.getItem('isAdmin') === 'true';
+      } catch (e) {
+        console.warn('LocalStorage not available:', e);
+      }
+      
+      // If localStorage failed, try cookies
+      if (!isAdmin) {
+        isAdmin = getCookie('isAdmin') === 'true';
+      }
+      
       if (!isAdmin) {
         console.log('Not authenticated, redirecting to login');
         router.push('/admin/login');
         return;
       }
       
+      setIsAuthenticated(true);
       // Load real feedback stats
       loadStats();
     } catch (err) {
@@ -42,6 +72,10 @@ export default function AdminDashboard() {
       setIsLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="p-6">
