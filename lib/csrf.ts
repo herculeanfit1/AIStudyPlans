@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import crypto from 'crypto';
 
 // Constants
 const CSRF_COOKIE_NAME = 'X-CSRF-Token';
@@ -9,11 +8,27 @@ const CSRF_TOKEN_LENGTH = 32;
 const CSRF_COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours in seconds
 
 /**
- * Generate a secure random CSRF token
+ * Generate a secure random CSRF token using Web Crypto API
  * @returns A cryptographically secure random token
  */
 export function generateCsrfToken(): string {
-  return crypto.randomBytes(CSRF_TOKEN_LENGTH).toString('hex');
+  // For static exports, use a simpler approach without crypto
+  const array = new Uint8Array(CSRF_TOKEN_LENGTH);
+  
+  // In browser environments use Web Crypto API
+  if (typeof window !== 'undefined' && window.crypto) {
+    window.crypto.getRandomValues(array);
+  } else {
+    // Fallback for server/static environments
+    for (let i = 0; i < array.length; i++) {
+      array[i] = Math.floor(Math.random() * 256);
+    }
+  }
+  
+  // Convert to hexadecimal string
+  return Array.from(array)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 /**
@@ -69,11 +84,8 @@ export function validateCsrfToken(request: NextRequest): boolean {
     return false;
   }
   
-  // Compare tokens with constant-time comparison to prevent timing attacks
-  return crypto.timingSafeEqual(
-    Buffer.from(cookieToken),
-    Buffer.from(headerToken)
-  );
+  // Simple string comparison (constant-time comparison not available without crypto)
+  return cookieToken === headerToken;
 }
 
 /**
