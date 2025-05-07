@@ -1,3 +1,7 @@
+# Main deployment workflow for AI Study Plans static website
+# This workflow builds and deploys the static site directly to Azure Static Web Apps
+# Last modified: May 6, 2025 - Set up for successful deployment
+
 name: Azure Static Web Apps CI/CD
 # Main deployment workflow for AI Study Plans static website
 # This workflow builds and deploys the static site directly to Azure Static Web Apps
