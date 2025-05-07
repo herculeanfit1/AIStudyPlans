@@ -1,0 +1,58 @@
+name: Dependency Validation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'npm-shrinkwrap.json'
+      - '.npmrc'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'npm-shrinkwrap.json'
+      - '.npmrc'
+  workflow_dispatch:
+
+jobs:
+  validate-dependencies:
+    name: Validate Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Validate dependencies
+        run: node scripts/validate-dependencies.js
+      
+      - name: Check for security vulnerabilities
+        run: npm audit --omit=dev
+      
+      - name: Verify exact versions
+        run: |
+          if grep -E '[\^~]' package.json; then
+            echo "Error: package.json contains dependencies with ^ or ~ version specifiers."
+            echo "Our dependency policy requires exact versions to ensure reproducible builds."
+            exit 1
+          fi
+      
+      - name: Verify npm-shrinkwrap.json
+        run: |
+          if [ ! -f npm-shrinkwrap.json ]; then
+            echo "Error: npm-shrinkwrap.json is missing."
+            echo "Run 'npm shrinkwrap' to generate it."
+            exit 1
+          fi 
