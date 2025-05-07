@@ -4,5 +4,16 @@
   },
   "mimeTypes": {
     ".json": "application/json"
-  }
+  },
+  "routes": [
+    {
+      "route": "/api/waitlist",
+      "allowedRoles": ["anonymous"],
+      "rewrite": "https://aistudyplans-function.azurewebsites.net/api/waitlist"
+    },
+    {
+      "route": "/api/*",
+      "allowedRoles": ["anonymous"]
+    }
+  ]
 } 
