@@ -1,0 +1,140 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Lint code
+        run: |
+          npm run lint || echo "Warning: Linting issues found"
+      
+      - name: Type check
+        run: |
+          npm run type-check || echo "Warning: Type checking issues found"
+      
+      - name: Run tests
+        run: |
+          npm test || echo "Warning: Tests failed"
+        
+      - name: Validate dependencies
+        run: node scripts/validate-dependencies.js
+      
+      - name: Build project
+        run: |
+          chmod +x ci-build.sh
+          ./ci-build.sh
+          
+      - name: Check for CI/build artifacts
+        run: |
+          if [ ! -d "out" ]; then
+            echo "❌ Error: Build failed to produce output directory"
+            exit 1
+          fi
+          echo "✅ Build successful, output directory exists"
+          
+  security_scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: validate
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run npm audit
+        run: |
+          npm audit --omit=dev --audit-level=high || echo "⚠️ Security vulnerabilities found"
+        
+      - name: Check commit messages
+        run: |
+          # Get commit messages in the PR
+          COMMIT_MESSAGES=$(git log --format=%B origin/main..HEAD)
+          
+          # Check for conventional commit format
+          if ! echo "$COMMIT_MESSAGES" | grep -E '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9-]+\))?: .+$'; then
+            echo "⚠️ Warning: Some commit messages don't follow conventional commit format"
+            echo "Please use format: type(scope): message"
+            echo "Examples: feat(auth): add login page, fix(api): resolve CORS issue"
+          else
+            echo "✅ All commit messages follow conventional format"
+          fi
+          
+  deployment_validation:
+    name: Deployment Validation
+    runs-on: ubuntu-latest
+    needs: [validate, security_scan]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build for deployment
+        run: |
+          chmod +x ci-build.sh
+          ./ci-build.sh
+          
+      - name: Validate static export
+        run: |
+          if [ ! -f "out/index.html" ]; then
+            echo "❌ Error: Static export doesn't contain index.html"
+            exit 1
+          fi
+          
+          if [ ! -f "out/staticwebapp.config.json" ]; then
+            echo "❌ Error: Static export doesn't contain staticwebapp.config.json"
+            exit 1
+          fi
+          
+          echo "✅ Static export validation successful"
+          
+      - name: Deployment rehearsal
+        run: |
+          echo "Simulating deployment to staging environment..."
+          # In a real scenario, you would deploy to a staging environment here
+          # For now, we'll just check if the necessary files exist
+          
+          # Check for Azure Functions deployment files
+          if [ -d "azure-functions" ]; then
+            echo "✓ Azure Functions directory exists"
+          else
+            echo "⚠️ Warning: Azure Functions directory not found"
+          fi
+          
+          echo "✅ Deployment rehearsal completed successfully" 

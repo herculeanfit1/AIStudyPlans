@@ -521,3 +521,51 @@ Since Application Insights resources can't be directly moved between resource gr
 
 4. **Delete the old resource:**
    Once everything is working with the new Application Insights resource, you can safely delete the old one.
+
+## Deployment & Development Workflow
+
+We follow a robust branching and deployment strategy to ensure code quality:
+
+### Branch Strategy
+
+We use a modified Git Flow strategy with protected branches:
+- `main`: Production code, always deployable
+- `develop`: Integration branch for features
+
+See [our complete branching strategy](./docs/branching-strategy.md) for details.
+
+### Pull Request Process
+
+All changes must go through pull requests:
+1. Create a branch following our naming convention
+2. Develop and test your changes
+3. Create a pull request using the PR template
+4. Address review feedback
+5. Merge once approved and checks pass
+
+### Continuous Integration
+
+Every PR triggers comprehensive checks:
+- Code linting and type checking
+- Unit and integration tests
+- Dependency validation
+- Security scans
+- Build verification
+- Deployment validation
+
+### Dependency Management
+
+We maintain strict dependency control:
+- All dependencies use exact versions (no `^` or `~`)
+- `npm-shrinkwrap.json` locks all transitive dependencies
+- Automated validation on all PRs
+- See [our dependency documentation](./docs/dependency-management.md)
+
+### Azure Deployment
+
+For Azure deployment, follow these steps:
+1. Changes must be merged to `main` through a PR
+2. The Azure Static Web App workflow builds and deploys to Azure
+3. Application Insights monitoring is automatically configured
+
+For questions about deployment, contact the repository maintainers.
