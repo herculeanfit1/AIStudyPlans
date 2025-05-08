@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getFeedbackStats } from '@/lib/admin-supabase';
 import { FeedbackStats } from '@/lib/types';
+import { useSession } from 'next-auth/react';
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<FeedbackStats | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -27,13 +29,21 @@ export default function AdminDashboard() {
   
   // Authentication check
   useEffect(() => {
+    // Don't check auth while Next Auth is still loading
+    if (status === 'loading') return;
+    
     const checkAuth = () => {
       try {
-        // Try localStorage first
+        // Check localStorage first for faster response
         let isAdmin = false;
         
         try {
           isAdmin = localStorage.getItem('isAdmin') === 'true';
+          if (isAdmin) {
+            setIsAuthenticated(true);
+            loadStats();
+            return true;
+          }
         } catch (err) {
           console.warn('LocalStorage access error:', err);
         }
@@ -41,15 +51,37 @@ export default function AdminDashboard() {
         // If localStorage failed, try cookies
         if (!isAdmin) {
           isAdmin = getCookie('isAdmin') === 'true';
+          if (isAdmin) {
+            setIsAuthenticated(true);
+            loadStats();
+            return true;
+          }
         }
         
-        if (!isAdmin) {
-          console.log('Not authenticated, redirecting to login');
+        // Finally check Next Auth - handle Microsoft auth differently
+        if (status === 'authenticated') {
+          // Set localStorage and cookies for future navigations
+          try {
+            localStorage.setItem('isAdmin', 'true');
+          } catch (err) {
+            console.warn('LocalStorage access error:', err);
+          }
+          
+          // Set cookies too
+          document.cookie = `isAdmin=true; path=/; max-age=${60*60*24}; SameSite=Strict`;
+          
+          setIsAuthenticated(true);
+          loadStats();
+          return true;
+        }
+        
+        // If we reach here, no auth method succeeded
+        if (status === 'unauthenticated' && !isAdmin) {
           router.push('/admin/login');
           return false;
         }
         
-        return true;
+        return isAdmin || (status === 'authenticated');
       } catch (err) {
         console.error('Auth check error:', err);
         router.push('/admin/login');
@@ -57,13 +89,15 @@ export default function AdminDashboard() {
       }
     };
     
-    const authResult = checkAuth();
-    setIsAuthenticated(authResult);
+    checkAuth();
     
-    if (authResult) {
-      loadStats();
-    }
-  }, [router]);
+    // Add a fallback to ensure loading state is eventually finished
+    const timer = setTimeout(() => {
+      if (isLoading) setIsLoading(false);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [session, status, router, isLoading]);
   
   // Load stats for dashboard
   const loadStats = async () => {
@@ -80,7 +114,17 @@ export default function AdminDashboard() {
     }
   };
 
-  // Show nothing while checking authentication
+  // Show loading state while Next Auth is still initializing
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"></div>
+        <p className="ml-3 text-gray-600">Checking authentication...</p>
+      </div>
+    );
+  }
+
+  // Show loading while we check local auth
   if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center p-12">

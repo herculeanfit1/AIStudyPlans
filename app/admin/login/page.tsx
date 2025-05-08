@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 
 export default function AdminLogin() {
   // State variables
@@ -45,7 +44,9 @@ export default function AdminLogin() {
       // Parse callback URL
       const url = new URL(window.location.href);
       const callback = url.searchParams.get('callbackUrl');
-      if (callback) setCallbackUrl(callback);
+      if (callback && callback !== '/admin/login' && callback !== '/admin/goto-login/') {
+        setCallbackUrl(callback);
+      }
       
       // Check for auth errors
       const urlError = url.searchParams.get('error');
@@ -95,16 +96,37 @@ export default function AdminLogin() {
   const handleFallbackLogin = (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
     
-    // Security: Use provided dev credentials
-    if (username === 'adminbridgingtrustaitk' && password === 'Movingondownthelineuntil1gettotheend!') {
-      if (setSecureAuth(true)) {
-        router.push('/admin');
+    try {
+      // Security: Use provided dev credentials
+      if (username === 'adminbridgingtrustaitk' && password === 'Movingondownthelineuntil1gettotheend!') {
+        // Set authentication with multiple methods for redundancy
+        const authSuccess = setSecureAuth(true);
+        
+        if (authSuccess) {
+          console.log('Authentication successful, redirecting to admin dashboard...');
+          
+          // Use multiple approaches to ensure navigation works
+          try {
+            // Direct navigation - most reliable method
+            window.location.href = '/admin';
+          } catch (navError) {
+            console.error('Navigation error:', navError);
+          }
+        } else {
+          setError('Browser storage error. Please enable cookies.');
+        }
       } else {
-        setError('Browser storage error. Please enable cookies.');
+        setError('Invalid username or password');
       }
-    } else {
-      setError('Invalid username or password');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An unexpected error occurred during login');
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     }
   };
   
@@ -129,19 +151,39 @@ export default function AdminLogin() {
   };
   
   useEffect(() => {
-    // Check for dev admin flag in localStorage or cookies
-    let isDevAdmin = false;
-    try {
-      isDevAdmin = localStorage.getItem('isAdmin') === 'true';
-    } catch {}
-    if (!isDevAdmin) {
-      isDevAdmin = document.cookie.includes('isAdmin=true');
+    // If already authenticated with NextAuth, redirect to admin
+    if (status === 'authenticated' && session?.user?.isAdmin) {
+      window.location.href = '/admin';
+      return;
     }
-    // Only redirect if truly authenticated
-    if ((session?.user?.isAdmin || isDevAdmin) && status !== 'loading') {
-      router.replace('/admin');
+    
+    // Check for dev admin flag in localStorage or cookies
+    if (status === 'unauthenticated') {
+      try {
+        const isLocalAdmin = localStorage.getItem('isAdmin') === 'true' || 
+                            document.cookie.includes('isAdmin=true');
+                            
+        if (isLocalAdmin) {
+          window.location.href = '/admin';
+        }
+      } catch (err) {
+        // Ignore storage errors in login page
+        console.warn('Storage check error:', err);
+      }
     }
   }, [session, status, router]);
+  
+  // If we're checking authentication, show loading
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -246,41 +288,16 @@ export default function AdminLogin() {
                 </button>
               </div>
               
-              <div className="mt-4 text-center">
-                <p className="text-xs text-gray-500">
-                  For development: username "adminbridgingtrustaitk" / password "Movingondownthelineuntil1gettotheend!"
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  {!safeStorageAvailable() && "Warning: Local storage is disabled in your browser."}
-                </p>
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowFallback(false)}
+                  className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Back to Microsoft login
+                </button>
               </div>
             </form>
-            
-            <div className="mt-6 relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or</span>
-              </div>
-            </div>
-            
-            <div className="mt-6">
-              <button 
-                type="button"
-                onClick={() => setShowFallback(false)}
-                className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md bg-[#2F2F2F] hover:bg-[#201F1F] text-white transition-colors"
-                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 23 23" className="mr-2">
-                  <rect x="1" y="1" width="10" height="10" fill="#f25022" />
-                  <rect x="12" y="1" width="10" height="10" fill="#7fba00" />
-                  <rect x="1" y="12" width="10" height="10" fill="#00a4ef" />
-                  <rect x="12" y="12" width="10" height="10" fill="#ffb900" />
-                </svg>
-                <span>Use Microsoft login</span>
-              </button>
-            </div>
           </div>
         )}
       </div>

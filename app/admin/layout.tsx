@@ -3,7 +3,7 @@
 import React, { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -12,9 +12,10 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const [isLocalAuth, setIsLocalAuth] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [checkCount, setCheckCount] = useState(0);
+  const [error, setError] = useState<Error | null>(null);
   
   // Utility to check cookies for auth
   const getCookie = (name: string): string | null => {
@@ -24,25 +25,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
       return null;
     } catch (e) {
-      console.error('Cookie parse error:', e);
       return null;
     }
   };
   
   useEffect(() => {
-    // Check both authentication methods with 3 retry attempts
+    // Skip auth check if already on login page
+    if (pathname === '/admin/login') {
+      setIsLoading(false);
+      return;
+    }
+    
     const checkAuth = async () => {
       try {
         setIsLoading(true);
         
-        // First check NextAuth status
-        if (status === 'authenticated') {
-          setIsLocalAuth(false);
-          setIsLoading(false);
-          return;
-        }
-        
-        // Then check for local auth in different storage mechanisms
+        // Check for local auth first (faster than NextAuth check)
         let isLocallyAuthenticated = false;
         
         // Try localStorage
@@ -57,28 +55,55 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           isLocallyAuthenticated = getCookie('isAdmin') === 'true';
         }
         
-        setIsLocalAuth(isLocallyAuthenticated);
-        
-        // If neither authenticated and tried 3 times, redirect to login
-        if (!isLocallyAuthenticated && status === 'unauthenticated' && checkCount >= 2) {
-          router.push('/admin/login');
-        } else if (!isLocallyAuthenticated && checkCount < 3) {
-          // Try again in 500ms (up to 3 times)
-          setCheckCount(prevCount => prevCount + 1);
-          setTimeout(checkAuth, 500);
+        // If locally authenticated, set state and finish
+        if (isLocallyAuthenticated) {
+          setIsLocalAuth(true);
+          setIsLoading(false);
           return;
         }
         
-        setIsLoading(false);
+        // Then check NextAuth status as a fallback
+        if (status === 'authenticated') {
+          // Ensure we set the admin flag in localStorage for consistency
+          try {
+            localStorage.setItem('isAdmin', 'true');
+          } catch (err) {
+            console.warn('Could not set localStorage admin flag:', err);
+          }
+          
+          // Set cookies as backup too
+          document.cookie = `isAdmin=true; path=/; max-age=${60*60*24}; SameSite=Strict`;
+          
+          setIsLocalAuth(false);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Only proceed with redirect if not authenticated by any method
+        if (status === 'unauthenticated' && !isLocallyAuthenticated) {
+          // If not authenticated, redirect to login
+          router.push('/admin/login');
+        }
+        
+        // Make sure we always finish loading eventually
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 1000); // Fallback timeout
+        
       } catch (err) {
         console.error('Auth check error:', err);
+        setError(err instanceof Error ? err : new Error('Authentication check failed'));
         setIsLoading(false);
-        router.push('/admin/login');
+        
+        // Only redirect if not on login page
+        if (pathname !== '/admin/login') {
+          router.push('/admin/login');
+        }
       }
     };
     
     checkAuth();
-  }, [status, router, checkCount]);
+  }, [status, router, pathname]);
   
   // Handle local logout
   const handleLocalLogout = () => {
@@ -97,55 +122,83 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading admin panel...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Admin Panel</h1>
+          <p className="text-gray-700 mb-4">{error.message}</p>
+          <div className="flex justify-center space-x-4">
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+            >
+              Retry
+            </button>
+            <Link 
+              href="/admin/login"
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Go to Login
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
   
   // Don't render admin UI until authenticated
-  if (status !== 'authenticated' && !isLocalAuth) {
-    return null;
+  if (status !== 'authenticated' && !isLocalAuth && pathname !== '/admin/login' && pathname !== '/admin/direct-login') {
+    // Instead of returning null, we'll return a more explicit loading state
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Authentication required</p>
+          <a 
+            href="/admin-login.html"
+            className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 mb-4"
+          >
+            Emergency Login
+          </a>
+        </div>
+      </div>
+    );
   }
   
+  // If we're on the login page, return just the children
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+  
+  // Navigation items
+  const navItems = [
+    { label: 'Dashboard', href: '/admin', icon: 'fas fa-home' },
+    { label: 'Feedback', href: '/admin/feedback', icon: 'fas fa-comment-alt' },
+    { label: 'Monitoring', href: '/admin/settings?tab=monitoring', icon: 'fas fa-chart-line' },
+    { label: 'Settings', href: '/admin/settings', icon: 'fas fa-cog' },
+  ];
+  
   return (
-    <div style={{ 
-      minHeight: '100vh',
-      backgroundColor: '#f3f4f6',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Admin Header */}
-      <header style={{
-        backgroundColor: '#4f46e5',
-        color: 'white',
-        padding: '16px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '0 16px'
-        }}>
-          <Link href="/admin" style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            textDecoration: 'none',
-            color: 'white'
-          }}>
-            <div style={{
-              fontWeight: 'bold',
-              fontSize: '20px'
-            }}>
-              SchedulEd Admin
-            </div>
+      <header className="bg-indigo-600 text-white p-4 shadow-sm">
+        <div className="container mx-auto px-4 flex justify-between items-center">
+          <Link href="/admin" className="flex items-center text-white no-underline">
+            <span className="font-bold text-xl">AI Study Plans Admin</span>
           </Link>
           
           {/* User info and signout */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ marginRight: '12px' }}>
+          <div className="flex items-center">
+            <span className="mr-3 text-sm md:text-base">
               {isLocalAuth 
                 ? 'Development Admin'
                 : (session?.user?.name || 'Admin')
@@ -153,15 +206,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </span>
             <button 
               onClick={isLocalAuth ? handleLocalLogout : () => signOut({ callbackUrl: '/admin/login' })}
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '4px',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
+              className="bg-white/20 border-0 py-1 px-3 rounded text-white text-sm cursor-pointer hover:bg-white/30 transition-colors"
             >
               Sign Out
             </button>
@@ -170,85 +215,75 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </header>
 
       {/* Main Content with Sidebar */}
-      <div style={{ 
-        display: 'flex',
-        flex: 1
-      }}>
+      <div className="flex flex-grow">
         {/* Sidebar */}
-        <aside style={{
-          width: '240px',
-          backgroundColor: 'white',
-          boxShadow: '1px 0 3px rgba(0, 0, 0, 0.1)',
-          padding: '24px 16px'
-        }}>
+        <aside className="w-60 bg-white shadow-sm p-6 hidden md:block">
           <nav>
-            <div style={{
-              fontSize: '12px',
-              fontWeight: '600',
-              color: '#9ca3af',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              marginBottom: '16px'
-            }}>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
               Admin Panel
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Link href="/admin" style={{
-                display: 'block',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                color: '#4b5563',
-                textDecoration: 'none',
-                fontSize: '14px'
-              }}>
-                <span style={{ marginRight: '8px' }}>📊</span> Dashboard
-              </Link>
-              
-              <Link href="/admin/feedback" style={{
-                display: 'block',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                color: '#4b5563',
-                textDecoration: 'none',
-                fontSize: '14px'
-              }}>
-                <span style={{ marginRight: '8px' }}>💬</span> Feedback
-              </Link>
-              
-              <Link href="#" style={{
-                display: 'block',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                color: '#4b5563',
-                textDecoration: 'none',
-                fontSize: '14px'
-              }}>
-                <span style={{ marginRight: '8px' }}>👥</span> Users
-              </Link>
-              
-              <Link href="/admin/settings" style={{
-                display: 'block',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                color: '#4b5563',
-                textDecoration: 'none',
-                fontSize: '14px'
-              }}>
-                <span style={{ marginRight: '8px' }}>⚙️</span> Settings
-              </Link>
+            <div className="flex flex-col gap-2">
+              {navItems.map((item) => (
+                <Link 
+                  key={item.label}
+                  href={item.href} 
+                  className="block p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+                >
+                  <span className="mr-2">
+                    <i className={item.icon} aria-hidden="true"></i>
+                  </span> 
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </nav>
         </aside>
 
         {/* Main Content */}
-        <main style={{
-          flex: 1,
-          padding: '24px'
-        }}>
-          {children}
+        <main className="flex-grow p-6">
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </main>
       </div>
     </div>
   );
+}
+
+// Simple client-side error boundary component
+class ErrorBoundary extends React.Component<
+  { children: ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    this.setState({ hasError: true, error });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-6 bg-red-50 border border-red-200 rounded-md">
+          <h2 className="text-lg font-semibold text-red-600 mb-2">
+            Something went wrong
+          </h2>
+          <p className="text-red-700 mb-4">
+            {this.state.error?.message || 'An unexpected error occurred'}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+          >
+            Reload page
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 } 

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import MonitoringDashboard from './monitoring';
 
 export default function AdminSettings() {
   const { data: session, status } = useSession();
@@ -12,6 +13,7 @@ export default function AdminSettings() {
   const [isSubmittingTest, setIsSubmittingTest] = useState(false);
   const [isLocalAuth, setIsLocalAuth] = useState(false);
   const [devAdmin, setDevAdmin] = useState(false);
+  const [activeTab, setActiveTab] = useState('settings');
   
   useEffect(() => {
     // Check for dev admin flag in localStorage or cookies
@@ -27,10 +29,23 @@ export default function AdminSettings() {
   }, []);
 
   useEffect(() => {
+    // Don't check while loading
     if (status === 'loading') return;
-    if (!(session?.user?.isAdmin || devAdmin)) {
-      router.replace('/admin/login?error=AccessDenied');
+    
+    // For NextAuth users, check isAdmin property
+    if (status === 'authenticated') {
+      // Microsoft login doesn't set isAdmin property by default,
+      // so we'll grant access to all authenticated Microsoft users
+      return;
     }
+    
+    // For local auth, check dev admin flag
+    if (devAdmin) {
+      return;
+    }
+    
+    // If neither auth method worked, redirect
+    router.replace('/admin/login?error=AccessDenied');
   }, [session, status, devAdmin, router]);
   
   // Handle clearing all feedback data
@@ -104,15 +119,37 @@ export default function AdminSettings() {
     }
   };
 
-  return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Admin Settings</h1>
-        <p className="text-gray-600">
-          Manage system settings and administrative actions
-        </p>
+  // Tab navigation
+  const TabNavigation = () => (
+    <div className="mb-6 border-b">
+      <div className="flex space-x-6">
+        <button
+          onClick={() => setActiveTab('settings')}
+          className={`pb-3 px-1 ${
+            activeTab === 'settings'
+              ? 'border-b-2 border-indigo-500 text-indigo-600 font-medium'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Settings
+        </button>
+        <button
+          onClick={() => setActiveTab('monitoring')}
+          className={`pb-3 px-1 ${
+            activeTab === 'monitoring'
+              ? 'border-b-2 border-indigo-500 text-indigo-600 font-medium'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Monitoring
+        </button>
       </div>
+    </div>
+  );
 
+  // Settings Content
+  const SettingsContent = () => (
+    <>
       {/* Action Cards */}
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         {/* Feedback Management */}
@@ -249,12 +286,27 @@ export default function AdminSettings() {
               ? () => { localStorage.removeItem('isAdmin'); window.location.href = '/admin/login'; }
               : () => signOut({ callbackUrl: '/admin/login' })
             }
-            className="py-2 px-4 bg-red-50 hover:bg-red-100 text-red-700 rounded-md transition-colors"
+            className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-md transition-colors"
           >
             Sign Out
           </button>
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Admin Settings</h1>
+        <p className="text-gray-600">
+          Manage system settings and administrative actions
+        </p>
+      </div>
+
+      <TabNavigation />
+      
+      {activeTab === 'settings' ? <SettingsContent /> : <MonitoringDashboard />}
     </div>
   );
 } 

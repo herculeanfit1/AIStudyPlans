@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Auth Fix</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f3f4f6;
+            flex-direction: column;
+        }
+        .container {
+            max-width: 500px;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #4f46e5;
+            margin-top: 0;
+        }
+        button {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 8px 0;
+            width: 100%;
+        }
+        .success {
+            background-color: #10b981;
+        }
+        .warning {
+            background-color: #f59e0b;
+        }
+        .danger {
+            background-color: #ef4444;
+        }
+        .log {
+            margin-top: 20px;
+            padding: 12px;
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 8px 12px;
+            margin: 12px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .status.error {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Authentication Fix</h1>
+        <p>This tool will fix any authentication issues and redirect you to the monitoring dashboard.</p>
+        
+        <div id="status"></div>
+        
+        <button id="fixAuth" class="success">Fix Authentication & Go to Dashboard</button>
+        <button id="goToTest" class="warning">Go to Test Dashboard (No Auth)</button>
+        <button id="clearAuth" class="danger">Clear All Authentication</button>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const logEl = document.getElementById('log');
+        const statusEl = document.getElementById('status');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logEl.innerHTML += `[${timestamp}] ${message}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function showStatus(message, isSuccess = true) {
+            statusEl.className = isSuccess ? 'status success' : 'status error';
+            statusEl.innerHTML = message;
+        }
+        
+        function fixAuth() {
+            log('Setting authentication credentials...');
+            try {
+                // Clean any existing auth
+                localStorage.removeItem('isAdmin');
+                document.cookie = "isAdmin=false; path=/; max-age=0";
+                log('Cleared existing auth tokens');
+                
+                // Set fresh auth tokens
+                localStorage.setItem('isAdmin', 'true');
+                document.cookie = "isAdmin=true; path=/; max-age=86400";
+                log('Set new auth tokens with 24h expiration');
+                
+                showStatus('Authentication fixed successfully!');
+                log('Authentication fix successful. Redirecting in 2 seconds...');
+                
+                setTimeout(() => {
+                    window.location.href = '/admin/settings?tab=monitoring';
+                }, 2000);
+                
+                return true;
+            } catch (err) {
+                log(`Error: ${err.message}`, 'error');
+                showStatus('Authentication failed: ' + err.message, false);
+                return false;
+            }
+        }
+        
+        document.getElementById('fixAuth').addEventListener('click', fixAuth);
+        
+        document.getElementById('goToTest').addEventListener('click', () => {
+            log('Redirecting to test dashboard (no auth required)...');
+            window.location.href = '/monitoring-test';
+        });
+        
+        document.getElementById('clearAuth').addEventListener('click', () => {
+            try {
+                localStorage.removeItem('isAdmin');
+                document.cookie = "isAdmin=false; path=/; max-age=0";
+                log('Authentication cleared successfully');
+                showStatus('Authentication cleared successfully');
+            } catch (err) {
+                log(`Error clearing auth: ${err.message}`, 'error');
+                showStatus('Failed to clear authentication: ' + err.message, false);
+            }
+        });
+        
+        // Check current auth status on page load
+        try {
+            const hasLocalStorage = localStorage.getItem('isAdmin') === 'true';
+            const hasCookie = document.cookie.includes('isAdmin=true');
+            
+            log(`Current auth status check:`);
+            log(`- LocalStorage: ${hasLocalStorage ? 'Authenticated' : 'Not authenticated'}`);
+            log(`- Cookie: ${hasCookie ? 'Authenticated' : 'Not authenticated'}`);
+            
+            if (hasLocalStorage || hasCookie) {
+                showStatus('You appear to be already authenticated');
+            } else {
+                showStatus('You are not currently authenticated', false);
+            }
+        } catch (err) {
+            log(`Error checking auth: ${err.message}`, 'error');
+        }
+    </script>
+</body>
+</html> 
