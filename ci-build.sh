@@ -25,6 +25,10 @@ fi
 export SKIP_AUTH=true
 export NODE_ENV=production
 
+# Replace Key Vault references with placeholders for CI build
+echo "Replacing Key Vault references with placeholders for CI build..."
+node scripts/ci-bypass-keyvault.js
+
 # Verify all API routes have proper generateStaticParams
 echo "Verifying API routes for static export compatibility..."
 node scripts/verify-api-routes.js
