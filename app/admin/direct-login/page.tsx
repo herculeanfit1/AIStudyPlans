@@ -8,13 +8,38 @@ export default function DirectLogin() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isProduction, setIsProduction] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   
-  // Environment detection
+  // Environment detection using hostname
   useEffect(() => {
-    // Check if we're in production
-    const isProductionEnv = process.env.NODE_ENV === 'production';
-    setIsProduction(isProductionEnv);
+    // Check if we're in production based on hostname
+    const hostname = window.location.hostname;
+    const isProductionHost = hostname.includes('aistudyplans.com') || 
+                            !hostname.includes('localhost');
+    
+    setIsProduction(isProductionHost);
+    
+    console.log('Hostname:', hostname);
+    console.log('Is production host:', isProductionHost);
+    
+    // In production, immediately redirect
+    if (isProductionHost) {
+      setIsRedirecting(true);
+      window.location.href = '/admin/login';
+    }
   }, []);
+  
+  // Show loading spinner when redirecting
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to authorized login page...</p>
+        </div>
+      </div>
+    );
+  }
   
   const handleLogin = (event) => {
     event.preventDefault();
@@ -43,22 +68,6 @@ export default function DirectLogin() {
       setError('An unexpected error occurred');
     }
   };
-  
-  // If in production mode, redirect to standard login page
-  if (isProduction) {
-    useEffect(() => {
-      window.location.href = '/admin/login';
-    }, []);
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to authorized login page...</p>
-        </div>
-      </div>
-    );
-  }
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">

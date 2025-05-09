@@ -17,16 +17,22 @@ export default function AdminLogin() {
   const router = useRouter();
   const { data: session, status } = useSession();
   
-  // Environment detection
+  // Environment detection using hostname
   useEffect(() => {
-    // Check if we're in production
-    const isProductionEnv = process.env.NODE_ENV === 'production';
-    setIsProduction(isProductionEnv);
+    // Check if we're in production based on hostname
+    const hostname = window.location.hostname;
+    const isProductionHost = hostname.includes('aistudyplans.com') || 
+                            !hostname.includes('localhost');
+    
+    setIsProduction(isProductionHost);
     
     // In production mode, never show fallback login
-    if (isProductionEnv) {
+    if (isProductionHost) {
       setShowFallback(false);
     }
+    
+    console.log('Hostname:', hostname);
+    console.log('Is production host:', isProductionHost);
   }, []);
   
   // Browser detection
@@ -157,10 +163,11 @@ export default function AdminLogin() {
         document.cookie = `preAuthRedirect=true; path=/; max-age=300;`;
       }
       
+      console.log("Initiating Microsoft sign-in with callback URL:", callbackUrl);
       await signIn('azure-ad', { callbackUrl });
     } catch (error) {
       console.error('Login error:', error);
-      setError('An error occurred during login. Please try again or use the fallback login.');
+      setError('An error occurred during login. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -270,8 +277,27 @@ export default function AdminLogin() {
             )}
           </div>
         ) : (
-          // Only show fallback form if not in production
-          !isProduction ? (
+          // Handle fallback view
+          isProduction ? (
+            // In production, show Microsoft login button again
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">Only Microsoft login is supported in production.</p>
+              <button
+                type="button"
+                onClick={handleMicrosoftLogin}
+                className="w-full flex items-center justify-center mt-4 py-2 px-4 border border-gray-300 rounded-md bg-[#2F2F2F] hover:bg-[#201F1F] text-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 23 23" className="mr-2">
+                  <rect x="1" y="1" width="10" height="10" fill="#f25022" />
+                  <rect x="12" y="1" width="10" height="10" fill="#7fba00" />
+                  <rect x="1" y="12" width="10" height="10" fill="#00a4ef" />
+                  <rect x="12" y="12" width="10" height="10" fill="#ffb900" />
+                </svg>
+                <span>Sign in with Microsoft</span>
+              </button>
+            </div>
+          ) : (
+            // In development, show the login form
             <form onSubmit={handleFallbackLogin}>
               <div className="space-y-4">
                 <div>
@@ -323,18 +349,6 @@ export default function AdminLogin() {
                 </button>
               </div>
             </form>
-          ) : (
-            // Redirect back to Microsoft login if in production
-            <div className="text-center">
-              <p className="text-gray-600 mb-4">Only Microsoft login is supported in production.</p>
-              <button
-                type="button"
-                onClick={() => setShowFallback(false)}
-                className="text-indigo-600 hover:text-indigo-800"
-              >
-                Back to Microsoft login
-              </button>
-            </div>
           )
         )}
       </div>
