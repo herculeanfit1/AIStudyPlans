@@ -1,9 +1,10 @@
-name: Backup Repository
+name: Weekly Repository Backup
 
 on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+  # Run only weekly to avoid unnecessary resource usage
+  schedule:
+    - cron: '0 0 * * 0'  # Run at midnight on Sundays
+  workflow_dispatch:  # Keep manual trigger ability
 
 jobs:
   backup:
@@ -13,6 +14,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: source-repo
+          fetch-depth: 1  # Only fetch the latest commit to save time/bandwidth
 
       - name: Generate GitHub App token
         id: generate-token
@@ -21,30 +23,6 @@ jobs:
           app-id: ${{ secrets.GH_APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
       
-      - name: Debug token access
-        run: |
-          echo "Testing token access to repositories..."
-          
-          # Check backup repo access
-          echo "Checking backup repo access:"
-          STATUS_BACKUP=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
-                 "https://api.github.com/repos/herculeanfit1/AIStudyPlans-Backups")
-          echo "API Response code: $STATUS_BACKUP"
-          
-          if [ "$STATUS_BACKUP" == "404" ]; then
-            echo "Backup repository not found. Will attempt to create it."
-            CREATE_RESPONSE=$(curl -s -X POST -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" \
-                          -H "Accept: application/vnd.github+json" \
-                          -H "X-GitHub-Api-Version: 2022-11-28" \
-                          https://api.github.com/user/repos \
-                          -d '{"name":"AIStudyPlans-Backups","private":true,"description":"Backup repository for AIStudyPlans"}')
-            echo "Repository creation response: $CREATE_RESPONSE"
-          elif [ "$STATUS_BACKUP" == "200" ]; then
-            echo "Backup repository exists and token has access."
-          else
-            echo "Unexpected status code: $STATUS_BACKUP"
-          fi
-
       - name: Backup to secondary repository
         if: success()
         env:
@@ -59,25 +37,15 @@ jobs:
           # Create a temporary directory for the filtered content
           mkdir -p ../filtered-repo
           
-          # Copy everything except .github directory to the filtered directory
-          rsync -av --exclude='.github' ./ ../filtered-repo/
-          
-          # Add a special .gitignore to the backup repo to prevent workflow triggers
-          echo "# Ignore GitHub workflows to prevent duplicate runs" > ../filtered-repo/.github-actions-ignore
-          echo ".github/workflows/" >> ../filtered-repo/.github-actions-ignore
+          # Copy everything except .github directory and other large/unnecessary files
+          rsync -av --exclude='.github' --exclude='node_modules' --exclude='.next' --exclude='out' ./ ../filtered-repo/
           
           # Initialize git in the filtered directory
           cd ../filtered-repo
           git init
           git add .
-          git commit -m "Backup from main repository - $(date)"
+          git commit -m "Weekly backup - $(date)"
           
-          # Print debug info about token permissions
-          echo "Testing repository access with token..."
-          GIT_TRACE=1 git ls-remote --exit-code https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git || echo "Could not reach repository"
-
           # Push to backup repository
-          if ! git push -f https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git main:main; then
-            echo "Push failed. Retrying with more verbose output:"
-            GIT_TRACE=1 git push -f https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git main:main || echo "Push failed again"
-          fi
+          git push -f https://x-access-token:${GH_TOKEN}@github.com/herculeanfit1/AIStudyPlans-Backups.git main:main || \
+            echo "Push failed. Verify that the backup repository exists and the token has proper permissions."

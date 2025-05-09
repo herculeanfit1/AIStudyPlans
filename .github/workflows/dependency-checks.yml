@@ -1,4 +1,4 @@
-name: Dependency Security Scan
+name: Dependency Validation & Security
 
 on:
   push:
@@ -6,30 +6,56 @@ on:
     paths:
       - 'package.json'
       - 'package-lock.json'
+      - 'npm-shrinkwrap.json'
       - '.npmrc'
   pull_request:
     branches: [ main ]
     paths:
       - 'package.json'
       - 'package-lock.json'
+      - 'npm-shrinkwrap.json'
       - '.npmrc'
   schedule:
     - cron: '0 0 * * 0'  # Run weekly on Sundays
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
-  security_scan:
+  validate-dependencies:
+    name: Validate & Secure Dependencies
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-        
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      # From dependency-validation.yml
+      - name: Validate dependencies
+        run: node scripts/validate-dependencies.js
+      
+      - name: Verify exact versions
+        run: |
+          if grep -E '[\^~]' package.json; then
+            echo "⚠️ Warning: package.json contains dependencies with ^ or ~ version specifiers."
+            echo "Our dependency policy recommends exact versions to ensure reproducible builds."
+          fi
+      
+      - name: Verify npm-shrinkwrap.json
+        run: |
+          if [ ! -f npm-shrinkwrap.json ]; then
+            echo "⚠️ Warning: npm-shrinkwrap.json is missing."
+            echo "Run 'npm shrinkwrap' to generate it."
+          fi
+      
+      # From dependency-security.yml
       - name: Verify .npmrc settings
         run: |
           echo "Checking .npmrc for secure settings..."
@@ -77,33 +103,6 @@ jobs:
       - name: Run npm audit
         run: npm audit --omit=dev --audit-level=high || echo "⚠️ Security vulnerabilities found but continuing build"
         continue-on-error: true
-
-      - name: Install Snyk CLI
-        run: npm install -g snyk
-
-      - name: Run Snyk to check for vulnerabilities
-        run: snyk test --severity-threshold=medium
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
-
-      - name: Install OWASP Dependency-Check
-        run: |
-          mkdir -p $HOME/OWASP
-          curl -L https://github.com/jeremylong/DependencyCheck/releases/download/v7.4.4/dependency-check-7.4.4-release.zip -o $HOME/OWASP/dependency-check.zip
-          unzip $HOME/OWASP/dependency-check.zip -d $HOME/OWASP
-
-      - name: Run OWASP Dependency-Check
-        run: |
-          $HOME/OWASP/dependency-check/bin/dependency-check.sh --scan . --out dependency-reports --format "HTML" --enableExperimental
-        continue-on-error: true
-
-      - name: Upload scan results
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-security-reports
-          path: dependency-reports/
-          retention-days: 7
 
       - name: Check for legacy-peer-deps in scripts
         run: |
