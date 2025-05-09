@@ -13,8 +13,21 @@ export default function AdminLogin() {
   const [showFallback, setShowFallback] = useState(false); // Show Microsoft login by default
   const [callbackUrl, setCallbackUrl] = useState('/admin');
   const [isSafari, setIsSafari] = useState(false);
+  const [isProduction, setIsProduction] = useState(false);
   const router = useRouter();
   const { data: session, status } = useSession();
+  
+  // Environment detection
+  useEffect(() => {
+    // Check if we're in production
+    const isProductionEnv = process.env.NODE_ENV === 'production';
+    setIsProduction(isProductionEnv);
+    
+    // In production mode, never show fallback login
+    if (isProductionEnv) {
+      setShowFallback(false);
+    }
+  }, []);
   
   // Browser detection
   useEffect(() => {
@@ -99,8 +112,11 @@ export default function AdminLogin() {
     setIsLoading(true);
     
     try {
-      // Security: Use provided dev credentials
-      if (username === 'adminbridgingtrustaitk' && password === 'Movingondownthelineuntil1gettotheend!') {
+      // Use environment variables for admin credentials in development
+      const adminUsername = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'aistudyplans_admin';
+      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'AdminDev!2024';
+      
+      if (username === adminUsername && password === adminPassword) {
         // Set authentication with multiple methods for redundancy
         const authSuccess = setSecureAuth(true);
         
@@ -229,76 +245,97 @@ export default function AdminLogin() {
               )}
             </button>
             
-            <div className="mt-6 relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or</span>
-              </div>
-            </div>
-            
-            <div className="mt-6">
-              <button 
-                type="button"
-                onClick={() => setShowFallback(true)}
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                Use development login
-              </button>
-            </div>
+            {/* Only show fallback option in development */}
+            {!isProduction && (
+              <>
+                <div className="mt-6 relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">Or</span>
+                  </div>
+                </div>
+                
+                <div className="mt-6">
+                  <button 
+                    type="button"
+                    onClick={() => setShowFallback(true)}
+                    className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Use development login
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ) : (
-          <div>
-            <form onSubmit={handleFallbackLogin} className="space-y-4">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                  Username
-                </label>
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                />
+          // Only show fallback form if not in production
+          !isProduction ? (
+            <form onSubmit={handleFallbackLogin}>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    autoComplete="username"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    {isLoading ? 'Signing in...' : 'Sign in'}
+                  </button>
+                </div>
               </div>
               
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                />
-              </div>
-              
-              <div>
-                <button
-                  type="submit"
-                  className="w-full py-2 px-4 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Sign in
-                </button>
-              </div>
-              
-              <div className="mt-4">
+              <div className="mt-6 text-center">
                 <button
                   type="button"
                   onClick={() => setShowFallback(false)}
-                  className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="text-indigo-600 hover:text-indigo-800 text-sm"
                 >
                   Back to Microsoft login
                 </button>
               </div>
             </form>
-          </div>
+          ) : (
+            // Redirect back to Microsoft login if in production
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">Only Microsoft login is supported in production.</p>
+              <button
+                type="button"
+                onClick={() => setShowFallback(false)}
+                className="text-indigo-600 hover:text-indigo-800"
+              >
+                Back to Microsoft login
+              </button>
+            </div>
+          )
         )}
       </div>
     </div>

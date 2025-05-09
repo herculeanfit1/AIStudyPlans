@@ -1,43 +1,64 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function DirectLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isProduction, setIsProduction] = useState(false);
   
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
+  // Environment detection
+  useEffect(() => {
+    // Check if we're in production
+    const isProductionEnv = process.env.NODE_ENV === 'production';
+    setIsProduction(isProductionEnv);
+  }, []);
+  
+  const handleLogin = (event) => {
+    event.preventDefault();
     
-    // Simple direct login with development credentials
-    if (username === 'adminbridgingtrustaitk' && password === 'Movingondownthelineuntil1gettotheend!') {
-      try {
-        // Set auth cookie
-        document.cookie = `isAdmin=true; path=/; max-age=${60*60*24}; SameSite=Strict`;
+    try {
+      // Use environment variables for admin credentials in development
+      const adminUsername = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'aistudyplans_admin';
+      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'AdminDev!2024';
+      
+      if (username === adminUsername && password === adminPassword) {
+        setError('');
+        setIsLoading(true);
         
-        // Set localStorage as backup
-        try {
-          localStorage.setItem('isAdmin', 'true');
-        } catch (err) {
-          console.warn('LocalStorage not available:', err);
-        }
+        // Set a cookie before redirecting
+        document.cookie = `isAdmin=true; path=/; max-age=${60*60*24}; SameSite=Lax`;
         
-        // Redirect directly to admin panel
-        window.location.href = '/admin';
-      } catch (err) {
-        console.error('Login error:', err);
-        setError('Error during login. Please try again.');
-        setIsLoading(false);
+        // Redirect to admin dashboard after successful login
+        setTimeout(() => {
+          window.location.href = '/admin';
+        }, 500);
+      } else {
+        setError('Invalid username or password');
       }
-    } else {
-      setError('Invalid username or password');
-      setIsLoading(false);
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An unexpected error occurred');
     }
   };
+  
+  // If in production mode, redirect to standard login page
+  if (isProduction) {
+    useEffect(() => {
+      window.location.href = '/admin/login';
+    }, []);
+    
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to authorized login page...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -45,6 +66,9 @@ export default function DirectLogin() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Direct Admin Login</h1>
           <p className="text-gray-600">Emergency access to the admin dashboard</p>
+          <div className="mt-2 text-sm bg-yellow-50 p-2 rounded-md text-yellow-600">
+            Development environment only
+          </div>
         </div>
         
         {error && (
