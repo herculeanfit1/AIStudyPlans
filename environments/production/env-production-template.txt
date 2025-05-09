@@ -29,4 +29,4 @@ ENABLE_WAITLIST=true
 API_KEY=@Microsoft.KeyVault(SecretUri=https://aistudyplansvault.vault.azure.net/secrets/api-key/)
 
 # Application Insights
-APPLICATIONINSIGHTS_CONNECTION_STRING=@Microsoft.KeyVault(SecretUri=https://aistudyplansvault.vault.azure.net/secrets/applicationinsights-connection-string/)
+APPLICATIONINSIGHTS_CONNECTION_STRING=@Microsoft.KeyVault(SecretUri=https://aistudyplansvault.vault.azure.net/secrets/applicationinsights-connection-string/) 
