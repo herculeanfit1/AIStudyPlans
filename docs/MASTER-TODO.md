@@ -33,7 +33,7 @@ This document consolidates all TODO items from various files into a single maste
 - [x] Create email service utilities
 - [x] Create email templates
 - [x] Set up waitlist API endpoint
-- [ ] Verify domain `aistudyplans.com` with Resend
+- [x] Verify domain `aistudyplans.com` with Resend
   - Go to https://resend.com/domains
   - Add aistudyplans.com as domain
   - Follow DNS verification steps:
