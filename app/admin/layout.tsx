@@ -158,17 +158,29 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   
   // Don't render admin UI until authenticated
   if (status !== 'authenticated' && !isLocalAuth && pathname !== '/admin/login' && pathname !== '/admin/direct-login') {
+    // Check if we're in development environment
+    const isDevEnvironment = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    
     // Instead of returning null, we'll return a more explicit loading state
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <p className="text-gray-600 mb-4">Authentication required</p>
-          <a 
-            href="/admin-login.html"
-            className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 mb-4"
+          {isDevEnvironment && (
+            <a 
+              href="/admin-login.html"
+              className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 mb-4"
+            >
+              Emergency Login
+            </a>
+          )}
+          <Link
+            href="/admin/ms-login" 
+            className="block mt-4 text-indigo-600 hover:text-indigo-800"
           >
-            Emergency Login
-          </a>
+            Go to login page
+          </Link>
         </div>
       </div>
     );
