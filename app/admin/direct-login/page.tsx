@@ -7,25 +7,28 @@ export default function DirectLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isProduction, setIsProduction] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isProduction, setIsProduction] = useState(true); // Default to production for safety
+  const [isRedirecting, setIsRedirecting] = useState(true); // Default to redirecting for safety
   
-  // Environment detection using hostname
+  // Environment detection using hostname - very strict approach
   useEffect(() => {
-    // Check if we're in production based on hostname
+    // More aggressive approach - immediately redirect for any non-localhost domain
     const hostname = window.location.hostname;
-    const isProductionHost = hostname.includes('aistudyplans.com') || 
-                            !hostname.includes('localhost');
+    const isDevelopment = hostname === 'localhost' || hostname === '127.0.0.1';
     
-    setIsProduction(isProductionHost);
+    console.log('Current hostname:', hostname);
+    console.log('Is development environment:', isDevelopment);
     
-    console.log('Hostname:', hostname);
-    console.log('Is production host:', isProductionHost);
-    
-    // In production, immediately redirect
-    if (isProductionHost) {
+    // Only show this page on localhost
+    if (!isDevelopment) {
       setIsRedirecting(true);
+      console.log('Redirecting to standard login page...');
+      
+      // Force redirect to standard login
       window.location.href = '/admin/login';
+    } else {
+      setIsRedirecting(false);
+      setIsProduction(false);
     }
   }, []);
   

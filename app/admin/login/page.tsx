@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function AdminLogin() {
   // State variables
@@ -13,26 +14,27 @@ export default function AdminLogin() {
   const [showFallback, setShowFallback] = useState(false); // Show Microsoft login by default
   const [callbackUrl, setCallbackUrl] = useState('/admin');
   const [isSafari, setIsSafari] = useState(false);
-  const [isProduction, setIsProduction] = useState(false);
+  const [isProduction, setIsProduction] = useState(true); // Default to production for safety
   const router = useRouter();
   const { data: session, status } = useSession();
   
-  // Environment detection using hostname
+  // Environment detection using multiple methods for redundancy
   useEffect(() => {
-    // Check if we're in production based on hostname
+    // Force production mode immediately for all non-localhost hosts
     const hostname = window.location.hostname;
-    const isProductionHost = hostname.includes('aistudyplans.com') || 
-                            !hostname.includes('localhost');
+    const isDevelopment = hostname === 'localhost' || hostname === '127.0.0.1';
+    const forceProduction = !isDevelopment;
     
-    setIsProduction(isProductionHost);
+    console.log('Current hostname:', hostname);
+    console.log('Is development environment:', isDevelopment);
+    console.log('Forcing production mode:', forceProduction);
     
-    // In production mode, never show fallback login
-    if (isProductionHost) {
+    setIsProduction(forceProduction);
+    
+    // In forced production mode, never show fallback login
+    if (forceProduction) {
       setShowFallback(false);
     }
-    
-    console.log('Hostname:', hostname);
-    console.log('Is production host:', isProductionHost);
   }, []);
   
   // Browser detection
