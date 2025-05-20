@@ -47,14 +47,13 @@ export default function WaitlistForm() {
       isValid = false;
     }
 
-    // Validate email - use same pattern as server
+    // Validate email - very simple check
     if (!formData.email.trim()) {
       errors.email = 'Email is required';
       isValid = false;
     } else {
-      // More permissive email validation pattern
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
+      // Simple email check - just look for @ sign
+      if (!formData.email.includes('@')) {
         errors.email = 'Please enter a valid email address';
         isValid = false;
       }
@@ -92,22 +91,7 @@ export default function WaitlistForm() {
     setError(null);
 
     try {
-      // Check if we're in static export mode (production)
-      if (process.env.NODE_ENV === 'production') {
-        // In production static export, API routes aren't available
-        // Just simulate success after a delay for demo purposes
-        console.log('Static export mode - simulating waitlist submission');
-        console.log('Form data:', formData);
-        
-        // In real implementation, you would send this data to an external API
-        // like an Azure Function that's deployed alongside the static site
-        
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setIsSubmitted(true);
-        return;
-      }
-
-      // Regular API route for development mode
+      // Always use the API route for waitlist submissions
       const response = await fetch('/api/waitlist', {
         method: 'POST',
         headers: {
@@ -193,6 +177,9 @@ export default function WaitlistForm() {
     );
   }
 
+  // Show admin notice in development
+  const showAdminNotice = isDev || !process.env.RESEND_API_KEY;
+  
   return (
     <motion.div
       variants={containerVariants}
@@ -217,6 +204,30 @@ export default function WaitlistForm() {
         </motion.div>
       )}
       
+      {showAdminNotice && (
+        <motion.div 
+          className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-amber-800">Administrator Notice</p>
+              <p className="mt-1 text-sm text-amber-700">Email delivery requires proper configuration:</p>
+              <ul className="mt-2 text-sm text-amber-700 list-disc list-inside">
+                <li>Set <code className="bg-amber-100 px-1 py-0.5 rounded">RESEND_API_KEY</code> in <code className="bg-amber-100 px-1 py-0.5 rounded">.env.local</code></li>
+                <li>Verify email domain in <a href="https://resend.com/domains" target="_blank" className="underline hover:text-amber-900">Resend dashboard</a></li>
+              </ul>
+            </div>
+          </div>
+        </motion.div>
+      )}
+      
       <motion.form onSubmit={handleSubmit} variants={itemVariants}>
         <div className="mb-5">
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -228,8 +239,8 @@ export default function WaitlistForm() {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border text-white bg-gray-900 ${
-              validationErrors.name ? 'border-red-500' : 'border-gray-700'
+            className={`w-full px-4 py-3 rounded-lg border ${
+              validationErrors.name ? 'border-red-500' : 'border-gray-300'
             } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition`}
             placeholder="Your name"
           />
@@ -248,8 +259,8 @@ export default function WaitlistForm() {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border text-white bg-gray-900 ${
-              validationErrors.email ? 'border-red-500' : 'border-gray-700'
+            className={`w-full px-4 py-3 rounded-lg border ${
+              validationErrors.email ? 'border-red-500' : 'border-gray-300'
             } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition`}
             placeholder="you@example.com"
           />
@@ -261,43 +272,26 @@ export default function WaitlistForm() {
         <motion.button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow transition-colors ${
-            isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-          }`}
+          className={`w-full bg-indigo-600 text-white py-3 px-6 rounded-lg text-lg font-semibold
+            transition-all hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+            ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+          variants={itemVariants}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Processing...
+              Joining...
             </span>
           ) : (
             'Join Waitlist'
           )}
         </motion.button>
       </motion.form>
-      
-      {/* Admin notice about email configuration - only in development */}
-      {isDev && (
-        <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-          <h4 className="font-semibold mb-1">⚠️ Administrator Notice</h4>
-          <p className="mb-2">
-            Email delivery requires proper configuration:
-          </p>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>Set <code className="bg-amber-100 px-1 rounded">RESEND_API_KEY</code> in <code className="bg-amber-100 px-1 rounded">.env.local</code></li>
-            <li>Verify email domain in Resend dashboard</li>
-            <li>For testing, use <code className="bg-amber-100 px-1 rounded">delivered@resend.dev</code></li>
-          </ul>
-          <p className="mt-2 text-xs">
-            This notice is only visible in development mode.
-          </p>
-        </div>
-      )}
     </motion.div>
   );
 }

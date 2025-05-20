@@ -19,7 +19,11 @@ export async function POST(request: NextRequest) {
     // Enhanced logging for production debugging
     console.log(`Waitlist API route called (${process.env.NODE_ENV} environment)`);
     console.log(`Environment config: URL=${process.env.NEXT_PUBLIC_APP_URL || 'not set'}`);
-    console.log(`Email config present: ${!!process.env.RESEND_API_KEY}, FROM=${!!process.env.EMAIL_FROM}, REPLY=${!!process.env.EMAIL_REPLY_TO}`);
+    
+    // Explicitly log Resend API key presence for debugging
+    const resendApiKeyPresent = !!process.env.RESEND_API_KEY;
+    console.log(`Resend API key present: ${resendApiKeyPresent}`);
+    console.log(`Email config present: FROM=${!!process.env.EMAIL_FROM}, REPLY=${!!process.env.EMAIL_REPLY_TO}`);
     console.log(`Supabase config present: ${!!process.env.NEXT_PUBLIC_SUPABASE_URL}, KEY=${!!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`);
     
     // Get body data, using a more resilient approach
@@ -39,11 +43,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // More permissive email validation pattern
-    // This is a better pattern that allows more valid email formats
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    if (!emailRegex.test(email)) {
+    // Simplified email validation - just check for @ symbol
+    // This matches the frontend validation to prevent inconsistencies
+    if (!email.includes('@')) {
       console.error(`Invalid email format: ${email}`);
       return new NextResponse(
         JSON.stringify({ error: 'Please enter a valid email address' }),
@@ -55,11 +57,11 @@ export async function POST(request: NextRequest) {
 
     // For production, allow special test email so we can validate end-to-end functionality
     const isTestEmail = email === 'delivered@resend.dev';
-    // Use a test email in development for more reliable testing
-    const emailToUse = process.env.NODE_ENV === 'production' && !isTestEmail ? email : 'delivered@resend.dev';
+    // In production, use the actual email - no more redirecting to test email
+    const emailToUse = email;
     
     // Log the email decision
-    console.log(`Email decision: using ${emailToUse} for delivery (isTestEmail: ${isTestEmail}, env: ${process.env.NODE_ENV})`);
+    console.log(`Email using: ${emailToUse} for delivery (isTestEmail: ${isTestEmail}, env: ${process.env.NODE_ENV})`);
 
     try {
       // Add user to database
@@ -74,7 +76,15 @@ export async function POST(request: NextRequest) {
       
       // Validate required environment variables are set
       if (!process.env.RESEND_API_KEY) {
-        throw new Error('RESEND_API_KEY environment variable is not set');
+        console.error('RESEND_API_KEY environment variable is not set');
+        return new NextResponse(
+          JSON.stringify({ 
+            error: 'Email service not configured', 
+            success: false,
+            details: 'Missing API key configuration'
+          }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
       }
       
       // Send confirmation email
@@ -96,8 +106,7 @@ export async function POST(request: NextRequest) {
       return new NextResponse(
         JSON.stringify({ 
           success: true, 
-          message: 'Successfully joined the waitlist',
-          note: process.env.NODE_ENV !== 'production' ? 'In development mode, emails are sent to delivered@resend.dev' : undefined
+          message: 'Successfully joined the waitlist'
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       );
