@@ -11,9 +11,14 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 const adminEmail = 'waitlist@aistudyplans.com';
 const feedbackFormUrl = `${appUrl}/feedback`;
 
-// Check if API key is provided
+// Check if API key is provided and log environment details
 if (!resendApiKey) {
-  console.warn('RESEND_API_KEY is not defined. Email functionality will not work.');
+  console.warn('⚠️ RESEND_API_KEY is not defined. Email functionality will not work.');
+} else {
+  console.log('✅ Resend API key is configured');
+  console.log(`✅ FROM email configured: ${fromEmail}`);
+  console.log(`✅ REPLY-TO email configured: ${replyToEmail}`);
+  console.log(`✅ App URL configured: ${appUrl}`);
 }
 
 // Initialize Resend client
@@ -34,8 +39,8 @@ export async function sendEmail({
   text: string;
 }) {
   if (!resend) {
-    console.error('Resend client is not initialized. Cannot send email.');
-    throw new Error('Email service not configured');
+    console.error('❌ Resend client is not initialized. Cannot send email.');
+    throw new Error('Email service not configured - RESEND_API_KEY is missing');
   }
 
   try {
@@ -50,11 +55,22 @@ export async function sendEmail({
     // Check if we're sending on optimal days (Tues-Thurs)
     const isOptimalDay = dayOfWeek >= 2 && dayOfWeek <= 4;
     
-    console.log(`Sending email to ${to} on ${dayNames[dayOfWeek]} at ${hour}:${now.getMinutes().toString().padStart(2, '0')} - ${isOptimalDay ? 'Optimal day' : 'Non-optimal day'}, ${isOptimalTime ? 'Optimal time' : 'Non-optimal time'}`);
+    console.log(`📧 Sending email to ${to} on ${dayNames[dayOfWeek]} at ${hour}:${now.getMinutes().toString().padStart(2, '0')} - ${isOptimalDay ? 'Optimal day' : 'Non-optimal day'}, ${isOptimalTime ? 'Optimal time' : 'Non-optimal time'}`);
+
+    // Production debugging - log partial email content for verification
+    console.log(`📧 Email Subject: ${subject}`);
+    console.log(`📧 Email Text Preview: ${text.substring(0, 50)}...`);
+    
+    // Use delivered@resend.dev for testing in development
+    let emailTo = to;
+    if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_EMAIL === 'true') {
+      console.log(`⚠️ DEV/DEBUG MODE: Redirecting email from ${to} to delivered@resend.dev`);
+      emailTo = 'delivered@resend.dev';
+    }
 
     const { data, error } = await resend.emails.send({
       from: fromEmail,
-      to,
+      to: emailTo,
       subject,
       html,
       text,
@@ -62,13 +78,14 @@ export async function sendEmail({
     });
 
     if (error) {
-      console.error('Error sending email via Resend:', error);
+      console.error('❌ Error sending email via Resend:', error);
       throw new Error(error.message);
     }
 
+    console.log(`✅ Email sent successfully to ${emailTo}, ID: ${data?.id}`);
     return { success: true, messageId: data?.id };
   } catch (error) {
-    console.error('Exception when sending email:', error);
+    console.error('❌ Exception when sending email:', error);
     throw error;
   }
 }
@@ -81,7 +98,7 @@ export async function sendEmail({
 export async function sendWaitlistConfirmationEmail(email: string) {
   const subject = 'Welcome to the SchedulEd Waitlist!';
   
-  console.log('Sending immediate welcome email - 74% of subscribers expect this and open rates average 80%');
+  console.log('📊 Sending immediate welcome email - 74% of subscribers expect this and open rates average 80%');
   
   // Get the email template
   const { html, text } = getWaitlistConfirmationTemplate({ appUrl });
@@ -124,13 +141,9 @@ export async function sendWaitlistAdminNotification(name: string, email: string)
     userEmail: email
   });
 
-  // Use Resend's test email as fallback to avoid domain verification issues
-  const adminEmailToUse = process.env.NODE_ENV === 'production' 
-    ? adminEmail 
-    : 'delivered@resend.dev';
-
+  // Send admin notification to the admin email
   return sendEmail({
-    to: adminEmailToUse,
+    to: adminEmail,
     subject,
     html,
     text,
@@ -161,14 +174,14 @@ export async function sendFeedbackCampaignEmail(user: WaitlistUser) {
     "Final feedback request (satisfaction)"
   ];
   
-  console.log(`Sending ${emailNames[nextPosition]} to ${user.email} (sequence position ${sequencePosition}->${nextPosition})`);
+  console.log(`📧 Sending ${emailNames[nextPosition]} to ${user.email} (sequence position ${sequencePosition}->${nextPosition})`);
   
   // Log time since last email
   if (user.last_email_sent_at) {
     const lastEmailDate = new Date(user.last_email_sent_at);
     const now = new Date();
     const daysSinceLastEmail = Math.round((now.getTime() - lastEmailDate.getTime()) / (1000 * 60 * 60 * 24));
-    console.log(`It has been ${daysSinceLastEmail} days since their last email (research recommends 3-7 days for first email, 7-14 days for subsequent emails)`);
+    console.log(`⏱️ It has been ${daysSinceLastEmail} days since their last email (research recommends 3-7 days for first email, 7-14 days for subsequent emails)`);
   }
   
   // Get the appropriate template
@@ -190,11 +203,11 @@ export async function sendFeedbackCampaignEmail(user: WaitlistUser) {
       text,
     });
     
-    console.log(`Successfully sent ${emailNames[nextPosition]} to ${user.email} (ID: ${result?.messageId})`);
+    console.log(`✅ Successfully sent ${emailNames[nextPosition]} to ${user.email} (ID: ${result?.messageId})`);
     
     return result;
   } catch (error) {
-    console.error(`Failed to send ${emailNames[nextPosition]} to ${user.email}:`, error);
+    console.error(`❌ Failed to send ${emailNames[nextPosition]} to ${user.email}:`, error);
     throw error;
   }
 } 

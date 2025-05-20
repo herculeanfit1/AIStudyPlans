@@ -27,86 +27,12 @@ fi
 
 echo -e "${GREEN}Build completed successfully.${NC}"
 
-# Update staticwebapp.config.json to use Next.js API routes
-echo -e "\n${YELLOW}Step 2: Updating staticwebapp.config.json...${NC}"
+# Update the staticwebapp.config.json file
+echo -e "${YELLOW}Step 2: Updating staticwebapp.config.json...${NC}"
+cp swa-deploy/staticwebapp.config.json out/staticwebapp.config.json
 
-cat > out/staticwebapp.config.json << EOL
-{
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/images/*.{png,jpg,gif,ico}", "/css/*", "/js/*", "/*.{css,js}"]
-  },
-  "mimeTypes": {
-    ".json": "application/json",
-    ".js": "application/javascript",
-    ".mjs": "application/javascript",
-    ".css": "text/css",
-    ".html": "text/html",
-    ".svg": "image/svg+xml",
-    ".ico": "image/x-icon"
-  },
-  "responseOverrides": {
-    "404": {
-      "rewrite": "/index.html",
-      "statusCode": 200
-    }
-  },
-  "globalHeaders": {
-    "X-Frame-Options": "DENY",
-    "X-Content-Type-Options": "nosniff",
-    "X-XSS-Protection": "1; mode=block",
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https://api.resend.com https://*.supabase.co; frame-src 'self';"
-  },
-  "routes": [
-    {
-      "route": "/api/*",
-      "allowedRoles": ["anonymous"]
-    },
-    {
-      "route": "/login",
-      "allowedRoles": ["anonymous"],
-      "rewrite": "/login.html"
-    },
-    {
-      "route": "/logout",
-      "allowedRoles": ["anonymous"],
-      "rewrite": "/logout.html"
-    },
-    {
-      "route": "/admin/direct-login*",
-      "redirect": "/admin/ms-login",
-      "statusCode": 301
-    },
-    {
-      "route": "/admin/emergency*",
-      "redirect": "/admin/ms-login",
-      "statusCode": 301
-    },
-    {
-      "route": "/admin/login*",
-      "redirect": "/admin/ms-login",
-      "statusCode": 301
-    },
-    {
-      "route": "/static/*",
-      "headers": {
-        "Cache-Control": "public, max-age=604800, immutable"
-      }
-    },
-    {
-      "route": "/*.{js,css,png,jpg,gif,ico,woff,woff2,ttf,svg}",
-      "headers": {
-        "Cache-Control": "public, max-age=604800, immutable"
-      }
-    }
-  ],
-  "platform": {
-    "apiRuntime": "node:18"
-  }
-}
-EOL
-
-echo -e "${GREEN}staticwebapp.config.json updated successfully.${NC}"
+# Show the content of staticwebapp.config.json
+echo "staticwebapp.config.json updated successfully."
 echo "Content of staticwebapp.config.json:"
 cat out/staticwebapp.config.json
 
@@ -115,43 +41,57 @@ echo -e "\n${YELLOW}Step 3: Logging in to Azure...${NC}"
 echo "Please log in to your Azure account in the browser window that opens."
 az login
 
-if [ $? -ne 0 ]; then
-  echo -e "${RED}Azure login failed. Please try again.${NC}"
-  exit 1
-fi
-
-# Get deployment token
+# Get the deployment token
 echo -e "\n${YELLOW}Step 4: Getting Azure Static Web App deployment token...${NC}"
 DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name $STATIC_WEB_APP_NAME --resource-group $RESOURCE_GROUP --query "properties.apiKey" -o tsv)
 
 if [ -z "$DEPLOYMENT_TOKEN" ]; then
-  echo -e "${RED}Failed to get deployment token. Please check your Azure access permissions.${NC}"
+  echo -e "${RED}Failed to retrieve deployment token. Please check your Azure credentials and try again.${NC}"
   exit 1
 fi
 
-echo -e "${GREEN}Deployment token retrieved successfully.${NC}"
+echo "Deployment token retrieved successfully."
 
-# Deploy to Azure Static Web App
+# Deploy using the SWA CLI
 echo -e "\n${YELLOW}Step 5: Deploying to Azure Static Web App...${NC}"
 echo "Deploying to $STATIC_WEB_APP_NAME using swa-cli..."
 
-# Install swa-cli if not already installed
-if ! command -v swa &> /dev/null; then
-  echo "Installing Azure Static Web Apps CLI..."
-  npm install -g @azure/static-web-apps-cli
+# Ensure environment variables are set in Azure
+echo -e "${YELLOW}Setting environment variables in Azure...${NC}"
+# Read from .env.production and set in Azure
+if [ -f ".env.production" ]; then
+  while IFS='=' read -r key value || [[ -n "$key" ]]; do
+    # Skip comments and empty lines
+    if [[ $key == \#* ]] || [[ -z "$key" ]]; then
+      continue
+    fi
+    
+    # Remove leading/trailing whitespace
+    key=$(echo "$key" | xargs)
+    value=$(echo "$value" | xargs)
+    
+    if [[ -n "$key" && -n "$value" ]]; then
+      echo "Setting environment variable: $key"
+      az staticwebapp appsettings set --name $STATIC_WEB_APP_NAME --resource-group $RESOURCE_GROUP --setting-names "$key=$value" --no-wait
+    fi
+  done < .env.production
+  
+  echo "Environment variables configured in Azure."
+else
+  echo -e "${RED}Warning: .env.production file not found. Environment variables will not be updated.${NC}"
 fi
 
-# Deploy using SWA CLI
-swa deploy ./out --deployment-token $DEPLOYMENT_TOKEN --env production
+# Deploy the app
+npx @azure/static-web-apps-cli deploy ./out --env production --deployment-token "$DEPLOYMENT_TOKEN" --app-location "." --api-location "api" --output-location out
 
 if [ $? -ne 0 ]; then
-  echo -e "${RED}Deployment failed. Please check the error messages above.${NC}"
+  echo -e "${RED}Deployment failed. Please check the logs and try again.${NC}"
   exit 1
 fi
 
 echo -e "\n${GREEN}✅ Deployment completed successfully!${NC}"
 echo "Your application has been deployed to Azure Static Web App."
-echo "You can access it at: https://$STATIC_WEB_APP_NAME.azurewebsites.net"
+echo "You can access it at: https://aistudyplanslanding.azurewebsites.net"
 echo ""
 echo "Next steps:"
 echo "1. Verify that the application works correctly in production"
