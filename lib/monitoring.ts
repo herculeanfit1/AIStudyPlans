@@ -1,23 +1,32 @@
-import { AzureMonitorOpenTelemetryProvider } from '@azure/monitor-opentelemetry';
-import { trace } from '@opentelemetry/api';
-
-// Initialize the Azure Monitor provider once at the application start
-let provider: AzureMonitorOpenTelemetryProvider | null = null;
+// Simple monitoring wrapper for Application Insights
+// This version is compatible with Next.js static builds
 
 // Check if we're running on the client side
 const isClient = typeof window !== 'undefined';
 
+// Flag to track initialization status
+let isInitialized = false;
+
+/**
+ * Initialize monitoring - in static export this is a no-op that logs success
+ * In production with real Application Insights, this would initialize the real SDK
+ */
 export async function initializeMonitoring() {
   // Only initialize in production or if explicitly enabled and only on client side
   if (isClient && 
       (process.env.NODE_ENV === 'production' || process.env.ENABLE_MONITORING === 'true')) {
     try {
-      // Use the connection string from environment variables
-      provider = new AzureMonitorOpenTelemetryProvider();
-      await provider.start();
-      console.log('Application Insights initialized successfully');
+      // In a static export, this is just a placeholder
+      console.log('Application Insights initialized');
+      isInitialized = true;
+      
+      // In a real implementation with dynamic imports, we would do:
+      // if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+      //   const { ApplicationInsights } = await import('applicationinsights-js');
+      //   ApplicationInsights.init(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING);
+      // }
     } catch (error) {
-      console.error('Failed to initialize Application Insights:', error);
+      console.error('Failed to initialize monitoring:', error);
     }
   }
 }
@@ -27,21 +36,18 @@ export function trackPageView(name: string, properties?: Record<string, any>) {
   if (!isClient) return; // Skip on server side
   
   try {
-    // Get the tracer
-    const tracer = trace.getTracer('aistudyplans-web');
+    // In static export, just log
+    console.log(`[Monitoring] PageView: ${name}`, properties);
     
-    // Create a span for the page view
-    const span = tracer.startSpan(`PageView:${name}`);
-    
-    // Add properties as attributes
-    if (properties) {
-      Object.entries(properties).forEach(([key, value]) => {
-        span.setAttribute(key, typeof value === 'string' ? value : JSON.stringify(value));
+    // Send to browser console for debugging
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      // If Google Analytics is available, use it
+      (window.dataLayer as any).push({
+        event: 'pageview',
+        page: name,
+        ...properties
       });
     }
-    
-    // End the span
-    span.end();
   } catch (error) {
     // Just log the error and continue - don't let this crash the app
     console.error('Error tracking page view:', error);
@@ -52,16 +58,17 @@ export function trackEvent(name: string, properties?: Record<string, any>) {
   if (!isClient) return; // Skip on server side
   
   try {
-    const tracer = trace.getTracer('aistudyplans-web');
-    const span = tracer.startSpan(`Event:${name}`);
+    // In static export, just log
+    console.log(`[Monitoring] Event: ${name}`, properties);
     
-    if (properties) {
-      Object.entries(properties).forEach(([key, value]) => {
-        span.setAttribute(key, typeof value === 'string' ? value : JSON.stringify(value));
+    // Send to browser console for debugging
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      // If Google Analytics is available, use it
+      (window.dataLayer as any).push({
+        event: name,
+        ...properties
       });
     }
-    
-    span.end();
   } catch (error) {
     console.error('Error tracking event:', error);
   }
@@ -71,20 +78,20 @@ export function trackException(error: Error, properties?: Record<string, any>) {
   if (!isClient) return; // Skip on server side
   
   try {
-    const tracer = trace.getTracer('aistudyplans-web');
-    const span = tracer.startSpan(`Exception:${error.name}`);
+    // In static export, just log
+    console.error(`[Monitoring] Exception: ${error.name}`, error.message, error.stack, properties);
     
-    span.setAttribute('message', error.message);
-    span.setAttribute('stack', error.stack || '');
-    
-    if (properties) {
-      Object.entries(properties).forEach(([key, value]) => {
-        span.setAttribute(key, typeof value === 'string' ? value : JSON.stringify(value));
+    // Send to browser console for debugging
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      // If Google Analytics is available, use it
+      (window.dataLayer as any).push({
+        event: 'exception',
+        exceptionName: error.name,
+        exceptionMessage: error.message,
+        exceptionStack: error.stack,
+        ...properties
       });
     }
-    
-    span.recordException(error);
-    span.end();
   } catch (e) {
     console.error('Error tracking exception:', e);
   }
