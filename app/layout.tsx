@@ -4,7 +4,6 @@ import { Inter } from "next/font/google";
 import { Providers } from "./providers";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AnalyticsProvider } from "./analytics-provider";
-import { initializeMonitoring } from "@/lib/monitoring";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,11 +29,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Initialize monitoring on the client
-  if (typeof window !== 'undefined') {
-    initializeMonitoring().catch(console.error);
-  }
-  
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
