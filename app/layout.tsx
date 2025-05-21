@@ -1,22 +1,26 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { Providers } from './providers';
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { Providers } from "./providers";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AnalyticsProvider } from "./analytics-provider";
+import { initializeMonitoring } from "@/lib/monitoring";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'SchedulEd - Smart Academic Planning for Students',
-  description: 'SchedulEd helps students plan their academic journey with AI-powered tools for course selection, scheduling, and degree planning.',
+  title: "SchedulEd - Smart Academic Planning for Students",
+  description:
+    "SchedulEd helps students plan their academic journey with AI-powered tools for course selection, scheduling, and degree planning.",
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
-  }
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export const viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 1,
 };
@@ -26,6 +30,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Initialize monitoring on the client
+  if (typeof window !== 'undefined') {
+    initializeMonitoring().catch(console.error);
+  }
+  
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -36,15 +45,22 @@ export default function RootLayout({
           crossOrigin="anonymous"
           referrerPolicy="no-referrer"
         />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <Providers>
-          {children}
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            <AnalyticsProvider>
+              {children}
+            </AnalyticsProvider>
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );
-} 
+}
