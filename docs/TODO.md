@@ -39,7 +39,6 @@
 - [x] Implement mobile-responsive navigation
 - [x] Add animations and transitions for better engagement
 - [x] Implement dark mode support
-- [ ] Add testimonials section
 - [x] Create FAQ section with accordion functionality
 
 ## UI Enhancements (In Progress)
@@ -78,6 +77,7 @@
 - [ ] Implement the following deployment steps:
 
 ### 1. Environment Configuration
+
 - [ ] Create a secure `.env.production` file with the following variables:
   - `NODE_ENV=production`
   - `NEXT_TELEMETRY_DISABLED=1`
@@ -89,6 +89,7 @@
 - [ ] Validate environment variables during the build process
 
 ### 2. Domain Setup
+
 - [ ] Configure DNS settings for `aistudyplans.com`:
   - A record pointing to the production server IP
   - CNAME for www subdomain
@@ -97,6 +98,7 @@
 - [ ] Set up DNS CAA records for enhanced SSL security
 
 ### 3. Server Setup
+
 - [ ] Provision a production server with adequate resources:
   - Minimum 2GB RAM, 2 vCPUs for initial deployment
   - 20GB SSD storage
@@ -112,9 +114,11 @@
   - Set up Docker to start on boot
 
 ### 4. SSL Certificate Setup
+
 - [ ] Create directories for Let's Encrypt certificates
 
 ### 5. Azure Static Web Apps Deployment
+
 - [x] Configure Next.js for hybrid Azure Static Web Apps deployment:
   - [x] Update `next.config.js` to include `output: "standalone"` for improved Azure compatibility
   - [x] Configure appropriate caching strategies for static and dynamic content
@@ -171,14 +175,14 @@
 - [ ] Add database integration for waitlist
 - [ ] Create study plan generation functionality
 - [ ] Build calendar integration
-- [ ] Add progress tracking 
+- [ ] Add progress tracking
 - [ ] Implement dashboard for registered users
 - [ ] Add study plan templates
 - [ ] Create resource recommendation engine
-- [ ] Interactive Study Plan Demo
-  - [ ] Create a simplified version of the study plan generator
-  - [ ] Allow users to input a subject and get a sample plan
-  - [ ] Include a "Get Full Plan" CTA
+- [x] Interactive Study Plan Demo
+  - [x] Create a simplified version of the study plan generator
+  - [x] Allow users to input a subject and get a sample plan
+  - [x] Include a "Get Full Plan" CTA
 - [ ] Personalization Quiz
   - [ ] Add a short quiz to identify user learning style
   - [ ] Show personalized recommendations based on results
