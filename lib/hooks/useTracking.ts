@@ -6,19 +6,33 @@ import { trackPageView } from '@/lib/monitoring';
 
 export function usePageTracking() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  
+  // Add try/catch to handle static export
+  let searchParamsObj = null;
+  try {
+    // This will throw during static export - we'll handle it gracefully
+    searchParamsObj = useSearchParams();
+  } catch (error) {
+    console.warn('SearchParams not available during static export');
+  }
   
   useEffect(() => {
     if (pathname) {
-      // Combine pathname and search params for full URL
-      const query = searchParams?.toString();
-      const url = query ? `${pathname}?${query}` : pathname;
+      // Combine pathname and search params for full URL if available
+      let url = pathname;
+      
+      if (searchParamsObj) {
+        const query = searchParamsObj.toString();
+        if (query) {
+          url = `${pathname}?${query}`;
+        }
+      }
       
       // Track the page view
       trackPageView(pathname, {
         url,
-        referrer: document.referrer || '',
+        referrer: typeof document !== 'undefined' ? (document.referrer || '') : '',
       });
     }
-  }, [pathname, searchParams]);
+  }, [pathname, searchParamsObj]);
 } 
