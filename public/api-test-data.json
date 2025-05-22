@@ -1,0 +1,6 @@
+{
+  "success": true,
+  "message": "Static JSON file working",
+  "timestamp": "2023-05-22T15:00:00Z",
+  "description": "This is a static JSON file that can be used to test API functionality without server-side processing"
+} 
