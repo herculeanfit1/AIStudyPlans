@@ -188,8 +188,8 @@ export default function WaitlistForm() {
     );
   }
 
-  // Show admin notice in development
-  const showAdminNotice = isDev || !process.env.RESEND_API_KEY;
+  // Show admin notice in development only
+  const showAdminNotice = isDev;
 
   return (
     <motion.div
