@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";
 
+// This is required for static export in Next.js when using output: 'export'
+export function generateStaticParams() {
+  // Return an empty array since we don't want to pre-render any API routes
+  return [];
+}
+
 /**
  * A very simple API endpoint that doesn't rely on any external services
  */
