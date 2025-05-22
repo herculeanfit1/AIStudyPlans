@@ -93,6 +93,9 @@ export default function WaitlistForm() {
     setError(null);
 
     try {
+      // Log what we're about to do
+      console.log(`Submitting waitlist form for ${formData.email}`);
+
       // Always use the API route for waitlist submissions
       const response = await fetch("/api/waitlist", {
         method: "POST",
@@ -102,23 +105,39 @@ export default function WaitlistForm() {
         body: JSON.stringify(formData),
       });
 
-      // Properly handle potential JSON parsing errors
+      console.log(`Response status: ${response.status} ${response.statusText}`);
+      console.log(`Response headers:`, Object.fromEntries([...response.headers.entries()]));
+
+      // Try to get the response text first before parsing JSON
+      const responseText = await response.text();
+      console.log(`Raw response: ${responseText.substring(0, 500)}`);
+
+      // Try to parse the JSON from the text
       let data;
       try {
-        data = await response.json();
+        data = JSON.parse(responseText);
+        console.log("Parsed JSON response:", data);
       } catch (jsonError) {
         console.error("Failed to parse JSON response:", jsonError);
-        throw new Error("Server returned an invalid response. Please try again later.");
+        // If there's content but not valid JSON, show a specific error
+        if (responseText && responseText.trim().length > 0) {
+          throw new Error("Server returned an invalid response. Our team has been notified.");
+        } else {
+          throw new Error("Server returned an empty response. Please try again later.");
+        }
       }
 
       if (!response.ok) {
         throw new Error(
-          data.error || "An error occurred while joining the waitlist",
+          data?.error || "An error occurred while joining the waitlist",
         );
       }
 
       // On success, mark as submitted
       setIsSubmitted(true);
+      
+      // Also log the successful submission
+      console.log("Waitlist submission successful");
     } catch (err) {
       console.error("Waitlist submission error:", err);
       setError(
