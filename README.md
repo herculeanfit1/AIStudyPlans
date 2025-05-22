@@ -2,7 +2,7 @@
 
 A modern web application for AI-powered study plan generation.
 
-Updated: Testing backup workflow - timestamp: 2023-11-14T15:42:00Z
+Updated: Triggering Static Web App restart - timestamp: 2025-05-22-00:36:18
 
 # AI Study Plans
 
@@ -29,6 +29,7 @@ A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan 
 - 🚀 Modern, responsive design optimized for all devices
 - ✨ Subtle animations and interactive UI elements
 - 🔍 SEO-friendly architecture
+- 📧 Email functionality using Next.js API Routes
 - 🧪 Comprehensive testing infrastructure (unit tests, E2E tests, performance tests)
 - 🐳 Containerized development and testing environment
 
@@ -36,6 +37,8 @@ A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan 
 
 - **Framework**: [Next.js 14](https://nextjs.org/) with App Router
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **API Routes**: Next.js Edge API Routes for serverless functionality
+- **Email Service**: [Resend](https://resend.com) for reliable email delivery
 - **Testing**:
   - [Jest](https://jestjs.io/) and [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for unit tests
   - [Playwright](https://playwright.dev/) for end-to-end testing
@@ -51,17 +54,20 @@ A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan 
 ### Local Development
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/AIStudyPlans.git
    cd AIStudyPlans
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Run the development server:
+
    ```bash
    npm run dev
    ```
@@ -73,14 +79,13 @@ A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan 
 For development, we use a local Qwen3 Coder model instead of cloud-based models:
 
 1. Start your local LLM server (e.g., using LM Studio) at http://10.1.10.98:1234/v1
-   
 2. The global MCP configuration is already set up at:
+
    ```
    ~/Library/Application Support/Cursor/User/settings.json
    ```
 
 3. Restart Cursor and select "Local Qwen3" in Settings → MCP Servers
-   
 4. Use Cursor's AI features as normal - all interactions will use your local model
 
 See [complete documentation](./docs/README.md#development-with-local-llm) for troubleshooting.
@@ -90,6 +95,7 @@ See [complete documentation](./docs/README.md#development-with-local-llm) for tr
 We provide a convenient Docker development environment:
 
 1. Start the development environment:
+
    ```bash
    ./run-docker.sh start
    ```
@@ -103,9 +109,16 @@ We provide a convenient Docker development environment:
 
 ### Testing Email Functionality
 
-We provide a consolidated email testing utility:
+The application uses Next.js API Routes with Resend for email functionality:
 
 ```bash
+# Test API functionality in production
+node test-api-local.js prod
+
+# Test API functionality in development (start local server first)
+npm run dev
+node test-api-local.js dev
+
 # Test a simple notification email
 ./run-docker.sh email simple your-email@example.com
 
@@ -115,6 +128,8 @@ We provide a consolidated email testing utility:
 # Test all email templates
 ./run-docker.sh email all your-email@example.com
 ```
+
+For more details on the email setup, see [Email Setup Guide](./email-setup.md).
 
 ## Testing
 
@@ -149,10 +164,17 @@ npm run test:e2e
 
 ```
 ├── app/                  # Next.js App Router structure
+│   ├── api/              # Next.js API Routes
+│   │   ├── waitlist/     # Waitlist API route
+│   │   ├── test-email/   # Test email API route
+│   │   └── health/       # Health check API route
 │   ├── components/       # React components
 │   ├── globals.css       # Global styles
 │   ├── layout.tsx        # Root layout
 │   └── page.tsx          # Homepage
+├── lib/                  # Shared libraries
+│   ├── email.ts          # Email functionality
+│   └── email-templates.ts # Email templates
 ├── e2e/                  # End-to-end tests
 ├── __tests__/            # Unit tests
 ├── public/               # Static assets
@@ -194,7 +216,21 @@ npm run start
 
 ## Azure Static Web Apps Deployment
 
-This landing page is configured for deployment to Azure Static Web Apps using GitHub Actions.
+This application is deployed to Azure Static Web Apps using GitHub Actions. The deployment process includes:
+
+1. Building the Next.js application
+2. Setting up environment variables
+3. Configuring routing via staticwebapp.config.json
+4. Deploying the application
+
+For manual deployment:
+
+```bash
+# Deploy to Azure Static Web Apps
+./deploy-to-prod.sh
+```
+
+For more details on the migration from Azure Functions to Next.js API Routes, see [API Migration Documentation](./docs/api-migration.md).
 
 ### Required GitHub Secrets
 
@@ -240,6 +276,7 @@ This project uses GitHub Actions for continuous integration and deployment with 
 ### CI/CD Workflow Overview
 
 1. **Build Workflow** (.github/workflows/build-artifact.yml)
+
    - Triggered on push to main/develop branches or via manual workflow dispatch
    - Builds and tags Docker images with environment and commit hash
    - Pushes images to GitHub Container Registry
@@ -263,12 +300,12 @@ This project follows strict dependency management practices to ensure security, 
 
 We've built several specialized tools to help manage dependencies:
 
-| Command | Description |
-|---------|-------------|
-| `npm run validate:deps` | Verify dependencies follow our standards |
-| `npm run fix:deps` | Interactive tool to fix common dependency issues |
-| `npm run dependencies:check` | Check for outdated dependencies |
-| `npm run dependencies:update` | Update dependencies (with caution) |
+| Command                       | Description                                      |
+| ----------------------------- | ------------------------------------------------ |
+| `npm run validate:deps`       | Verify dependencies follow our standards         |
+| `npm run fix:deps`            | Interactive tool to fix common dependency issues |
+| `npm run dependencies:check`  | Check for outdated dependencies                  |
+| `npm run dependencies:update` | Update dependencies (with caution)               |
 
 ### Adding New Dependencies
 
@@ -414,7 +451,7 @@ node scripts/test-email.js [template] [recipient-email]
 
 # Examples:
 node scripts/test-email.js simple your-email@example.com
-node scripts/test-email.js waitlist your-email@example.com 
+node scripts/test-email.js waitlist your-email@example.com
 node scripts/test-email.js feedback your-email@example.com
 
 # Send all email templates at once
@@ -437,7 +474,7 @@ TEMPLATE=all EMAIL_TO=your-email@example.com docker-compose -f docker-compose.em
 ### Available Email Templates
 
 1. **simple** - A basic test email to verify your setup
-2. **waitlist** - The waitlist confirmation email template 
+2. **waitlist** - The waitlist confirmation email template
 3. **feedback** - The feedback request email template
 4. **all** - Sends all available templates at once
 
@@ -496,6 +533,7 @@ This repository includes scripts to help with migrating Azure resources between 
 Since Application Insights resources can't be directly moved between resource groups (due to deny assignments), we provide utilities to create a new resource and update your application configuration:
 
 1. **Create a new Application Insights in your target resource group:**
+
    ```bash
    # Install Azure CLI if needed
    # brew install azure-cli (macOS) or follow https://docs.microsoft.com/en-us/cli/azure/install-azure-cli
@@ -508,6 +546,7 @@ Since Application Insights resources can't be directly moved between resource gr
    ```
 
 2. **Update your application configuration with the new connection string:**
+
    ```bash
    # After creating the new Application Insights resource,
    # use the migration script to update all configuration files
@@ -515,6 +554,7 @@ Since Application Insights resources can't be directly moved between resource gr
    ```
 
 3. **Verify functionality:**
+
    - Start the development server: `npm run dev`
    - Check the monitoring endpoints work correctly
    - Update CI/CD workflows with the new connection string
@@ -529,6 +569,7 @@ We follow a robust branching and deployment strategy to ensure code quality:
 ### Branch Strategy
 
 We use a modified Git Flow strategy with protected branches:
+
 - `main`: Production code, always deployable
 - `develop`: Integration branch for features
 
@@ -537,6 +578,7 @@ See [our complete branching strategy](./docs/branching-strategy.md) for details.
 ### Pull Request Process
 
 All changes must go through pull requests:
+
 1. Create a branch following our naming convention
 2. Develop and test your changes
 3. Create a pull request using the PR template
@@ -546,6 +588,7 @@ All changes must go through pull requests:
 ### Continuous Integration
 
 Every PR triggers comprehensive checks:
+
 - Code linting and type checking
 - Unit and integration tests
 - Dependency validation
@@ -556,6 +599,7 @@ Every PR triggers comprehensive checks:
 ### Dependency Management
 
 We maintain strict dependency control:
+
 - All dependencies use exact versions (no `^` or `~`)
 - `npm-shrinkwrap.json` locks all transitive dependencies
 - Automated validation on all PRs
@@ -564,6 +608,7 @@ We maintain strict dependency control:
 ### Azure Deployment
 
 For Azure deployment, follow these steps:
+
 1. Changes must be merged to `main` through a PR
 2. The Azure Static Web App workflow builds and deploys to Azure
 3. Application Insights monitoring is automatically configured
