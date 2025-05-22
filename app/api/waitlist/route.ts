@@ -7,7 +7,8 @@ import { addToWaitlist, startFeedbackCampaign } from "@/lib/supabase";
 import { trackEvent, trackException } from "@/lib/monitoring";
 
 // Use edge runtime instead of nodejs for static export compatibility
-export const runtime = "edge";
+// Change from edge to nodejs runtime
+export const runtime = "nodejs";
 
 // This is required for static export in Next.js when using output: 'export'
 export function generateStaticParams() {
