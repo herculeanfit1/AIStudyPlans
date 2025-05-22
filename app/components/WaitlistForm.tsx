@@ -154,7 +154,7 @@ export default function WaitlistForm() {
       setError(
         err instanceof Error
           ? err.message
-          : "An error occurred. Please try again later.",
+          : "An error occurred. Please try again later."
       );
     } finally {
       setIsSubmitting(false);
