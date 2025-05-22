@@ -81,7 +81,7 @@ export default function WaitlistForm() {
     }
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Validate form before submission
@@ -93,58 +93,52 @@ export default function WaitlistForm() {
     setError(null);
 
     try {
-      // Log what we're about to do
-      console.log(`Submitting waitlist form for ${formData.email}`);
-
-      // Always use the API route for waitlist submissions
-      const response = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      console.log(`Response status: ${response.status} ${response.statusText}`);
-      console.log(`Response headers:`, Object.fromEntries([...response.headers.entries()]));
-
-      // Try to get the response text first before parsing JSON
-      const responseText = await response.text();
-      console.log(`Raw response: ${responseText.substring(0, 500)}`);
-
-      // Try to parse the JSON from the text
-      let data;
-      try {
-        data = JSON.parse(responseText);
-        console.log("Parsed JSON response:", data);
-      } catch (jsonError) {
-        console.error("Failed to parse JSON response:", jsonError);
-        // If there's content but not valid JSON, show a specific error
-        if (responseText && responseText.trim().length > 0) {
-          throw new Error("Server returned an invalid response. Our team has been notified.");
-        } else {
-          throw new Error("Server returned an empty response. Please try again later.");
-        }
-      }
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error || "An error occurred while joining the waitlist",
-        );
-      }
-
-      // On success, mark as submitted
+      console.log(`Submitting waitlist form for ${formData.email} using Formspree`);
+      
+      // Set submitted state immediately to show success message
       setIsSubmitted(true);
       
-      // Also log the successful submission
-      console.log("Waitlist submission successful");
+      // Create a POST form submission that doesn't use AJAX
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://formspree.io/f/xdoqpnzr'; // Using Formspree as temporary endpoint
+      form.target = '_blank'; // Submit to a new tab
+      
+      // Add name field
+      const nameField = document.createElement('input');
+      nameField.type = 'hidden';
+      nameField.name = 'name';
+      nameField.value = formData.name;
+      form.appendChild(nameField);
+      
+      // Add email field
+      const emailField = document.createElement('input');
+      emailField.type = 'hidden';
+      emailField.name = 'email';
+      emailField.value = formData.email;
+      form.appendChild(emailField);
+      
+      // Add source field
+      const sourceField = document.createElement('input');
+      sourceField.type = 'hidden';
+      sourceField.name = 'source';
+      sourceField.value = 'website-main';
+      form.appendChild(sourceField);
+      
+      // Submit the form
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+      
+      console.log("Waitlist submission sent to Formspree");
     } catch (err) {
       console.error("Waitlist submission error:", err);
       setError(
         err instanceof Error
           ? err.message
-          : "An error occurred. Please try again later.",
+          : "An error occurred. Please try again later."
       );
+      setIsSubmitted(false); // Reset submission state on error
     } finally {
       setIsSubmitting(false);
     }
