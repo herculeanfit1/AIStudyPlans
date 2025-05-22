@@ -72,6 +72,8 @@ jobs:
           ./ci-build.sh
         env:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://aistudyplans.com' }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           # Add any other environment variables needed for the build here
 
       # Ensure staticwebapp.config.json is in the output directory
@@ -126,6 +128,9 @@ jobs:
           skip_app_build: true # Skip build as we already built the app
           is_static_export: true # Explicitly tell Azure this is a static export
           ###### End of Repository/Build Configurations ######
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: Report deployment status
         if: always()

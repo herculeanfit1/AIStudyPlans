@@ -25,6 +25,17 @@ fi
 export SKIP_AUTH=true
 export NODE_ENV=production
 
+# Ensure Supabase environment variables are available
+if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
+  echo "Warning: NEXT_PUBLIC_SUPABASE_URL not set, using placeholder for build"
+  export NEXT_PUBLIC_SUPABASE_URL="https://placeholder-for-build.supabase.co"
+fi
+
+if [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
+  echo "Warning: NEXT_PUBLIC_SUPABASE_ANON_KEY not set, using placeholder for build"
+  export NEXT_PUBLIC_SUPABASE_ANON_KEY="placeholder-key-for-build-process"
+fi
+
 # Replace Key Vault references with placeholders for CI build
 echo "Replacing Key Vault references with placeholders for CI build..."
 node scripts/ci-bypass-keyvault.js

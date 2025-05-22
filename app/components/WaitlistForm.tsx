@@ -2,6 +2,7 @@
 
 import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { motion } from "framer-motion";
+import { createClient } from '@supabase/supabase-js';
 
 interface FormData {
   name: string;
@@ -96,48 +97,58 @@ export default function WaitlistForm() {
       // Log what we're about to do
       console.log(`Submitting waitlist form for ${formData.email}`);
 
-      // Always use the API route for waitlist submissions
-      const response = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      console.log(`Response status: ${response.status} ${response.statusText}`);
-      console.log(`Response headers:`, Object.fromEntries([...response.headers.entries()]));
-
-      // Try to get the response text first before parsing JSON
-      const responseText = await response.text();
-      console.log(`Raw response: ${responseText.substring(0, 500)}`);
-
-      // Try to parse the JSON from the text
-      let data;
-      try {
-        data = JSON.parse(responseText);
-        console.log("Parsed JSON response:", data);
-      } catch (jsonError) {
-        console.error("Failed to parse JSON response:", jsonError);
-        // If there's content but not valid JSON, show a specific error
-        if (responseText && responseText.trim().length > 0) {
-          throw new Error("Server returned an invalid response. Our team has been notified.");
-        } else {
-          throw new Error("Server returned an empty response. Please try again later.");
+      // Create Supabase client
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+      
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error("Supabase configuration is missing");
+      }
+      
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      
+      // Insert the waitlist entry directly into Supabase
+      const { data, error: dbError } = await supabase
+        .from('waitlist')
+        .insert([
+          { 
+            name: formData.name, 
+            email: formData.email,
+            source: 'website-direct',
+            status: 'pending' 
+          }
+        ])
+        .select();
+      
+      if (dbError) {
+        console.error("Database error:", dbError);
+        
+        // Check if this is a duplicate entry
+        if (dbError.code === '23505') { // PostgreSQL unique constraint violation
+          // Still mark as success for UX purposes - they're on the list already
+          console.log("User already on waitlist, treating as success");
+          setIsSubmitted(true);
+          return;
         }
+        
+        throw new Error("Failed to join waitlist. Please try again later.");
       }
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error || "An error occurred while joining the waitlist",
-        );
-      }
-
+      
+      console.log("Successfully added to waitlist:", data);
+      
       // On success, mark as submitted
       setIsSubmitted(true);
       
       // Also log the successful submission
       console.log("Waitlist submission successful");
+      
+      // Track the event (optional, if you have client-side tracking)
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'waitlist_signup', {
+          event_category: 'engagement',
+          event_label: 'website-direct'
+        });
+      }
     } catch (err) {
       console.error("Waitlist submission error:", err);
       setError(
@@ -189,8 +200,7 @@ export default function WaitlistForm() {
             Thank you for joining!
           </h3>
           <p className="text-gray-600 mb-6">
-            We'll notify you when we launch. In the meantime, check your inbox
-            for a confirmation email.
+            We'll notify you when we launch. Thanks for your interest in AI Study Plans!
           </p>
           <div className="inline-block bg-white p-4 rounded-full">
             <svg
@@ -267,28 +277,21 @@ export default function WaitlistForm() {
                 Administrator Notice
               </p>
               <p className="mt-1 text-sm text-amber-700">
-                Email delivery requires proper configuration:
+                Now using direct Supabase integration for waitlist:
               </p>
               <ul className="mt-2 text-sm text-amber-700 list-disc list-inside">
                 <li>
-                  Set{" "}
+                  Set {" "}
                   <code className="bg-amber-100 px-1 py-0.5 rounded">
-                    RESEND_API_KEY
+                    NEXT_PUBLIC_SUPABASE_URL
                   </code>{" "}
-                  in{" "}
+                  and{" "}
                   <code className="bg-amber-100 px-1 py-0.5 rounded">
-                    .env.local
+                    NEXT_PUBLIC_SUPABASE_ANON_KEY
                   </code>
                 </li>
                 <li>
-                  Verify email domain in{" "}
-                  <a
-                    href="https://resend.com/domains"
-                    target="_blank"
-                    className="underline hover:text-amber-900"
-                  >
-                    Resend dashboard
-                  </a>
+                  Ensure the waitlist table exists in Supabase
                 </li>
               </ul>
             </div>
