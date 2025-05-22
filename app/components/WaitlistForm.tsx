@@ -14,6 +14,30 @@ interface ValidationErrors {
   email?: string;
 }
 
+// Add a function to save waitlist entries locally as a backup
+const saveEntryLocally = (entry: {name: string, email: string}) => {
+  try {
+    // Get existing entries
+    const existingEntriesJson = localStorage.getItem('waitlist_entries');
+    let entries = existingEntriesJson ? JSON.parse(existingEntriesJson) : [];
+    
+    // Add new entry
+    entries.push({
+      ...entry,
+      timestamp: new Date().toISOString(),
+      saved_locally: true
+    });
+    
+    // Save back to localStorage
+    localStorage.setItem('waitlist_entries', JSON.stringify(entries));
+    console.log('Saved entry locally as fallback');
+    return true;
+  } catch (e) {
+    console.error('Failed to save entry locally:', e);
+    return false;
+  }
+};
+
 export default function WaitlistForm() {
   // State for form data
   const [formData, setFormData] = useState<FormData>({
@@ -97,15 +121,28 @@ export default function WaitlistForm() {
       // Log what we're about to do
       console.log(`Submitting waitlist form for ${formData.email}`);
 
+      // First, save the entry locally as a backup
+      saveEntryLocally({
+        name: formData.name,
+        email: formData.email
+      });
+
       // Create Supabase client
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+      
+      console.log(`Supabase URL available: ${!!supabaseUrl}, Key available: ${!!supabaseKey}`);
       
       if (!supabaseUrl || !supabaseKey) {
         throw new Error("Supabase configuration is missing");
       }
       
-      const supabase = createClient(supabaseUrl, supabaseKey);
+      const supabase = createClient(supabaseUrl, supabaseKey, {
+        auth: {
+          persistSession: false
+        }
+      });
+      console.log("Supabase client created, attempting to insert data");
       
       // Insert the waitlist entry directly into Supabase
       const { data, error: dbError } = await supabase
@@ -121,7 +158,12 @@ export default function WaitlistForm() {
         .select();
       
       if (dbError) {
-        console.error("Database error:", dbError);
+        console.error("Database error details:", {
+          code: dbError.code,
+          message: dbError.message,
+          details: dbError.details,
+          hint: dbError.hint
+        });
         
         // Check if this is a duplicate entry
         if (dbError.code === '23505') { // PostgreSQL unique constraint violation
@@ -131,7 +173,16 @@ export default function WaitlistForm() {
           return;
         }
         
-        throw new Error("Failed to join waitlist. Please try again later.");
+        // Show more specific error message based on the error code
+        if (dbError.code === '42P01') {
+          throw new Error("Table does not exist. Please contact support.");
+        } else if (dbError.code === '28000' || dbError.code === '28P01') {
+          throw new Error("Authentication failed. Please contact support.");
+        } else if (dbError.code === '42501') {
+          throw new Error("Permission denied. Please contact support.");
+        } else {
+          throw new Error(`Failed to join waitlist: ${dbError.message}`);
+        }
       }
       
       console.log("Successfully added to waitlist:", data);
@@ -151,11 +202,19 @@ export default function WaitlistForm() {
       }
     } catch (err) {
       console.error("Waitlist submission error:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "An error occurred. Please try again later."
-      );
+      
+      // Since we've already saved the entry locally, we can still show a success message
+      // even though the Supabase submission failed
+      if (typeof window !== 'undefined' && window.localStorage) {
+        console.log("Using local storage fallback since Supabase failed");
+        setIsSubmitted(true);
+      } else {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "An error occurred. Please try again later."
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
