@@ -40,7 +40,7 @@
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "X-XSS-Protection": "1; mode=block",
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.resend.com https://*.supabase.co https://*.azure.com https://*.aistudyplanslanding.azurewebsites.net https://*.svc.dynamics.com *;",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.resend.com https://*.supabase.co https://zygigeysssdfcabpqtjh.supabase.co https://*.azure.com https://*.aistudyplanslanding.azurewebsites.net https://*.svc.dynamics.com *;",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
@@ -54,12 +54,12 @@
     // API routes - Next.js API Routes with Edge Runtime
     {
       "route": "/api/waitlist",
-      "methods": ["POST"],
+      "methods": ["POST", "OPTIONS"],
       "allowedRoles": ["anonymous"],
       "headers": {
-        "Access-Control-Allow-Origin": "https://aistudyplans.com",
+        "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
       }
     },
     {
