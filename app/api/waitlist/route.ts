@@ -20,13 +20,15 @@ export function generateStaticParams() {
  * Handle OPTIONS requests for CORS preflight
  */
 export async function OPTIONS() {
-  return new NextResponse(null, {
+  // Use standard Response instead of NextResponse
+  return new Response(null, {
     status: 204,
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-      "Access-Control-Max-Age": "86400"
+      "Access-Control-Max-Age": "86400",
+      "Cache-Control": "no-store, max-age=0"
     }
   });
 }
@@ -207,7 +209,8 @@ export async function POST(request: NextRequest) {
         source: source
       });
 
-      return new NextResponse(
+      // Use simpler Response format rather than NextResponse
+      return new Response(
         JSON.stringify({
           success: true,
           message:
@@ -232,7 +235,8 @@ export async function POST(request: NextRequest) {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+            "Cache-Control": "no-store, max-age=0"
           } 
         },
       );
@@ -260,7 +264,8 @@ export async function POST(request: NextRequest) {
         details: errorDetails
       });
 
-      return new NextResponse(
+      // Use simpler Response format rather than NextResponse
+      return new Response(
         JSON.stringify({
           error: "Failed to send emails",
           message: emailError?.message || "Unknown error",
@@ -275,7 +280,8 @@ export async function POST(request: NextRequest) {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+            "Cache-Control": "no-store, max-age=0"
           } 
         },
       );
@@ -292,8 +298,8 @@ export async function POST(request: NextRequest) {
       operation: "POST"
     });
 
-    // Make sure we're returning a proper JSON response
-    return new NextResponse(
+    // Use simpler Response format rather than NextResponse
+    return new Response(
       JSON.stringify({
         error: "Internal server error",
         details: error?.message || "Unknown error",
@@ -306,7 +312,8 @@ export async function POST(request: NextRequest) {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
+          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+          "Cache-Control": "no-store, max-age=0"
         } 
       },
     );

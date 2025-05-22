@@ -138,5 +138,15 @@
   // Platform configuration
   "platform": {
     "apiRuntime": "node:18"
+  },
+  
+  // Special configuration for API routes in static export
+  "outputCacheConfig": {
+    "routes": [
+      {
+        "route": "/api/*",
+        "disableCache": true
+      }
+    ]
   }
 }
