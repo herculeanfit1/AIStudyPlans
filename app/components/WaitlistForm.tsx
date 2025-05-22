@@ -102,7 +102,14 @@ export default function WaitlistForm() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      // Properly handle potential JSON parsing errors
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error("Failed to parse JSON response:", jsonError);
+        throw new Error("Server returned an invalid response. Please try again later.");
+      }
 
       if (!response.ok) {
         throw new Error(

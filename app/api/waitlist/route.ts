@@ -16,6 +16,21 @@ export function generateStaticParams() {
 }
 
 /**
+ * Handle OPTIONS requests for CORS preflight
+ */
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Max-Age": "86400"
+    }
+  });
+}
+
+/**
  * API route handler for waitlist signups
  */
 export async function POST(request: NextRequest) {
@@ -210,7 +225,15 @@ export async function POST(request: NextRequest) {
                 }
               : undefined,
         }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
+        { 
+          status: 200, 
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
+          } 
+        },
       );
     } catch (emailError: any) {
       console.error(
@@ -245,7 +268,15 @@ export async function POST(request: NextRequest) {
           contact:
             "Please contact support@aistudyplans.com to ensure your spot on the waitlist.",
         }),
-        { status: 500, headers: { "Content-Type": "application/json" } },
+        { 
+          status: 500, 
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
+          } 
+        },
       );
     }
   } catch (error: any) {
@@ -260,6 +291,7 @@ export async function POST(request: NextRequest) {
       operation: "POST"
     });
 
+    // Make sure we're returning a proper JSON response
     return new NextResponse(
       JSON.stringify({
         error: "Internal server error",
@@ -267,7 +299,15 @@ export async function POST(request: NextRequest) {
         contact:
           "Please contact support@aistudyplans.com to ensure your spot on the waitlist.",
       }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
+      { 
+        status: 500, 
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
+        } 
+      },
     );
   }
 }
