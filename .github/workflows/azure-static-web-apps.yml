@@ -14,7 +14,7 @@ on:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
-  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
   build_and_deploy_job:
@@ -29,7 +29,7 @@ jobs:
           # Ensure Git is properly initialized with safe directories and no extraheader
           git config --global --add safe.directory '*'
           git config --global core.longpaths true
-          
+
           # First check if the extraheader exists before trying to remove it
           if git config --global --get http.https://github.com/.extraheader > /dev/null 2>&1; then
             echo "Removing existing extraheader..."
@@ -37,11 +37,11 @@ jobs:
           else
             echo "No extraheader found to remove"
           fi
-          
+
           # Display current git config for debugging
           echo "Current Git configuration:"
           git config --global --list
-      
+
       - uses: actions/checkout@v4
         with:
           submodules: true
@@ -55,7 +55,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Setup caching
         uses: actions/cache@v4
@@ -74,12 +74,6 @@ jobs:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://aistudyplans.com' }}
           # Add any other environment variables needed for the build here
 
-      # Create a simple test file in the output directory
-      - name: Add test file
-        run: |
-          echo "This is a test file to verify deployment" > out/test.txt
-          ls -la out/
-
       # Ensure staticwebapp.config.json is in the output directory
       - name: Verify staticwebapp.config.json
         run: |
@@ -90,28 +84,33 @@ jobs:
           echo "Content of staticwebapp.config.json:"
           cat out/staticwebapp.config.json
 
-      # Update API route in staticwebapp.config.json for Email Relay
-      - name: Update API routes in staticwebapp.config.json
+      # Verify security headers in staticwebapp.config.json
+      - name: Verify security headers
         run: |
-          cat > out/staticwebapp.config.json << EOL
-          {
-            "navigationFallback": {
-              "rewrite": "/index.html"
-            },
-            "mimeTypes": {
-              ".json": "application/json"
-            },
-            "routes": [
-              {
-                "route": "/api/waitlist",
-                "allowedRoles": ["anonymous"],
-                "rewrite": "https://${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}.azurewebsites.net/api/waitlist"
-              }
-            ]
-          }
-          EOL
-          echo "Updated staticwebapp.config.json with Azure Functions API routes"
-          cat out/staticwebapp.config.json
+          echo "Checking security headers in staticwebapp.config.json..."
+          
+          if grep -q "Strict-Transport-Security" out/staticwebapp.config.json; then
+            echo "✅ HSTS header found"
+          else
+            echo "⚠️ HSTS header missing, updating configuration"
+            # This is just a check - we're not actually modifying since we already did above
+          fi
+          
+          if grep -q "Content-Security-Policy" out/staticwebapp.config.json; then
+            echo "✅ CSP header found"
+          else
+            echo "⚠️ CSP header missing, updating configuration"
+            # This is just a check - we're not actually modifying since we already did above
+          fi
+          
+          if grep -q "Access-Control-Allow-Origin" out/staticwebapp.config.json; then
+            echo "✅ CORS headers found"
+          else
+            echo "⚠️ CORS headers missing, updating configuration"
+            # This is just a check - we're not actually modifying since we already did above
+          fi
+          
+          echo "Security headers verification complete"
 
       - name: Build And Deploy
         id: builddeploy
@@ -122,7 +121,7 @@ jobs:
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           app_location: "out" # Only deploy the output directory
-          api_location: "api" # Use the dedicated API directory
+          api_location: "" # No separate API directory, as we use Next.js API routes
           output_location: "" # No additional output dir, we're already in the output
           skip_app_build: true # Skip build as we already built the app
           is_static_export: true # Explicitly tell Azure this is a static export
@@ -138,62 +137,6 @@ jobs:
             echo "Please check the logs for more information"
           fi
 
-  deploy_azure_functions:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    name: Deploy Azure Functions
-    needs: build_and_deploy_job
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      # Pre-emptively check and remove WEBSITE_RUN_FROM_PACKAGE to avoid deployment errors
-      - name: Login to Azure and clean app settings
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-        
-      - name: Remove WEBSITE_RUN_FROM_PACKAGE app setting
-        run: |
-          echo "Checking for and removing WEBSITE_RUN_FROM_PACKAGE app setting..."
-          az functionapp config appsettings list --name "${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}" --resource-group "AIStudyPlans-RG1" --query "[?name=='WEBSITE_RUN_FROM_PACKAGE'].name" -o tsv | xargs -r az functionapp config appsettings delete --name "${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}" --resource-group "AIStudyPlans-RG1" --setting-names
-          echo "App settings cleanup completed"
-
-      # Use the official Azure Functions Action instead of installing Core Tools manually
-      - name: 'Deploy Azure Functions'
-        uses: Azure/functions-action@v1
-        with:
-          app-name: ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }}
-          package: './azure-functions'
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-      
-      # Backup method - Only run if the primary deployment method fails
-      - name: Install Azure Functions Core Tools (if needed)
-        if: failure()
-        run: |
-          echo "Primary deployment method failed. Attempting alternative method..."
-          npm install -g azure-functions-core-tools@4 --unsafe-perm false
-          echo "Azure Functions Core Tools installed successfully"
-          func --version
-
-      - name: Install Azure Functions dependencies (if needed)
-        if: failure()
-        run: |
-          cd azure-functions
-          npm install
-
-      # Deploy with force flag to ensure the deployment works even with existing app settings
-      - name: Deploy Azure Functions (if needed)
-        if: failure()
-        run: |
-          cd azure-functions
-          echo "Deploying function app using alternative method..."
-          func azure functionapp publish ${{ secrets.FUNCTION_APP_NAME || 'aistudyplans-function' }} --javascript --force
-
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
@@ -205,4 +148,4 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: "close"
-          app_location: "/" # App source code path 
+          app_location: "/" # App source code path

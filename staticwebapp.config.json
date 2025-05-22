@@ -1,8 +1,21 @@
 {
+  // Navigation fallback configuration - controls SPA routing behavior
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/images/*.{png,jpg,gif,ico}", "/css/*", "/js/*", "/*.{css,js}", "/api/*"]
+    "exclude": [
+      // Static assets that should never be rewritten to index.html
+      "/images/*.{png,jpg,gif,ico}",
+      "/css/*",
+      "/js/*",
+      "/*.{css,js}",
+      // API routes handled by Next.js
+      "/api/*",
+      // Next.js static assets
+      "/_next/*"
+    ]
   },
+
+  // MIME type configuration for proper content serving
   "mimeTypes": {
     ".json": "application/json",
     ".js": "application/javascript",
@@ -12,42 +25,73 @@
     ".svg": "image/svg+xml",
     ".ico": "image/x-icon"
   },
+
+  // Override response behavior for specific status codes
   "responseOverrides": {
     "404": {
       "rewrite": "/index.html",
       "statusCode": 200
     }
   },
+
+  // Global headers applied to all responses
   "globalHeaders": {
     "Cache-Control": "must-revalidate, max-age=600",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "X-XSS-Protection": "1; mode=block",
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.resend.com https://*.supabase.co;"
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.resend.com https://*.supabase.co https://*.azure.com https://*.aistudyplanslanding.azurewebsites.net https://*.svc.dynamics.com *;",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Resource-Policy": "same-site",
+    "Cross-Origin-Embedder-Policy": "require-corp"
   },
+
+  // Route-specific configurations
   "routes": [
+    // API routes - Next.js API Routes with Edge Runtime
+    {
+      "route": "/api/waitlist",
+      "methods": ["POST"],
+      "allowedRoles": ["anonymous"],
+      "headers": {
+        "Access-Control-Allow-Origin": "https://aistudyplans.com",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      }
+    },
+    {
+      "route": "/api/test-email",
+      "methods": ["GET", "POST"],
+      "allowedRoles": ["anonymous"],
+      "headers": {
+        "Access-Control-Allow-Origin": "https://aistudyplans.com",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      }
+    },
     {
       "route": "/api/*",
       "methods": ["GET", "POST", "PUT", "DELETE"],
       "allowedRoles": ["anonymous"],
-      "rewrite": "/api/index"
+      "headers": {
+        "Access-Control-Allow-Origin": "https://aistudyplans.com",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
+      }
     },
-    {
-      "route": "/api/waitlist",
-      "methods": ["POST"],
-      "allowedRoles": ["anonymous"]
-    },
-    {
-      "route": "/api/test-email",
-      "methods": ["GET"],
-      "allowedRoles": ["anonymous"]
-    },
+
+    // Static asset caching - Next.js static files
     {
       "route": "/_next/static/*",
       "headers": {
         "cache-control": "public, max-age=31536000, immutable"
       }
     },
+
+    // Authentication routes
     {
       "route": "/login",
       "allowedRoles": ["anonymous"],
@@ -58,6 +102,8 @@
       "allowedRoles": ["anonymous"],
       "rewrite": "/logout.html"
     },
+
+    // Admin routes - redirects
     {
       "route": "/admin/direct-login*",
       "redirect": "/admin/ms-login",
@@ -73,6 +119,8 @@
       "redirect": "/admin/ms-login",
       "statusCode": 301
     },
+
+    // Static assets caching
     {
       "route": "/static/*",
       "headers": {
@@ -86,7 +134,9 @@
       }
     }
   ],
+
+  // Platform configuration
   "platform": {
     "apiRuntime": "node:18"
   }
-} 
+}
