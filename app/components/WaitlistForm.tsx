@@ -286,7 +286,7 @@ export default function WaitlistForm() {
             Thank you for joining!
           </h3>
           <p className="text-gray-600 mb-6">
-            We'll notify you when we launch. Thanks for your interest in AI Study Plans!
+            We'll notify you when we launch. You'll receive an email confirmation shortly. Thanks for your interest in AI Study Plans!
           </p>
           <div className="inline-block bg-white p-4 rounded-full">
             <svg
