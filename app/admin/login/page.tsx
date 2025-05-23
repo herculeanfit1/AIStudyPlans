@@ -15,6 +15,7 @@ export default function AdminLogin() {
   const [isSafari, setIsSafari] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
   const [redirectAttempts, setRedirectAttempts] = useState(0);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   
   // Log session status for debugging
   useEffect(() => {
@@ -30,10 +31,11 @@ export default function AdminLogin() {
           expires: session.expires
         } : null,
         url: window.location.href,
-        redirectAttempts
+        redirectAttempts,
+        isAuthenticating
       });
     }
-  }, [status, session, redirectAttempts]);
+  }, [status, session, redirectAttempts, isAuthenticating]);
   
   // Get error from URL if present
   useEffect(() => {
@@ -93,6 +95,7 @@ export default function AdminLogin() {
       setError('');
       // Clear any stale state
       setRedirectAttempts(0);
+      setIsAuthenticating(false);
     } catch (err) {
       console.error('Sign out error:', err);
     } finally {
@@ -105,10 +108,16 @@ export default function AdminLogin() {
   
   // Handle Microsoft login
   const handleMicrosoftLogin = async () => {
+    if (isAuthenticating) {
+      console.log("Authentication already in progress, ignoring duplicate request");
+      return;
+    }
+    
     try {
       setIsLoading(true);
       setError('');
       setRedirectAttempts(0);
+      setIsAuthenticating(true);
       
       // Set a cookie before redirecting (helps with Safari)
       if (isSafari) {
@@ -116,11 +125,21 @@ export default function AdminLogin() {
       }
       
       console.log("Initiating Microsoft sign-in with callback URL:", callbackUrl);
-      await signIn('azure-ad', { callbackUrl });
+      
+      // Direct redirect to Azure AD auth endpoint to bypass any potential loop issues
+      const result = await signIn('azure-ad', { 
+        callbackUrl,
+        redirect: true,
+        prompt: 'login' // Force fresh login to avoid cached credentials
+      });
+      
+      console.log("SignIn result:", result);
     } catch (error) {
       console.error('Login error:', error);
       setError('An error occurred during login. Please try again.');
+      setIsAuthenticating(false);
     } finally {
+      // If we reach this point (we shouldn't because of redirect: true)
       setIsLoading(false);
     }
   };
@@ -166,7 +185,7 @@ export default function AdminLogin() {
           <button
             type="button"
             onClick={handleMicrosoftLogin}
-            disabled={isLoading}
+            disabled={isLoading || isAuthenticating}
             className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
             {isLoading ? (

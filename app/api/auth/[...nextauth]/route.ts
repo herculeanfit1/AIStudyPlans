@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import AzureAD from "next-auth/providers/azure-ad";
+import { logAuthEvent } from "@/lib/monitoring";
 
 // This is required for static export in Next.js when using output: 'export'
 export function generateStaticParams() {
@@ -23,7 +24,7 @@ declare module "next-auth" {
 }
 
 // For debugging purposes
-const logAuthEvent = (event: string, data: any) => {
+const logAuthEventLocal = (event: string, data: any) => {
   if (process.env.NODE_ENV === 'development') {
     console.log(`[NextAuth] ${event}:`, JSON.stringify(data, null, 2));
   } else {
@@ -40,7 +41,9 @@ const handler = NextAuth({
       tenantId: process.env.AZURE_AD_TENANT_ID || "",
       authorization: {
         params: {
-          prompt: "login", // Force re-authentication to avoid stale sessions
+          prompt: "select_account", // Force account selection to prevent automatic login with cached credentials
+          response_type: "code",
+          response_mode: "query"
         },
       },
     }),
@@ -49,27 +52,41 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       // More detailed logging
-      logAuthEvent('signIn attempt', { 
+      logAuthEventLocal('signIn attempt', { 
         email: user.email,
         provider: account?.provider,
         timestamp: new Date().toISOString()
       });
       
+      // Log to Application Insights
+      logAuthEvent('signIn attempt', {
+        email: user.email,
+        provider: account?.provider
+      });
+      
       // Allow only the specific admin email for Azure AD
-      const allowedEmails = ["btaiadmin@bridgingtrustai.onmicrosoft.com"];
+      const allowedEmails = [
+        "btaiadmin@bridgingtrustai.onmicrosoft.com",
+        "terence@bridgingtrust.ai" // Adding your email for testing
+      ];
       
       if (!user.email) {
         console.error("[NextAuth] Sign in failed: No email provided");
+        logAuthEvent('signIn failed', { reason: 'no email' });
         return false;
       }
       
       const isAllowed = allowedEmails.includes(user.email);
       console.log(`[NextAuth] User ${user.email} ${isAllowed ? 'allowed' : 'denied'} access`);
+      logAuthEvent('signIn result', { 
+        email: user.email, 
+        allowed: isAllowed 
+      });
       return isAllowed;
     },
     async jwt({ token, user, account, trigger }) {
       // Pass information to the token
-      logAuthEvent('jwt callback', { 
+      logAuthEventLocal('jwt callback', { 
         tokenEmail: token.email,
         userPresent: !!user,
         accountProvider: account?.provider,
@@ -77,15 +94,25 @@ const handler = NextAuth({
         timestamp: new Date().toISOString()
       });
       
+      // Log to Application Insights
+      logAuthEvent('jwt callback', {
+        email: token.email,
+        userPresent: !!user,
+        provider: account?.provider,
+        trigger: trigger
+      });
+      
       // If this is a sign-in (user object present)
       if (user) {
-        // Check specifically for the admin email
-        if (user.email === "btaiadmin@bridgingtrustai.onmicrosoft.com") {
+        // Check specifically for admin emails
+        if (["btaiadmin@bridgingtrustai.onmicrosoft.com", "terence@bridgingtrust.ai"].includes(user.email || "")) {
           token.isAdmin = true;
           console.log("[NextAuth] Admin privileges granted to token");
+          logAuthEvent('admin granted', { email: user.email });
         } else {
           token.isAdmin = false;
           console.log("[NextAuth] Standard user privileges set on token");
+          logAuthEvent('admin denied', { email: user.email });
         }
       }
       // If token already has isAdmin field, preserve it
@@ -93,22 +120,33 @@ const handler = NextAuth({
         // Default to false if not set
         token.isAdmin = false;
         console.log("[NextAuth] Setting default isAdmin=false on token");
+        logAuthEvent('admin default', { email: token.email });
       }
       
       return token;
     },
     async session({ session, token }) {
       // Pass information to the client session
-      logAuthEvent('session callback', { 
+      logAuthEventLocal('session callback', { 
         sessionEmail: session.user?.email,
         tokenIsAdmin: token.isAdmin,
         timestamp: new Date().toISOString()
+      });
+      
+      // Log to Application Insights
+      logAuthEvent('session callback', {
+        email: session.user?.email,
+        isAdmin: token.isAdmin
       });
       
       if (session.user) {
         // Explicitly cast and set isAdmin from token
         session.user.isAdmin = !!token.isAdmin;
         console.log(`[NextAuth] Session created for ${session.user.email}, isAdmin: ${session.user.isAdmin}`);
+        logAuthEvent('session created', {
+          email: session.user.email,
+          isAdmin: session.user.isAdmin
+        });
       }
       
       return session;

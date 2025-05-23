@@ -116,179 +116,70 @@ export default function WaitlistForm() {
     setError(null);
 
     try {
-      // Check if email services are configured by querying our API
-      console.log("Checking email configuration status...");
-      const configCheck = await fetch("/api/email-config");
-      const configData = await configCheck.json();
-      
-      // Track whether email is configured
-      const emailConfigured = configData.configured;
-      console.log(`Email configuration status: ${emailConfigured ? 'Configured' : 'Not Configured'}`);
-
-      // Log what we're about to do
-      console.log(`Submitting waitlist form for ${formData.email}`);
-
-      // First, save the entry locally as a backup
+      // Save entry locally first as backup
       saveEntryLocally({
         name: formData.name,
         email: formData.email,
       });
-
-      // API call to submit the form - trying explicit API call first
-      try {
-        console.log("Making direct API call to waitlist endpoint");
-        const apiResponse = await fetch("/api/waitlist", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            source: "website-form"
-          }),
-        });
-        
-        // If the API responds with an error, log it
-        if (!apiResponse.ok) {
-          let errorData;
-          try {
-            errorData = await apiResponse.json();
-          } catch (jsonError) {
-            // If the response is not valid JSON, get the text instead
-            const errorText = await apiResponse.text();
-            console.error("API returned non-JSON response:", errorText);
-            throw new Error(
-              errorText.includes("Backend call failure")
-                ? "Server error: Backend service unavailable."
-                : `API error: ${errorText.substring(0, 100)}`
-            );
-          }
-          
-          console.error("API response error:", errorData);
-          if (errorData.validation_errors) {
-            // Clear existing validation messages and set the ones from the server
-            setValidationErrors(errorData.validation_errors);
-            
-            // Set a more user-friendly error message depending on the error type
-            if (errorData.validation_errors.email) {
-              setError("Please enter a valid email address.");
-            } else if (errorData.validation_errors.name) {
-              setError("Please enter your name to join the waitlist.");
-            } else {
-              setError("Please fix the validation errors and try again.");
-            }
-            setIsSubmitting(false);
-            return;
-          } else {
-            throw new Error(errorData.error || "API error");
-          }
-        } else {
-          const successData = await apiResponse.json();
-          console.log("API success:", successData);
-          setIsSubmitted(true);
-          return;
-        }
-      } catch (apiError: any) {
-        console.error("Direct API call failed:", apiError);
-        setError(apiError.message || "Failed to connect to server. Please try again later.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Create Supabase client
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-
-      console.log(
-        `Supabase URL available: ${!!supabaseUrl}, Key available: ${!!supabaseKey}`,
-      );
-
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error("Supabase configuration is missing");
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseKey, {
-        auth: {
-          persistSession: false,
-        },
-      });
-      console.log("Supabase client created, attempting to insert data");
-
-      // Insert the waitlist entry directly into Supabase
-      const { data, error: dbError } = await supabase
-        .from("waitlist_users")
-        .insert([
-          {
-            name: formData.name,
-            email: formData.email,
-            source: "website-direct",
-            feedback_campaign_started: false,
-          },
-        ])
-        .select();
-
-      if (dbError) {
-        console.error("Database error details:", {
-          code: dbError.code,
-          message: dbError.message,
-          details: dbError.details,
-          hint: dbError.hint,
-        });
-
-        // Check if this is a duplicate entry
-        if (dbError.code === "23505") {
-          // PostgreSQL unique constraint violation
-          // Still mark as success for UX purposes - they're on the list already
-          console.log("User already on waitlist, treating as success");
-          setIsSubmitted(true);
-          return;
-        }
-
-        // Show more specific error message based on the error code
-        if (dbError.code === "42P01") {
-          throw new Error("Table does not exist. Please contact support.");
-        } else if (dbError.code === "28000" || dbError.code === "28P01") {
-          throw new Error("Authentication failed. Please contact support.");
-        } else if (dbError.code === "42501") {
-          throw new Error("Permission denied. Please contact support.");
-        } else {
-          throw new Error(`Failed to join waitlist: ${dbError.message}`);
-        }
-      }
-
-      console.log("Successfully added to waitlist:", data);
       
-      // If email is configured, call the API to send notification emails
-      if (emailConfigured) {
+      // Log what we're about to do
+      console.log(`Submitting waitlist form for ${formData.email}`);
+      
+      // API call to submit the form
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          source: "website-form"
+        }),
+      });
+      
+      // First check if the response is ok (status in the 200-299 range)
+      if (!response.ok) {
+        // Get response text first
+        const responseText = await response.text();
+        let errorMessage = responseText;
+        
         try {
-          console.log("Calling waitlist API to send email notifications");
-          const emailResponse = await fetch("/api/waitlist", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              name: formData.name,
-              email: formData.email,
-              source: "website-form"
-            }),
-          });
-          
-          if (emailResponse.ok) {
-            console.log("API notification successful, emails should be sent");
-          } else {
-            console.warn("API notification failed but user was added to database");
+          // Try to parse as JSON if possible
+          const errorData = JSON.parse(responseText);
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
           }
-        } catch (emailError) {
-          console.error("Error sending email notifications:", emailError);
-          // Don't throw here, we still want to show success since the DB entry was created
+        } catch (jsonError) {
+          // If not valid JSON, use the response text directly
+          console.error("API response is not valid JSON:", responseText);
+          // Truncate long error messages
+          if (responseText.length > 100) {
+            errorMessage = `${responseText.substring(0, 100)}...`;
+          }
         }
-      } else {
-        console.warn("Email not configured, skipping email notifications");
+        
+        throw new Error(errorMessage);
       }
-
-      // On success, mark as submitted
+      
+      // For successful responses, try to get JSON
+      let responseData = {};
+      try {
+        const responseText = await response.text();
+        // Handle empty response
+        if (responseText.trim() === '') {
+          responseData = { success: true };
+        } else {
+          responseData = JSON.parse(responseText);
+        }
+      } catch (jsonError) {
+        console.warn("Could not parse success response as JSON, but continuing as success");
+        responseData = { success: true };
+      }
+      
+      console.log("API success:", responseData);
       setIsSubmitted(true);
       
       // Track successful conversion for analytics
@@ -299,8 +190,19 @@ export default function WaitlistForm() {
         });
       }
     } catch (error: any) {
-      console.error("Error handling waitlist submission:", error);
-      setError(error.message || "An error occurred. Please try again later.");
+      console.error("Error in waitlist submission:", error);
+      
+      // Handle various error types
+      if (error.message?.includes("Backend call failure")) {
+        setError("Sorry, our server is experiencing issues. We've saved your submission locally and will try to recover it.");
+      } else if (error.message?.includes("fetch")) {
+        setError("Network error. Please check your connection and try again.");
+      } else if (error.message?.length > 100) {
+        // Truncate very long error messages
+        setError(`Error: ${error.message.substring(0, 100)}...`);
+      } else {
+        setError(error.message || "An error occurred. Please try again later.");
+      }
       
       // Track error for analytics
       if (typeof window !== "undefined" && window.gtag) {

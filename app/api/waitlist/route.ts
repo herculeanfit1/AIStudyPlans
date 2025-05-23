@@ -56,8 +56,17 @@ export async function POST(request: NextRequest) {
       `📊 Database config: SUPABASE_URL=${!!process.env.NEXT_PUBLIC_SUPABASE_URL ? "present" : "MISSING"}, ANON_KEY=${!!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "present" : "MISSING"}`,
     );
 
-    // Get body data, using a more resilient approach
-    const body = await request.json().catch(() => ({}));
+    // Get body data using a more resilient approach with explicit error handling
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      console.error("❌ Error parsing request body as JSON:", parseError);
+      return createJsonResponse({
+        error: "Invalid JSON in request body",
+        details: "Could not parse the request body as valid JSON"
+      }, 400);
+    }
     
     // Use Zod validation for input data
     const validation = validateInput(waitlistSchema, body);
@@ -72,19 +81,10 @@ export async function POST(request: NextRequest) {
         input: body
       });
       
-      return new Response(
-        JSON.stringify({ 
-          error: errorMessage || "Invalid input data",
-          validation_errors: validation.error
-        }),
-        { 
-          status: 400, 
-          headers: { 
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-          } 
-        }
-      );
+      return createJsonResponse({ 
+        error: errorMessage || "Invalid input data",
+        validation_errors: validation.error
+      }, 400);
     }
     
     // If validation passes, we can safely use the data
@@ -125,15 +125,12 @@ export async function POST(request: NextRequest) {
         trackEvent("WaitlistConfigError", {
           error: "Missing RESEND_API_KEY"
         });
-        return new Response(
-          JSON.stringify({
-            error: "Email service not configured",
-            success: false,
-            details:
-              "Missing API key configuration. Please check server environment variables.",
-          }),
-          { status: 500, headers: { "Content-Type": "application/json" } },
-        );
+        return createJsonResponse({
+          error: "Email service not configured",
+          success: false,
+          details:
+            "Missing API key configuration. Please check server environment variables.",
+        }, 500);
       }
 
       // Send confirmation email with detailed logging
@@ -207,37 +204,25 @@ export async function POST(request: NextRequest) {
         source: source
       });
 
-      // Use simpler Response format rather than NextResponse
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message:
-            "Successfully joined the waitlist. Please check your email for confirmation.",
-          debug:
-            process.env.NODE_ENV !== "production"
-              ? {
-                  emailConfig: {
-                    apiKey: resendApiKeyPresent ? "present" : "missing",
-                    from: process.env.EMAIL_FROM ? "configured" : "missing",
-                    replyTo: process.env.EMAIL_REPLY_TO
-                      ? "configured"
-                      : "missing",
-                  },
-                  environment: process.env.NODE_ENV,
-                }
-              : undefined,
-        }),
-        { 
-          status: 200, 
-          headers: { 
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-            "Cache-Control": "no-store, max-age=0"
-          } 
-        },
-      );
+      // Return a successful JSON response
+      return createJsonResponse({
+        success: true,
+        message:
+          "Successfully joined the waitlist. Please check your email for confirmation.",
+        debug:
+          process.env.NODE_ENV !== "production"
+            ? {
+                emailConfig: {
+                  apiKey: resendApiKeyPresent ? "present" : "missing",
+                  from: process.env.EMAIL_FROM ? "configured" : "missing",
+                  replyTo: process.env.EMAIL_REPLY_TO
+                    ? "configured"
+                    : "missing",
+                },
+                environment: process.env.NODE_ENV,
+              }
+            : undefined,
+      }, 200);
     } catch (emailError: any) {
       console.error(
         "❌ Error processing emails:",
@@ -262,27 +247,15 @@ export async function POST(request: NextRequest) {
         details: errorDetails
       });
 
-      // Use simpler Response format rather than NextResponse
-      return new Response(
-        JSON.stringify({
-          error: "Failed to send emails",
-          message: emailError?.message || "Unknown error",
-          details: errorDetails,
-          success: false,
-          contact:
-            "Please contact support@aistudyplans.com to ensure your spot on the waitlist.",
-        }),
-        { 
-          status: 500, 
-          headers: { 
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-            "Cache-Control": "no-store, max-age=0"
-          } 
-        },
-      );
+      // Return error response as JSON
+      return createJsonResponse({
+        error: "Failed to send emails",
+        message: emailError?.message || "Unknown error",
+        details: errorDetails,
+        success: false,
+        contact:
+          "Please contact support@aistudyplans.com to ensure your spot on the waitlist.",
+      }, 500);
     }
   } catch (error: any) {
     console.error(
@@ -296,24 +269,46 @@ export async function POST(request: NextRequest) {
       operation: "POST"
     });
 
-    // Use simpler Response format rather than NextResponse
-    return new Response(
-      JSON.stringify({
-        error: "Internal server error",
-        details: error?.message || "Unknown error",
-        contact:
-          "Please contact support@aistudyplans.com to ensure your spot on the waitlist.",
-      }),
-      { 
-        status: 500, 
-        headers: { 
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-          "Cache-Control": "no-store, max-age=0"
-        } 
-      },
-    );
+    // Always return properly formatted JSON even for unknown errors
+    return createJsonResponse({
+      error: "Internal server error",
+      details: error?.message || "Unknown error",
+      contact:
+        "Please contact support@aistudyplans.com to ensure your spot on the waitlist.",
+    }, 500);
+  }
+}
+
+/**
+ * Helper function to create a JSON Response with proper headers
+ * This ensures all responses are consistently formatted
+ */
+function createJsonResponse(data: any, status: number = 200) {
+  // Make sure to wrap the response in a try-catch to ensure a proper response
+  try {
+    const jsonString = JSON.stringify(data);
+    return new Response(jsonString, { 
+      status, 
+      headers: { 
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        "Cache-Control": "no-store, max-age=0"
+      } 
+    });
+  } catch (jsonError) {
+    console.error("❌ Error creating JSON response:", jsonError);
+    // If JSON stringification fails for any reason, create a basic error response
+    return new Response(JSON.stringify({ 
+      error: "Error processing response",
+      success: false
+    }), { 
+      status: 500, 
+      headers: { 
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      } 
+    });
   }
 }
