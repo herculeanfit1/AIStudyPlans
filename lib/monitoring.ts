@@ -1,5 +1,5 @@
 // Enhanced monitoring wrapper for Application Insights
-// This version will work with Next.js and send logs to Azure Application Insights
+// This version uses the Application Insights SDK properly
 
 // Check if we're running on the client side
 const isClient = typeof window !== 'undefined';
@@ -29,6 +29,8 @@ export async function initializeMonitoring() {
             enableCorsCorrelation: true,
             enableRequestHeaderTracking: true,
             enableResponseHeaderTracking: true,
+            autoTrackPageVisitTime: true,
+            enableUnhandledPromiseRejectionTracking: true
           }
         });
         
@@ -98,7 +100,10 @@ export function logAuthEvent(event: string, data: any) {
     ...data
   };
   
-  trackEvent('NextAuth_Event', logData);
+  if (isInitialized && appInsights) {
+    appInsights.trackEvent({ name: 'NextAuth_Event', properties: logData });
+  }
+  
   console.log(`[NextAuth-${logData.timestamp}] ${event}:`, logData);
 }
 
@@ -107,13 +112,16 @@ export function trackPageView(name: string, properties?: Record<string, any>) {
   if (!isClient) return; // Skip on server side
   
   try {
-    // In static export, just log
-    console.log(`[Monitoring] PageView: ${name}`, properties);
+    if (isInitialized && appInsights) {
+      appInsights.trackPageView({ name, properties });
+    } else {
+      console.log(`[Monitoring] PageView: ${name}`, properties);
+    }
     
     // Send to browser console for debugging
-    if (typeof window !== 'undefined' && window.dataLayer) {
+    if (typeof window !== 'undefined' && (window as any).dataLayer) {
       // If Google Analytics is available, use it
-      (window.dataLayer as any).push({
+      ((window as any).dataLayer as any).push({
         event: 'pageview',
         page: name,
         ...properties
