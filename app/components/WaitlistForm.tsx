@@ -154,8 +154,17 @@ export default function WaitlistForm() {
           const errorData = await apiResponse.json();
           console.error("API response error:", errorData);
           if (errorData.validation_errors) {
+            // Clear existing validation messages and set the ones from the server
             setValidationErrors(errorData.validation_errors);
-            setError("Please fix the validation errors and try again.");
+            
+            // Set a more user-friendly error message depending on the error type
+            if (errorData.validation_errors.email) {
+              setError("Please enter a valid email address.");
+            } else if (errorData.validation_errors.name) {
+              setError("Please enter your name to join the waitlist.");
+            } else {
+              setError("Please fix the validation errors and try again.");
+            }
             setIsSubmitting(false);
             return;
           } else {
