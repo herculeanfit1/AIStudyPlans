@@ -5,6 +5,7 @@ import {
 } from "@/lib/email";
 import { addToWaitlist, startFeedbackCampaign } from "@/lib/supabase";
 import { trackEvent, trackException } from "@/lib/monitoring";
+import { waitlistSchema, validateInput } from "@/lib/validation";
 
 // Use edge runtime instead of nodejs for static export compatibility
 // Change from edge to nodejs runtime
@@ -57,42 +58,39 @@ export async function POST(request: NextRequest) {
 
     // Get body data, using a more resilient approach
     const body = await request.json().catch(() => ({}));
-    const name = body.name || "";
-    const email = body.email || "";
-    const source = body.source || "website"; // Track where the signup came from
-
-    console.log(`👤 Received waitlist request for: ${name} (${email})`);
-
-    // Validate the request data
-    if (!name || !email) {
-      console.error("❌ Missing required fields: name or email");
+    
+    // Use Zod validation for input data
+    const validation = validateInput(waitlistSchema, body);
+    if (!validation.success) {
+      // Format validation errors
+      const errorMessage = Object.values(validation.error || {}).join('. ');
+      console.error(`❌ Validation error: ${errorMessage}`);
+      
       // Track validation error
       trackEvent("WaitlistValidationError", { 
-        error: "Missing required fields",
-        missingName: !name,
-        missingEmail: !email
+        error: errorMessage,
+        input: body
       });
-      return new NextResponse(
-        JSON.stringify({ error: "Name and email are required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
+      
+      return new Response(
+        JSON.stringify({ 
+          error: errorMessage || "Invalid input data",
+          validation_errors: validation.error
+        }),
+        { 
+          status: 400, 
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+          } 
+        }
       );
     }
+    
+    // If validation passes, we can safely use the data
+    const { name, email, source } = validation.data;
 
-    // Simplified email validation - just check for @ symbol
-    // This matches the frontend validation to prevent inconsistencies
-    if (!email.includes("@")) {
-      console.error(`❌ Invalid email format: ${email}`);
-      // Track invalid email format
-      trackEvent("WaitlistValidationError", { 
-        error: "Invalid email format",
-        email: email
-      });
-      return new NextResponse(
-        JSON.stringify({ error: "Please enter a valid email address" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
-    }
-
+    console.log(`👤 Received waitlist request for: ${name} (${email})`);
     console.log(`✅ Validated waitlist signup: ${name} (${email})`);
 
     try {
@@ -127,7 +125,7 @@ export async function POST(request: NextRequest) {
         trackEvent("WaitlistConfigError", {
           error: "Missing RESEND_API_KEY"
         });
-        return new NextResponse(
+        return new Response(
           JSON.stringify({
             error: "Email service not configured",
             success: false,

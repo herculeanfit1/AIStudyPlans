@@ -3,6 +3,7 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
+import { waitlistSchema, validateInput } from "@/lib/validation";
 
 interface FormData {
   name: string;
@@ -10,8 +11,7 @@ interface FormData {
 }
 
 interface ValidationErrors {
-  name?: string;
-  email?: string;
+  [key: string]: string;
 }
 
 // Add a function to save waitlist entries locally as a backup
@@ -53,9 +53,7 @@ export default function WaitlistForm() {
   const [isConfigured, setIsConfigured] = useState(false);
 
   // State for validation errors
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
-    {},
-  );
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
   // Check environment and configuration on mount
   useEffect(() => {
@@ -67,29 +65,22 @@ export default function WaitlistForm() {
   }, []);
 
   const validateForm = (): boolean => {
-    const errors: ValidationErrors = {};
-    let isValid = true;
+    // Use Zod validation for consistent validation across frontend and backend
+    const validation = validateInput(waitlistSchema, {
+      name: formData.name,
+      email: formData.email,
+      source: "website-form"
+    });
 
-    // Validate name
-    if (!formData.name.trim()) {
-      errors.name = "Name is required";
-      isValid = false;
+    if (!validation.success) {
+      // Set validation errors from Zod validation result
+      setValidationErrors(validation.error || {});
+      return false;
     }
 
-    // Validate email - very simple check
-    if (!formData.email.trim()) {
-      errors.email = "Email is required";
-      isValid = false;
-    } else {
-      // Simple email check - just look for @ sign
-      if (!formData.email.includes("@")) {
-        errors.email = "Please enter a valid email address";
-        isValid = false;
-      }
-    }
-
-    setValidationErrors(errors);
-    return isValid;
+    // Clear validation errors if validation passes
+    setValidationErrors({});
+    return true;
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +91,7 @@ export default function WaitlistForm() {
     }));
 
     // Clear validation error when user types
-    if (validationErrors[name as keyof ValidationErrors]) {
+    if (validationErrors[name]) {
       setValidationErrors((prev) => ({
         ...prev,
         [name]: undefined,
