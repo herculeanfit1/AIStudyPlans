@@ -73,11 +73,15 @@ export default function WaitlistForm() {
     });
 
     if (!validation.success) {
+      // For debugging in production - log the actual validation errors
+      console.log("Form validation failed:", validation.error);
+      
       // Set validation errors from Zod validation result
       setValidationErrors(validation.error || {});
       return false;
     }
 
+    console.log("Form validation passed successfully");
     // Clear validation errors if validation passes
     setValidationErrors({});
     return true;
@@ -104,6 +108,7 @@ export default function WaitlistForm() {
 
     // Validate form before submission
     if (!validateForm()) {
+      console.log("Form validation failed in handleSubmit");
       return;
     }
 
@@ -128,6 +133,44 @@ export default function WaitlistForm() {
         name: formData.name,
         email: formData.email,
       });
+
+      // API call to submit the form - trying explicit API call first
+      try {
+        console.log("Making direct API call to waitlist endpoint");
+        const apiResponse = await fetch("/api/waitlist", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            source: "website-form"
+          }),
+        });
+        
+        // If the API responds with an error, log it
+        if (!apiResponse.ok) {
+          const errorData = await apiResponse.json();
+          console.error("API response error:", errorData);
+          if (errorData.validation_errors) {
+            setValidationErrors(errorData.validation_errors);
+            setError("Please fix the validation errors and try again.");
+            setIsSubmitting(false);
+            return;
+          } else {
+            throw new Error(errorData.error || "API error");
+          }
+        } else {
+          const successData = await apiResponse.json();
+          console.log("API success:", successData);
+          setIsSubmitted(true);
+          return;
+        }
+      } catch (apiError) {
+        console.error("Direct API call failed:", apiError);
+        // Continue with Supabase as fallback if API call fails
+      }
 
       // Create Supabase client
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -410,9 +453,11 @@ export default function WaitlistForm() {
               validationErrors.name ? "border-red-500" : "border-gray-300"
             } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition`}
             placeholder="Your name"
+            aria-invalid={!!validationErrors.name}
+            aria-describedby={validationErrors.name ? "name-error" : undefined}
           />
           {validationErrors.name && (
-            <p className="mt-1 text-sm text-red-600">{validationErrors.name}</p>
+            <p id="name-error" className="mt-1 text-sm text-red-600 font-medium">{validationErrors.name}</p>
           )}
         </div>
 
@@ -433,9 +478,11 @@ export default function WaitlistForm() {
               validationErrors.email ? "border-red-500" : "border-gray-300"
             } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition`}
             placeholder="you@example.com"
+            aria-invalid={!!validationErrors.email}
+            aria-describedby={validationErrors.email ? "email-error" : undefined}
           />
           {validationErrors.email && (
-            <p className="mt-1 text-sm text-red-600">
+            <p id="email-error" className="mt-1 text-sm text-red-600 font-medium">
               {validationErrors.email}
             </p>
           )}

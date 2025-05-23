@@ -13,6 +13,25 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSafari, setIsSafari] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
+  
+  // Log session status for debugging
+  useEffect(() => {
+    console.log('Admin Login - Auth Status:', status);
+    console.log('Admin Login - Session:', session);
+    
+    // Only capture debug info in development
+    if (process.env.NODE_ENV === 'development') {
+      setDebugInfo({
+        status,
+        session: session ? { 
+          user: session.user,
+          expires: session.expires
+        } : null,
+        url: window.location.href
+      });
+    }
+  }, [status, session]);
   
   // Get error from URL if present
   useEffect(() => {
@@ -40,9 +59,16 @@ export default function AdminLogin() {
   }, []);
 
   // If already authenticated, redirect to admin dashboard
+  // Add check for isAdmin to prevent redirect loop
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.isAdmin) {
+      console.log('User is authenticated and is admin, redirecting to /admin');
       router.replace('/admin');
+    } else if (status === 'authenticated' && session && !session.user?.isAdmin) {
+      // If authenticated but not admin, show error
+      console.log('User is authenticated but not admin');
+      setError('You do not have administrator privileges.');
+      // Do not redirect - let them see the error
     }
   }, [session, status, router]);
   
@@ -81,6 +107,18 @@ export default function AdminLogin() {
           {error && (
             <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md">
               <p>{error}</p>
+            </div>
+          )}
+          
+          {/* Debug information in development */}
+          {debugInfo && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-md text-xs text-left">
+              <details>
+                <summary className="font-medium cursor-pointer">Debug Info</summary>
+                <pre className="mt-2 whitespace-pre-wrap">
+                  {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+              </details>
             </div>
           )}
         </div>

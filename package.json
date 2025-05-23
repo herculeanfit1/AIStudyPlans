@@ -21,6 +21,8 @@
     "test:python": "pytest",
     "test:email": "node scripts/test-email.js",
     "verify:email": "node scripts/verify-email-config.js",
+    "verify:deploy": "node scripts/verify-deployment.js",
+    "verify:validation": "node scripts/verify-validation.js",
     "test:all": "npm run lint && npm run typecheck && npm run test && npm run test:e2e",
     "test:ci": "npm run lint && npm run typecheck && npm run test:coverage && npm run test:e2e",
     "test:a11y": "pa11y-ci",

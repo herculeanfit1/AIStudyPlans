@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface AdminLayoutProps {
@@ -16,24 +16,78 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   
   // Debug info for development environments only
   useEffect(() => {
+    console.log(`[AdminLayout] Auth Status: ${status}, Path: ${pathname}`);
+    
+    // In development, log more detailed information
     if (process.env.NODE_ENV === 'development') {
-      console.log('Admin Layout - Auth Status:', status);
-      console.log('Admin Layout - Session:', session);
-      console.log('Admin Layout - Current Path:', pathname);
+      console.log('[AdminLayout] Session:', session);
     }
   }, [status, session, pathname]);
   
-  // Don't render admin UI until authenticated with NextAuth
-  if (status !== 'authenticated' && pathname !== '/admin/login') {
-    // Show loading/redirect state
+  // Authentication and redirection logic
+  useEffect(() => {
+    // Clear any stale state after route changes
+    setIsRedirecting(false);
+    
+    // Handle authentication redirects
+    if (status === 'unauthenticated' && pathname !== '/admin/login') {
+      console.log('[AdminLayout] Unauthenticated user - redirecting to login');
+      setIsRedirecting(true);
+      router.push('/admin/login');
+      return;
+    }
+    
+    // If authenticated, check admin privileges
+    if (status === 'authenticated' && session) {
+      if (!session.user?.isAdmin && pathname !== '/admin/login') {
+        console.log('[AdminLayout] User is not admin - signing out and redirecting');
+        setIsRedirecting(true);
+        // Sign out and redirect to login with error message
+        signOut({ redirect: false }).then(() => {
+          router.push('/admin/login?error=AccessDenied');
+        });
+        return;
+      }
+    }
+  }, [status, session, pathname, router]);
+  
+  // Handle sign out process
+  const handleSignOut = () => {
+    setIsRedirecting(true);
+    signOut({ callbackUrl: '/admin/login' });
+  };
+  
+  // If we're still loading authentication state
+  if (status === 'loading' || isRedirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 mb-4">
+            {isRedirecting ? 'Redirecting...' : 'Checking authentication...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // If we're on the login page, return just the children
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+  
+  // Don't render admin UI until authenticated with NextAuth
+  if (status !== 'authenticated') {
+    // Show login redirect button
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
           <p className="text-gray-600 mb-4">Authentication required</p>
           <Link
             href="/admin/login" 
@@ -44,11 +98,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </div>
     );
-  }
-  
-  // If we're on the login page, return just the children
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
   }
   
   // Navigation items
@@ -142,24 +191,27 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </button>
           <div className="flex-1 px-4 flex justify-end">
             <div className="ml-4 flex items-center md:ml-6">
-              {/* User dropdown */}
-              <div className="ml-3 relative">
-                <div>
-                  <div className="flex items-center max-w-xs text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <span className="inline-block h-8 w-8 rounded-full overflow-hidden bg-gray-100">
-                      {session?.user?.image ? (
-                        <img src={session.user.image} alt="User" className="h-8 w-8 rounded-full" />
-                      ) : (
-                        <svg className="h-8 w-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-                        </svg>
-                      )}
-                    </span>
-                    <span className="ml-2 text-sm font-medium text-gray-700">
-                      {session?.user?.name || 'Admin User'}
-                    </span>
-                  </div>
-                </div>
+              {/* User dropdown and sign out button */}
+              <div className="ml-3 relative flex items-center">
+                <span className="inline-block h-8 w-8 rounded-full overflow-hidden bg-gray-100 mr-2">
+                  {session?.user?.image ? (
+                    <img src={session.user.image} alt="User" className="h-8 w-8 rounded-full" />
+                  ) : (
+                    <svg className="h-8 w-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                    </svg>
+                  )}
+                </span>
+                <span className="text-sm font-medium text-gray-700 mr-4">
+                  {session?.user?.name || 'Admin User'}
+                </span>
+                <button
+                  onClick={handleSignOut}
+                  className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <i className="fas fa-sign-out-alt mr-2"></i>
+                  Sign out
+                </button>
               </div>
             </div>
           </div>
