@@ -2,7 +2,7 @@
 
 import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { motion } from "framer-motion";
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 interface FormData {
   name: string;
@@ -15,25 +15,25 @@ interface ValidationErrors {
 }
 
 // Add a function to save waitlist entries locally as a backup
-const saveEntryLocally = (entry: {name: string, email: string}) => {
+const saveEntryLocally = (entry: { name: string; email: string }) => {
   try {
     // Get existing entries
-    const existingEntriesJson = localStorage.getItem('waitlist_entries');
-    let entries = existingEntriesJson ? JSON.parse(existingEntriesJson) : [];
-    
+    const existingEntriesJson = localStorage.getItem("waitlist_entries");
+    const entries = existingEntriesJson ? JSON.parse(existingEntriesJson) : [];
+
     // Add new entry
     entries.push({
       ...entry,
       timestamp: new Date().toISOString(),
-      saved_locally: true
+      saved_locally: true,
     });
-    
+
     // Save back to localStorage
-    localStorage.setItem('waitlist_entries', JSON.stringify(entries));
-    console.log('Saved entry locally as fallback');
+    localStorage.setItem("waitlist_entries", JSON.stringify(entries));
+    console.log("Saved entry locally as fallback");
     return true;
   } catch (e) {
-    console.error('Failed to save entry locally:', e);
+    console.error("Failed to save entry locally:", e);
     return false;
   }
 };
@@ -124,94 +124,99 @@ export default function WaitlistForm() {
       // First, save the entry locally as a backup
       saveEntryLocally({
         name: formData.name,
-        email: formData.email
+        email: formData.email,
       });
 
       // Create Supabase client
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-      
-      console.log(`Supabase URL available: ${!!supabaseUrl}, Key available: ${!!supabaseKey}`);
-      
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+      console.log(
+        `Supabase URL available: ${!!supabaseUrl}, Key available: ${!!supabaseKey}`,
+      );
+
       if (!supabaseUrl || !supabaseKey) {
         throw new Error("Supabase configuration is missing");
       }
-      
+
       const supabase = createClient(supabaseUrl, supabaseKey, {
         auth: {
-          persistSession: false
-        }
+          persistSession: false,
+        },
       });
       console.log("Supabase client created, attempting to insert data");
-      
+
       // Insert the waitlist entry directly into Supabase
       const { data, error: dbError } = await supabase
-        .from('waitlist_users')
+        .from("waitlist_users")
         .insert([
-          { 
-            name: formData.name, 
+          {
+            name: formData.name,
             email: formData.email,
-            source: 'website-direct',
-            feedback_campaign_started: false
-          }
+            source: "website-direct",
+            feedback_campaign_started: false,
+          },
         ])
         .select();
-      
+
       if (dbError) {
         console.error("Database error details:", {
           code: dbError.code,
           message: dbError.message,
           details: dbError.details,
-          hint: dbError.hint
+          hint: dbError.hint,
         });
-        
+
         // Check if this is a duplicate entry
-        if (dbError.code === '23505') { // PostgreSQL unique constraint violation
+        if (dbError.code === "23505") {
+          // PostgreSQL unique constraint violation
           // Still mark as success for UX purposes - they're on the list already
           console.log("User already on waitlist, treating as success");
           setIsSubmitted(true);
           return;
         }
-        
+
         // Show more specific error message based on the error code
-        if (dbError.code === '42P01') {
+        if (dbError.code === "42P01") {
           throw new Error("Table does not exist. Please contact support.");
-        } else if (dbError.code === '28000' || dbError.code === '28P01') {
+        } else if (dbError.code === "28000" || dbError.code === "28P01") {
           throw new Error("Authentication failed. Please contact support.");
-        } else if (dbError.code === '42501') {
+        } else if (dbError.code === "42501") {
           throw new Error("Permission denied. Please contact support.");
         } else {
           throw new Error(`Failed to join waitlist: ${dbError.message}`);
         }
       }
-      
+
       console.log("Successfully added to waitlist:", data);
-      
+
       // On success, mark as submitted
       setIsSubmitted(true);
-      
+
       // Also log the successful submission
       console.log("Waitlist submission successful");
-      
+
       // Now also call the API route to trigger email notifications
       try {
         console.log("Calling waitlist API to send email notifications");
-        const apiResponse = await fetch('/api/waitlist', {
-          method: 'POST',
+        const apiResponse = await fetch("/api/waitlist", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
-            source: 'website-direct-api'
+            source: "website-direct-api",
           }),
         });
-        
+
         if (apiResponse.ok) {
           console.log("API notification successful, emails should be sent");
         } else {
-          console.error("API notification failed, but Supabase entry was created");
+          console.error(
+            "API notification failed, but Supabase entry was created",
+          );
           console.error("API error:", await apiResponse.text());
         }
       } catch (apiError) {
@@ -219,27 +224,27 @@ export default function WaitlistForm() {
         // even if the email notification fails
         console.error("Error calling API for email notifications:", apiError);
       }
-      
+
       // Track the event (optional, if you have client-side tracking)
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'waitlist_signup', {
-          event_category: 'engagement',
-          event_label: 'website-direct'
+      if (typeof window !== "undefined" && window.gtag) {
+        window.gtag("event", "waitlist_signup", {
+          event_category: "engagement",
+          event_label: "website-direct",
         });
       }
     } catch (err) {
       console.error("Waitlist submission error:", err);
-      
+
       // Since we've already saved the entry locally, we can still show a success message
       // even though the Supabase submission failed
-      if (typeof window !== 'undefined' && window.localStorage) {
+      if (typeof window !== "undefined" && window.localStorage) {
         console.log("Using local storage fallback since Supabase failed");
         setIsSubmitted(true);
       } else {
         setError(
           err instanceof Error
             ? err.message
-            : "An error occurred. Please try again later."
+            : "An error occurred. Please try again later.",
         );
       }
     } finally {
@@ -286,7 +291,8 @@ export default function WaitlistForm() {
             Thank you for joining!
           </h3>
           <p className="text-gray-600 mb-6">
-            We'll notify you when we launch. You'll receive an email confirmation shortly. Thanks for your interest in AI Study Plans!
+            We'll notify you when we launch. You'll receive an email
+            confirmation shortly. Thanks for your interest in AI Study Plans!
           </p>
           <div className="inline-block bg-white p-4 rounded-full">
             <svg
@@ -367,7 +373,7 @@ export default function WaitlistForm() {
               </p>
               <ul className="mt-2 text-sm text-amber-700 list-disc list-inside">
                 <li>
-                  Set {" "}
+                  Set{" "}
                   <code className="bg-amber-100 px-1 py-0.5 rounded">
                     NEXT_PUBLIC_SUPABASE_URL
                   </code>{" "}
@@ -376,9 +382,7 @@ export default function WaitlistForm() {
                     NEXT_PUBLIC_SUPABASE_ANON_KEY
                   </code>
                 </li>
-                <li>
-                  Ensure the waitlist table exists in Supabase
-                </li>
+                <li>Ensure the waitlist table exists in Supabase</li>
               </ul>
             </div>
           </div>
