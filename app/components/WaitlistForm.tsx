@@ -120,6 +120,15 @@ export default function WaitlistForm() {
     setError(null);
 
     try {
+      // Check if email services are configured by querying our API
+      console.log("Checking email configuration status...");
+      const configCheck = await fetch("/api/email-config");
+      const configData = await configCheck.json();
+      
+      // Track whether email is configured
+      const emailConfigured = configData.configured;
+      console.log(`Email configuration status: ${emailConfigured ? 'Configured' : 'Not Configured'}`);
+
       // Log what we're about to do
       console.log(`Submitting waitlist form for ${formData.email}`);
 
@@ -191,63 +200,56 @@ export default function WaitlistForm() {
       }
 
       console.log("Successfully added to waitlist:", data);
+      
+      // If email is configured, call the API to send notification emails
+      if (emailConfigured) {
+        try {
+          console.log("Calling waitlist API to send email notifications");
+          const emailResponse = await fetch("/api/waitlist", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: formData.name,
+              email: formData.email,
+              source: "website-form"
+            }),
+          });
+          
+          if (emailResponse.ok) {
+            console.log("API notification successful, emails should be sent");
+          } else {
+            console.warn("API notification failed but user was added to database");
+          }
+        } catch (emailError) {
+          console.error("Error sending email notifications:", emailError);
+          // Don't throw here, we still want to show success since the DB entry was created
+        }
+      } else {
+        console.warn("Email not configured, skipping email notifications");
+      }
 
       // On success, mark as submitted
       setIsSubmitted(true);
-
-      // Also log the successful submission
-      console.log("Waitlist submission successful");
-
-      // Now also call the API route to trigger email notifications
-      try {
-        console.log("Calling waitlist API to send email notifications");
-        const apiResponse = await fetch("/api/waitlist", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            source: "website-direct-api",
-          }),
-        });
-
-        if (apiResponse.ok) {
-          console.log("API notification successful, emails should be sent");
-        } else {
-          console.error(
-            "API notification failed, but Supabase entry was created",
-          );
-          console.error("API error:", await apiResponse.text());
-        }
-      } catch (apiError) {
-        // Don't throw here - we still want to consider the signup successful
-        // even if the email notification fails
-        console.error("Error calling API for email notifications:", apiError);
-      }
-
-      // Track the event (optional, if you have client-side tracking)
+      
+      // Track successful conversion for analytics
       if (typeof window !== "undefined" && window.gtag) {
         window.gtag("event", "waitlist_signup", {
           event_category: "engagement",
-          event_label: "website-direct",
+          event_label: formData.email,
         });
       }
-    } catch (err) {
-      console.error("Waitlist submission error:", err);
-
-      // Since we've already saved the entry locally, we can still show a success message
-      // even though the Supabase submission failed
-      if (typeof window !== "undefined" && window.localStorage) {
-        console.log("Using local storage fallback since Supabase failed");
-        setIsSubmitted(true);
-      } else {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "An error occurred. Please try again later.",
-        );
+    } catch (error: any) {
+      console.error("Error handling waitlist submission:", error);
+      setError(error.message || "An error occurred. Please try again later.");
+      
+      // Track error for analytics
+      if (typeof window !== "undefined" && window.gtag) {
+        window.gtag("event", "waitlist_error", {
+          event_category: "error",
+          event_label: error.message,
+        });
       }
     } finally {
       setIsSubmitting(false);

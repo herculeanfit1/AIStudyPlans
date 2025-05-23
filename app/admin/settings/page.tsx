@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MonitoringDashboard from "./monitoring";
+import EmailStatusChecker from "@/components/admin/EmailStatusChecker";
 
 export default function AdminSettings() {
   const { data: session, status } = useSession();
@@ -152,6 +153,16 @@ export default function AdminSettings() {
           }`}
         >
           Monitoring
+        </button>
+        <button
+          onClick={() => setActiveTab("email")}
+          className={`pb-3 px-1 ${
+            activeTab === "email"
+              ? "border-b-2 border-indigo-500 text-indigo-600 font-medium"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Email Config
         </button>
       </div>
     </div>
@@ -333,7 +344,9 @@ export default function AdminSettings() {
 
       <TabNavigation />
 
-      {activeTab === "settings" ? <SettingsContent /> : <MonitoringDashboard />}
+      {activeTab === "settings" ? <SettingsContent /> : 
+       activeTab === "monitoring" ? <MonitoringDashboard /> : 
+       <EmailStatusChecker />}
     </div>
   );
 }

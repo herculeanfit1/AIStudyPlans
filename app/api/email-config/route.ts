@@ -14,6 +14,14 @@ export async function GET() {
   // Check all required email configuration
   const isFullyConfigured = resendApiKeyConfigured && emailFromConfigured && emailReplyToConfigured;
   
+  // Include additional debugging information for troubleshooting
+  const debugInfo = process.env.NODE_ENV === 'development' ? {
+    environment: process.env.NODE_ENV,
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
+    allVariablesPresent: isFullyConfigured,
+    supabaseConfigured: !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  } : undefined;
+  
   // Return configuration status without exposing sensitive values
   return NextResponse.json({
     configured: isFullyConfigured,
@@ -22,6 +30,8 @@ export async function GET() {
     emailReplyTo: emailReplyToConfigured,
     // For client consumption
     nextPublicResendConfigured: isFullyConfigured ? "true" : "false",
+    // Debugging info
+    debug: debugInfo,
   }, {
     status: 200,
     headers: {
