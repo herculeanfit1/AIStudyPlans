@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn, useSession, signOut } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -14,6 +14,7 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [isSafari, setIsSafari] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [redirectAttempts, setRedirectAttempts] = useState(0);
   
   // Log session status for debugging
   useEffect(() => {
@@ -28,10 +29,11 @@ export default function AdminLogin() {
           user: session.user,
           expires: session.expires
         } : null,
-        url: window.location.href
+        url: window.location.href,
+        redirectAttempts
       });
     }
-  }, [status, session]);
+  }, [status, session, redirectAttempts]);
   
   // Get error from URL if present
   useEffect(() => {
@@ -61,16 +63,42 @@ export default function AdminLogin() {
   // If already authenticated, redirect to admin dashboard
   // Add check for isAdmin to prevent redirect loop
   useEffect(() => {
-    if (status === 'authenticated' && session?.user?.isAdmin) {
-      console.log('User is authenticated and is admin, redirecting to /admin');
-      router.replace('/admin');
-    } else if (status === 'authenticated' && session && !session.user?.isAdmin) {
-      // If authenticated but not admin, show error
-      console.log('User is authenticated but not admin');
-      setError('You do not have administrator privileges.');
-      // Do not redirect - let them see the error
+    if (status === 'authenticated') {
+      if (session?.user?.isAdmin) {
+        console.log('User is authenticated and is admin, redirecting to /admin');
+        
+        // Prevent redirect loops by tracking attempts
+        setRedirectAttempts(prev => {
+          if (prev < 3) { // Only redirect if we haven't tried too many times
+            router.replace('/admin');
+            return prev + 1;
+          }
+          console.warn('Too many redirect attempts, stopping automatic redirection');
+          setError('Too many redirect attempts. Please try navigating manually.');
+          return prev;
+        });
+      } else if (session) {
+        // If authenticated but not admin, show error and provide sign out option
+        console.log('User is authenticated but not admin');
+        setError('You do not have administrator privileges. Please sign in with an admin account.');
+      }
     }
   }, [session, status, router]);
+  
+  // Handle sign out
+  const handleSignOut = async () => {
+    setIsLoading(true);
+    try {
+      await signOut({ redirect: false });
+      setError('');
+      // Clear any stale state
+      setRedirectAttempts(0);
+    } catch (err) {
+      console.error('Sign out error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   // Configure callback URL
   const callbackUrl = '/admin';
@@ -80,6 +108,7 @@ export default function AdminLogin() {
     try {
       setIsLoading(true);
       setError('');
+      setRedirectAttempts(0);
       
       // Set a cookie before redirecting (helps with Safari)
       if (isSafari) {
@@ -107,6 +136,16 @@ export default function AdminLogin() {
           {error && (
             <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md">
               <p>{error}</p>
+              
+              {/* Show sign out option if authenticated but not admin */}
+              {status === 'authenticated' && !session?.user?.isAdmin && (
+                <button
+                  onClick={handleSignOut}
+                  className="mt-2 text-sm text-red-700 underline hover:text-red-800"
+                >
+                  Sign out and try with a different account
+                </button>
+              )}
             </div>
           )}
           

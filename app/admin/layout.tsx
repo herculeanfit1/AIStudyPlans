@@ -19,26 +19,37 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectCount, setRedirectCount] = useState(0);
   
   // Debug info for development environments only
   useEffect(() => {
-    console.log(`[AdminLayout] Auth Status: ${status}, Path: ${pathname}`);
+    console.log(`[AdminLayout] Auth Status: ${status}, Path: ${pathname}, Redirect Count: ${redirectCount}`);
     
     // In development, log more detailed information
     if (process.env.NODE_ENV === 'development') {
       console.log('[AdminLayout] Session:', session);
     }
-  }, [status, session, pathname]);
+  }, [status, session, pathname, redirectCount]);
   
   // Authentication and redirection logic
   useEffect(() => {
+    // Skip if we've attempted too many redirects already (prevent loops)
+    if (redirectCount > 3) {
+      console.error('[AdminLayout] Too many redirect attempts - stopping redirect cycle');
+      return;
+    }
+    
     // Clear any stale state after route changes
-    setIsRedirecting(false);
+    if (pathname.includes('/admin/login')) {
+      setIsRedirecting(false);
+      return; // Don't apply any redirects if already on login page
+    }
     
     // Handle authentication redirects
     if (status === 'unauthenticated' && pathname !== '/admin/login') {
       console.log('[AdminLayout] Unauthenticated user - redirecting to login');
       setIsRedirecting(true);
+      setRedirectCount(prev => prev + 1);
       router.push('/admin/login');
       return;
     }
@@ -48,6 +59,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       if (!session.user?.isAdmin && pathname !== '/admin/login') {
         console.log('[AdminLayout] User is not admin - signing out and redirecting');
         setIsRedirecting(true);
+        setRedirectCount(prev => prev + 1);
+        
         // Sign out and redirect to login with error message
         signOut({ redirect: false }).then(() => {
           router.push('/admin/login?error=AccessDenied');
@@ -55,7 +68,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         return;
       }
     }
-  }, [status, session, pathname, router]);
+  }, [status, session, pathname, router, redirectCount]);
+  
+  // Reset redirect counter when path changes successfully
+  useEffect(() => {
+    // Only reset if not redirecting and on a valid page
+    if (!isRedirecting && pathname !== '/admin/login') {
+      setRedirectCount(0);
+    }
+  }, [pathname, isRedirecting]);
   
   // Handle sign out process
   const handleSignOut = () => {
@@ -80,6 +101,36 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // If we're on the login page, return just the children
   if (pathname === '/admin/login') {
     return <>{children}</>;
+  }
+  
+  // Show error if too many redirects occurred
+  if (redirectCount > 3) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">Authentication Error</h2>
+            <p className="text-gray-700 mb-4">
+              We encountered an issue with authentication. Please try again later or contact support.
+            </p>
+            <div className="space-y-4">
+              <Link
+                href="/admin/login" 
+                className="inline-block w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-center"
+              >
+                Return to Login
+              </Link>
+              <Link
+                href="/" 
+                className="inline-block w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-center"
+              >
+                Go to Homepage
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
   
   // Don't render admin UI until authenticated with NextAuth
