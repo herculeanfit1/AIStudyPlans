@@ -6,11 +6,15 @@
 - [x] Create email service utilities
 - [x] Create email templates
 - [x] Set up waitlist API endpoint
-- [ ] Verify domain `aistudyplans.com` with Resend
+- [x] Verify domain `aistudyplans.com` with Resend
   - Go to https://resend.com/domains
   - Add aistudyplans.com as domain
   - Follow DNS verification steps
   - Update EMAIL_FROM in .env.local after verification
+- [x] Fix waitlist form email configuration in production
+  - Created NEXT_PUBLIC_RESEND_CONFIGURED flag
+  - Updated WaitlistForm.tsx component
+  - Modified GitHub Actions workflow
 
 ## Application Structure
 

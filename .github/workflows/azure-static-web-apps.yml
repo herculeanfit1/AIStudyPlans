@@ -65,6 +65,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      # Set NEXT_PUBLIC_RESEND_CONFIGURED based on whether the API key is present
+      - name: Check email configuration
+        id: email_config
+        run: |
+          if [[ -n "${{ secrets.RESEND_API_KEY }}" && -n "${{ secrets.EMAIL_FROM }}" && -n "${{ secrets.EMAIL_REPLY_TO }}" ]]; then
+            echo "RESEND_CONFIGURED=true" >> $GITHUB_ENV
+            echo "Email configuration is available"
+          else
+            echo "RESEND_CONFIGURED=false" >> $GITHUB_ENV
+            echo "Email configuration is missing or incomplete"
+          fi
+
       - name: Install dependencies and build
         run: |
           npm ci
@@ -74,6 +86,7 @@ jobs:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://aistudyplans.com' }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_RESEND_CONFIGURED: ${{ env.RESEND_CONFIGURED }}
           # Add any other environment variables needed for the build here
 
       # Ensure staticwebapp.config.json is in the output directory
@@ -131,6 +144,7 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_RESEND_CONFIGURED: ${{ env.RESEND_CONFIGURED }}
 
       - name: Report deployment status
         if: always()

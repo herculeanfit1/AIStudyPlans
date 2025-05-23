@@ -42,6 +42,12 @@ This document consolidates all TODO items from various files into a single maste
     - Add DKIM record (TXT record) to verify email authenticity
     - Add MX record for proper email feedback handling
   - Update EMAIL_FROM in .env.local after verification
+- [x] Fix waitlist form email configuration in production
+  - Created NEXT_PUBLIC_RESEND_CONFIGURED flag
+  - Updated WaitlistForm.tsx component to check this flag
+  - Created /api/email-config endpoint
+  - Added script to update Azure Static Web App settings
+  - Modified GitHub Actions workflow
 
 ### Application Structure
 

@@ -30,10 +30,8 @@ const saveEntryLocally = (entry: { name: string; email: string }) => {
 
     // Save back to localStorage
     localStorage.setItem("waitlist_entries", JSON.stringify(entries));
-    console.log("Saved entry locally as fallback");
     return true;
   } catch (e) {
-    console.error("Failed to save entry locally:", e);
     return false;
   }
 };
@@ -52,16 +50,20 @@ export default function WaitlistForm() {
 
   // State for environment detection
   const [isDev, setIsDev] = useState(true);
+  const [isConfigured, setIsConfigured] = useState(false);
 
   // State for validation errors
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
     {},
   );
 
-  // Check environment on mount - this only needs to run once when the component initializes
+  // Check environment and configuration on mount
   useEffect(() => {
     // In production, this will be false
     setIsDev(process.env.NODE_ENV === "development");
+    
+    // Check if Resend is configured via public environment variable
+    setIsConfigured(process.env.NEXT_PUBLIC_RESEND_CONFIGURED === "true");
   }, []);
 
   const validateForm = (): boolean => {
@@ -316,8 +318,9 @@ export default function WaitlistForm() {
     );
   }
 
-  // Show admin notice in development only
-  const showAdminNotice = isDev;
+  // Only show admin notice in development or if explicitly not configured
+  // We don't want to show admin notices in production
+  const showAdminNotice = isDev && !isConfigured;
 
   return (
     <motion.div
@@ -383,6 +386,13 @@ export default function WaitlistForm() {
                   </code>
                 </li>
                 <li>Ensure the waitlist table exists in Supabase</li>
+                <li>
+                  Set{" "}
+                  <code className="bg-amber-100 px-1 py-0.5 rounded">
+                    NEXT_PUBLIC_RESEND_CONFIGURED
+                  </code>{" "}
+                  to "true" to hide this notice
+                </li>
               </ul>
             </div>
           </div>

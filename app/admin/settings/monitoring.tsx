@@ -1,53 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-
-type HealthData = {
-  status: string;
-  timestamp: string;
-  uptime: number;
-  environment: string;
-  version: string;
-  hostname: string;
-  platform: string;
-  containerized: boolean;
-  system: {
-    memoryUsagePercent: string;
-    cpuCount: number;
-    loadAverage: number[];
-  };
-};
-
-type CIWorkflow = {
-  id: string;
-  name: string;
-  status: string;
-  lastRun: string;
-  branch: string;
-  commit: string;
-  duration: string;
-};
-
-type CISummary = {
-  totalWorkflows: number;
-  successRate: number;
-  averageDuration: string;
-  lastDeployment: string;
-  status: string;
-};
-
-type MonitoringStats = {
-  apiStatus: 'healthy' | 'degraded' | 'offline';
-  lastChecked: string;
-  uptime: number;
-  emailDeliveryRate: number;
-  emailsLastWeek: number;
-  averageResponseTime: number;
-  cicdStatus: 'passing' | 'failing' | 'unknown';
-  lastDeployment: string;
-  healthData: HealthData | null;
-  ciWorkflows: CIWorkflow[];
-  ciSummary: CISummary | null;
-};
+import { MonitoringStats } from '../../types/monitoring';
+import OverviewSection from '../../components/monitoring/OverviewSection';
+import CICDSection from '../../components/monitoring/CICDSection';
+import EmailSection from '../../components/monitoring/EmailSection';
 
 export default function MonitoringDashboard() {
   const [stats, setStats] = useState<MonitoringStats>({
@@ -206,302 +162,67 @@ export default function MonitoringDashboard() {
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          Email Delivery
+          Email Service
         </button>
       </div>
     </div>
   );
 
-  // Overview section showing all key metrics
-  const OverviewSection = () => (
-    <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* API Status */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">API Status</h3>
-          <div className="flex items-center">
-            <span className={`px-2 py-1 rounded-md text-xs font-medium ${getStatusColor(stats.apiStatus)}`}>
-              {stats.apiStatus.toUpperCase()}
-            </span>
-            <span className="ml-2 text-lg font-bold">{stats.healthData?.system.memoryUsagePercent}% Memory</span>
-          </div>
-          <p className="mt-2 text-sm text-gray-600">Uptime: {formatUptime(stats.uptime)}</p>
-        </div>
-
-        {/* Email Delivery */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Email Delivery</h3>
-          <div className="flex items-center">
-            <span className={`px-2 py-1 rounded-md text-xs font-medium ${stats.emailDeliveryRate > 95 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-              {stats.emailDeliveryRate}% SUCCESS
-            </span>
-          </div>
-          <p className="mt-2 text-sm text-gray-600">{stats.emailsLastWeek} emails sent last week</p>
-        </div>
-
-        {/* Response Time */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Response Time</h3>
-          <div className="text-lg font-bold">
-            {stats.averageResponseTime} ms
-          </div>
-          <p className="mt-2 text-sm text-gray-600">Average API response time</p>
-        </div>
-
-        {/* CI/CD Status */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">CI/CD Pipeline</h3>
-          <div className="flex items-center">
-            <span className={`px-2 py-1 rounded-md text-xs font-medium ${getStatusColor(stats.cicdStatus)}`}>
-              {stats.cicdStatus.toUpperCase()}
-            </span>
-          </div>
-          <p className="mt-2 text-sm text-gray-600">
-            Last deployment: {format(new Date(stats.lastDeployment), 'MMM d, yyyy')}
-          </p>
-        </div>
-      </div>
-
-      {/* System Details */}
-      {stats.healthData && (
-        <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
-          <h3 className="text-lg font-medium mb-4">System Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Environment:</span>
-                <span className="font-medium">{stats.healthData.environment}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Version:</span>
-                <span className="font-medium">{stats.healthData.version}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Platform:</span>
-                <span className="font-medium">{stats.healthData.platform}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Containerized:</span>
-                <span className="font-medium">{stats.healthData.containerized ? 'Yes' : 'No'}</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Memory Usage:</span>
-                <span className="font-medium">{stats.healthData.system.memoryUsagePercent}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">CPU Count:</span>
-                <span className="font-medium">{stats.healthData.system.cpuCount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">CPU Load Average:</span>
-                <span className="font-medium">{stats.healthData.system.loadAverage[0].toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Hostname:</span>
-                <span className="font-medium">{stats.healthData.hostname}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-  
-  // CI/CD section with detailed workflow information
-  const CICDSection = () => (
-    <>
-      {/* CI/CD Summary */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h3 className="text-lg font-medium mb-4">CI/CD Pipeline Summary</h3>
-        
-        {stats.ciSummary ? (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-gray-50 p-4 rounded-md">
-              <p className="text-sm text-gray-500">Overall Status</p>
-              <div className="flex items-center mt-1">
-                <span className={`px-2 py-1 rounded-md text-xs font-medium ${getStatusColor(stats.ciSummary.status)}`}>
-                  {stats.ciSummary.status.toUpperCase()}
-                </span>
-              </div>
-            </div>
-            
-            <div className="bg-gray-50 p-4 rounded-md">
-              <p className="text-sm text-gray-500">Success Rate</p>
-              <p className="text-xl font-bold">{stats.ciSummary.successRate}%</p>
-            </div>
-            
-            <div className="bg-gray-50 p-4 rounded-md">
-              <p className="text-sm text-gray-500">Average Duration</p>
-              <p className="text-xl font-bold">{stats.ciSummary.averageDuration}</p>
-            </div>
-            
-            <div className="bg-gray-50 p-4 rounded-md">
-              <p className="text-sm text-gray-500">Total Workflows</p>
-              <p className="text-xl font-bold">{stats.ciSummary.totalWorkflows}</p>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-gray-50 p-4 rounded-md">
-            <p className="text-sm text-gray-500 text-center">No CI/CD summary data available</p>
-          </div>
-        )}
-      </div>
-      
-      {/* CI/CD Workflows */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-medium mb-4">Recent Workflow Runs</h3>
-        
-        {stats.ciWorkflows.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Workflow</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Run</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {stats.ciWorkflows.map((workflow) => (
-                  <tr key={workflow.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{workflow.name}</div>
-                      <div className="text-xs text-gray-500">{workflow.commit}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(workflow.status)}`}>
-                        {workflow.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {workflow.branch}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {format(new Date(workflow.lastRun), 'MMM d, yyyy h:mm a')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {workflow.duration}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="bg-gray-50 p-4 rounded-md">
-            <p className="text-sm text-gray-500 text-center">No workflow data available</p>
-          </div>
-        )}
-      </div>
-    </>
-  );
-  
-  // Email delivery stats section
-  const EmailSection = () => (
-    <>
-      {/* Email Delivery Stats */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h3 className="text-lg font-medium mb-4">Email Delivery Performance</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-gray-50 p-4 rounded-md">
-            <p className="text-sm text-gray-500">Delivery Rate</p>
-            <p className="text-xl font-bold">{stats.emailDeliveryRate}%</p>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-              <div 
-                className={`h-2.5 rounded-full ${stats.emailDeliveryRate > 95 ? 'bg-green-500' : 'bg-yellow-500'}`} 
-                style={{ width: `${stats.emailDeliveryRate}%` }}
-              ></div>
-            </div>
-          </div>
-          
-          <div className="bg-gray-50 p-4 rounded-md">
-            <p className="text-sm text-gray-500">Emails Last Week</p>
-            <p className="text-xl font-bold">{stats.emailsLastWeek}</p>
-          </div>
-          
-          <div className="bg-gray-50 p-4 rounded-md">
-            <p className="text-sm text-gray-500">Open Rate</p>
-            <p className="text-xl font-bold">72%</p>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-              <div className="h-2.5 rounded-full bg-blue-500" style={{ width: '72%' }}></div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Mock email distribution chart */}
-        <div className="bg-gray-50 p-6 rounded-md">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Email Activity (Last 7 Days)</h4>
-          <div className="h-48 flex items-end space-x-2">
-            {[12, 18, 9, 24, 16, 20, 14].map((value, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center">
-                <div 
-                  className="w-full bg-indigo-400 rounded-t"
-                  style={{ height: `${(value / 24) * 100}%` }}
-                ></div>
-                <span className="text-xs text-gray-500 mt-1">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="mt-6 p-4 bg-blue-50 rounded-md">
-          <h4 className="text-sm font-medium text-blue-700 flex items-center">
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path>
-            </svg>
-            Note
-          </h4>
-          <p className="text-sm text-blue-600 mt-1">
-            Email statistics shown here are simulated data. In a production environment, you would integrate with your email provider's API (Resend, SendGrid, etc.) to fetch real metrics.
-          </p>
-        </div>
-      </div>
-    </>
-  );
-
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold">System Monitoring</h2>
-        <div className="text-sm text-gray-500">
-          Last updated: {format(new Date(stats.lastChecked), 'MMM d, yyyy h:mm a')}
-        </div>
+        <button
+          onClick={() => window.location.reload()}
+          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          <svg
+            className="-ml-0.5 mr-2 h-4 w-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Refresh
+        </button>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4 text-red-700">
-          {error}
+        <div className="bg-red-50 border-l-4 border-red-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-red-400"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
         </div>
       )}
-      
-      <MonitoringNavigation />
-      
-      {activeSection === 'overview' && <OverviewSection />}
-      {activeSection === 'ci-cd' && <CICDSection />}
-      {activeSection === 'email' && <EmailSection />}
 
-      {/* Actions */}
-      <div className="flex space-x-4 mt-6">
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-md transition-colors"
-        >
-          Refresh Data
-        </button>
-        <button
-          onClick={() => window.open('/api/health', '_blank')}
-          className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-md transition-colors"
-        >
-          View Raw Health Data
-        </button>
-      </div>
+      <MonitoringNavigation />
+
+      {activeSection === 'overview' && <OverviewSection stats={stats} formatUptime={formatUptime} getStatusColor={getStatusColor} />}
+      {activeSection === 'ci-cd' && <CICDSection stats={stats} getStatusColor={getStatusColor} />}
+      {activeSection === 'email' && <EmailSection stats={stats} />}
     </div>
   );
 } 
