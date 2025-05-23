@@ -28,4 +28,12 @@ export async function GET() {
       'Cache-Control': 'no-store, max-age=0',
     },
   });
+}
+
+/**
+ * Required for static export compatibility
+ * This generates static paths for the API route
+ */
+export function generateStaticParams() {
+  return [];
 } 
