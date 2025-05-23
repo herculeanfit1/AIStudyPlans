@@ -1,183 +1,43 @@
 'use client';
 
-import React, { ReactNode, useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
-import { useRouter, usePathname } from 'next/navigation';
 
 interface AdminLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
+/**
+ * Admin layout component - requires Microsoft SSO authentication
+ * Enforces NextAuth session validation for all admin routes
+ */
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
-  const [isLocalAuth, setIsLocalAuth] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  // Utility to check cookies for auth
-  const getCookie = (name: string): string | null => {
-    try {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-      return null;
-    } catch (e) {
-      return null;
-    }
-  };
-  
+  // Debug info for development environments only
   useEffect(() => {
-    // Skip auth check if already on login page
-    if (pathname === '/admin/login') {
-      setIsLoading(false);
-      return;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Admin Layout - Auth Status:', status);
+      console.log('Admin Layout - Session:', session);
+      console.log('Admin Layout - Current Path:', pathname);
     }
-    
-    const checkAuth = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Check for local auth first (faster than NextAuth check)
-        let isLocallyAuthenticated = false;
-        
-        // Try localStorage
-        try {
-          isLocallyAuthenticated = localStorage.getItem('isAdmin') === 'true';
-        } catch (e) {
-          console.warn('LocalStorage not available:', e);
-        }
-        
-        // If localStorage failed, try cookies
-        if (!isLocallyAuthenticated) {
-          isLocallyAuthenticated = getCookie('isAdmin') === 'true';
-        }
-        
-        // If locally authenticated, set state and finish
-        if (isLocallyAuthenticated) {
-          setIsLocalAuth(true);
-          setIsLoading(false);
-          return;
-        }
-        
-        // Then check NextAuth status as a fallback
-        if (status === 'authenticated') {
-          // Ensure we set the admin flag in localStorage for consistency
-          try {
-            localStorage.setItem('isAdmin', 'true');
-          } catch (err) {
-            console.warn('Could not set localStorage admin flag:', err);
-          }
-          
-          // Set cookies as backup too
-          document.cookie = `isAdmin=true; path=/; max-age=${60*60*24}; SameSite=Strict`;
-          
-          setIsLocalAuth(false);
-          setIsLoading(false);
-          return;
-        }
-        
-        // Only proceed with redirect if not authenticated by any method
-        if (status === 'unauthenticated' && !isLocallyAuthenticated) {
-          // If not authenticated, redirect to login
-          router.push('/admin/login');
-        }
-        
-        // Make sure we always finish loading eventually
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 1000); // Fallback timeout
-        
-      } catch (err) {
-        console.error('Auth check error:', err);
-        setError(err instanceof Error ? err : new Error('Authentication check failed'));
-        setIsLoading(false);
-        
-        // Only redirect if not on login page
-        if (pathname !== '/admin/login') {
-          router.push('/admin/login');
-        }
-      }
-    };
-    
-    checkAuth();
-  }, [status, router, pathname]);
+  }, [status, session, pathname]);
   
-  // Handle local logout
-  const handleLocalLogout = () => {
-    try {
-      // Clear all auth methods
-      localStorage.removeItem('isAdmin');
-      document.cookie = 'isAdmin=false; path=/; max-age=0';
-      router.push('/admin/login');
-    } catch (e) {
-      console.error('Logout error:', e);
-      router.push('/admin/login');
-    }
-  };
-  
-  // Show loading state while checking authentication
-  if (isLoading) {
+  // Don't render admin UI until authenticated with NextAuth
+  if (status !== 'authenticated' && pathname !== '/admin/login') {
+    // Show loading/redirect state
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading admin panel...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // Show error state if there's an error
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Admin Panel</h1>
-          <p className="text-gray-700 mb-4">{error.message}</p>
-          <div className="flex justify-center space-x-4">
-            <button 
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-            >
-              Retry
-            </button>
-            <Link 
-              href="/admin/login"
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              Go to Login
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  // Don't render admin UI until authenticated
-  if (status !== 'authenticated' && !isLocalAuth && pathname !== '/admin/login' && pathname !== '/admin/direct-login') {
-    // Check if we're in development environment
-    const isDevEnvironment = typeof window !== 'undefined' && 
-      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    
-    // Instead of returning null, we'll return a more explicit loading state
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
           <p className="text-gray-600 mb-4">Authentication required</p>
-          {isDevEnvironment && (
-            <a 
-              href="/admin-login.html"
-              className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 mb-4"
-            >
-              Emergency Login
-            </a>
-          )}
           <Link
-            href="/admin/ms-login" 
-            className="block mt-4 text-indigo-600 hover:text-indigo-800"
+            href="/admin/login" 
+            className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           >
             Go to login page
           </Link>
@@ -200,102 +60,118 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ];
   
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Admin Header */}
-      <header className="bg-indigo-600 text-white p-4 shadow-sm">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link href="/admin" className="flex items-center text-white no-underline">
-            <span className="font-bold text-xl">AI Study Plans Admin</span>
-          </Link>
-          
-          {/* User info and signout */}
-          <div className="flex items-center">
-            <span className="mr-3 text-sm md:text-base">
-              {isLocalAuth 
-                ? 'Development Admin'
-                : (session?.user?.name || 'Admin')
-              }
-            </span>
+    <div className="h-screen flex overflow-hidden bg-gray-100">
+      {/* Mobile sidebar */}
+      <div className={`md:hidden fixed inset-0 flex z-40 ${sidebarOpen ? 'block' : 'hidden'}`}>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)}></div>
+        <div className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-gray-800">
+          <div className="flex items-center justify-between px-4">
+            <div className="flex-shrink-0 text-white text-xl font-semibold">AIStudyPlans Admin</div>
             <button 
-              onClick={isLocalAuth ? handleLocalLogout : () => signOut({ callbackUrl: '/admin/login' })}
-              className="bg-white/20 border-0 py-1 px-3 rounded text-white text-sm cursor-pointer hover:bg-white/30 transition-colors"
+              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" 
+              onClick={() => setSidebarOpen(false)}
             >
-              Sign Out
+              <span className="sr-only">Close sidebar</span>
+              <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
-        </div>
-      </header>
-
-      {/* Main Content with Sidebar */}
-      <div className="flex flex-grow">
-        {/* Sidebar */}
-        <aside className="w-60 bg-white shadow-sm p-6 hidden md:block">
-          <nav>
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-              Admin Panel
-            </div>
-            
-            <div className="flex flex-col gap-2">
+          <div className="mt-5 flex-1 h-0 overflow-y-auto">
+            <nav className="px-2 space-y-1">
               {navItems.map((item) => (
-                <Link 
-                  key={item.label}
-                  href={item.href} 
-                  className="block p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`group flex items-center px-2 py-2 text-base font-medium rounded-md ${
+                    pathname === item.href ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  }`}
                 >
-                  <span className="mr-2">
-                    <i className={item.icon} aria-hidden="true"></i>
-                  </span> 
+                  <i className={`${item.icon} mr-3 ${
+                    pathname === item.href ? 'text-white' : 'text-gray-400 group-hover:text-gray-300'
+                  }`}></i>
                   {item.label}
                 </Link>
               ))}
-            </div>
-          </nav>
-        </aside>
+            </nav>
+          </div>
+        </div>
+      </div>
 
-        {/* Main Content */}
-        <main className="flex-grow p-6">
-          <ErrorBoundary>
+      {/* Static sidebar for desktop */}
+      <div className="hidden md:flex md:flex-shrink-0">
+        <div className="flex flex-col w-64">
+          <div className="flex flex-col h-0 flex-1 bg-gray-800">
+            <div className="flex items-center h-16 flex-shrink-0 px-4 bg-gray-900">
+              <div className="text-white text-lg font-semibold">AIStudyPlans Admin</div>
+            </div>
+            <div className="flex-1 flex flex-col overflow-y-auto">
+              <nav className="flex-1 px-2 py-4 space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                      pathname === item.href ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    }`}
+                  >
+                    <i className={`${item.icon} mr-3 ${
+                      pathname === item.href ? 'text-white' : 'text-gray-400 group-hover:text-gray-300'
+                    }`}></i>
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col w-0 flex-1 overflow-hidden">
+        {/* Top bar */}
+        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow">
+          <button
+            type="button"
+            className="md:hidden px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <span className="sr-only">Open sidebar</span>
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <div className="flex-1 px-4 flex justify-end">
+            <div className="ml-4 flex items-center md:ml-6">
+              {/* User dropdown */}
+              <div className="ml-3 relative">
+                <div>
+                  <div className="flex items-center max-w-xs text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span className="inline-block h-8 w-8 rounded-full overflow-hidden bg-gray-100">
+                      {session?.user?.image ? (
+                        <img src={session.user.image} alt="User" className="h-8 w-8 rounded-full" />
+                      ) : (
+                        <svg className="h-8 w-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                        </svg>
+                      )}
+                    </span>
+                    <span className="ml-2 text-sm font-medium text-gray-700">
+                      {session?.user?.name || 'Admin User'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main content */}
+        <main className="flex-1 relative overflow-y-auto focus:outline-none">
+          <div className="py-6">
             {children}
-          </ErrorBoundary>
+          </div>
         </main>
       </div>
     </div>
   );
-}
-
-// Simple client-side error boundary component
-class ErrorBoundary extends React.Component<
-  { children: ReactNode },
-  { hasError: boolean; error: Error | null }
-> {
-  constructor(props: { children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    this.setState({ hasError: true, error });
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="p-6 bg-red-50 border border-red-200 rounded-md">
-          <h2 className="text-lg font-semibold text-red-600 mb-2">
-            Something went wrong
-          </h2>
-          <p className="text-red-700 mb-4">
-            {this.state.error?.message || 'An unexpected error occurred'}
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-          >
-            Reload page
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
 } 
