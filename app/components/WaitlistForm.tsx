@@ -151,7 +151,20 @@ export default function WaitlistForm() {
         
         // If the API responds with an error, log it
         if (!apiResponse.ok) {
-          const errorData = await apiResponse.json();
+          let errorData;
+          try {
+            errorData = await apiResponse.json();
+          } catch (jsonError) {
+            // If the response is not valid JSON, get the text instead
+            const errorText = await apiResponse.text();
+            console.error("API returned non-JSON response:", errorText);
+            throw new Error(
+              errorText.includes("Backend call failure")
+                ? "Server error: Backend service unavailable."
+                : `API error: ${errorText.substring(0, 100)}`
+            );
+          }
+          
           console.error("API response error:", errorData);
           if (errorData.validation_errors) {
             // Clear existing validation messages and set the ones from the server
@@ -176,9 +189,11 @@ export default function WaitlistForm() {
           setIsSubmitted(true);
           return;
         }
-      } catch (apiError) {
+      } catch (apiError: any) {
         console.error("Direct API call failed:", apiError);
-        // Continue with Supabase as fallback if API call fails
+        setError(apiError.message || "Failed to connect to server. Please try again later.");
+        setIsSubmitting(false);
+        return;
       }
 
       // Create Supabase client
