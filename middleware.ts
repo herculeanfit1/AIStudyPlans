@@ -31,8 +31,8 @@ export async function middleware(request: NextRequest) {
 
     if (!token) {
       console.log(`No auth token, redirecting from: ${path}`);
-      // Redirect to NextAuth's default sign-in page with Azure AD
-      const url = new URL("/api/auth/signin", request.url);
+      // Redirect to our custom admin login page instead of NextAuth default
+      const url = new URL("/admin/login", request.url);
       url.searchParams.set("callbackUrl", request.nextUrl.pathname);
       return NextResponse.redirect(url);
     }

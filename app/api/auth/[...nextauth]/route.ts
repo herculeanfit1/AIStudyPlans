@@ -81,10 +81,6 @@ const handler = NextAuth({
   jwt: {
     maxAge: 24 * 60 * 60, // 24 hours
   },
-  pages: {
-    signIn: '/admin/login',
-    error: '/admin/login'
-  },
 });
 
 export { handler as GET, handler as POST };
