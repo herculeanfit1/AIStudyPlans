@@ -30,10 +30,10 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-medium text-white mb-4">Features</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Personalized Plans</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Smart Scheduling</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Progress Tracking</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Resource Recommendations</a></li>
+              <li><a href="#features" className="text-gray-400 hover:text-white transition">Personalized Plans</a></li>
+              <li><a href="#features" className="text-gray-400 hover:text-white transition">Smart Scheduling</a></li>
+              <li><a href="#features" className="text-gray-400 hover:text-white transition">Progress Tracking</a></li>
+              <li><a href="#features" className="text-gray-400 hover:text-white transition">Resource Recommendations</a></li>
             </ul>
           </div>
           
@@ -41,8 +41,6 @@ export default function Footer() {
             <h4 className="text-lg font-medium text-white mb-4">Company</h4>
             <ul className="space-y-2">
               <li><a href="#" className="text-gray-400 hover:text-white transition">About Us</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Blog</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Careers</a></li>
               <li><a href="#" className="text-gray-400 hover:text-white transition">Contact</a></li>
             </ul>
           </div>
@@ -52,7 +50,6 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><a href="#" className="text-gray-400 hover:text-white transition">Terms of Service</a></li>
               <li><a href="#" className="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Cookie Policy</a></li>
             </ul>
           </div>
         </div>

@@ -1,458 +1,95 @@
 "use client";
 
-import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import { createClient } from "@supabase/supabase-js";
-import { waitlistSchema, validateInput } from "@/lib/validation";
+import { useWaitlistForm } from "@/app/hooks/useWaitlistForm";
+import WaitlistFormFields from "./waitlist/WaitlistFormFields";
+import WaitlistFormStates from "./waitlist/WaitlistFormStates";
 
-interface FormData {
-  name: string;
-  email: string;
-}
-
-interface ValidationErrors {
-  [key: string]: string;
-}
-
-// Add a function to save waitlist entries locally as a backup
-const saveEntryLocally = (entry: { name: string; email: string }) => {
-  try {
-    // Get existing entries
-    const existingEntriesJson = localStorage.getItem("waitlist_entries");
-    const entries = existingEntriesJson ? JSON.parse(existingEntriesJson) : [];
-
-    // Add new entry
-    entries.push({
-      ...entry,
-      timestamp: new Date().toISOString(),
-      saved_locally: true,
-    });
-
-    // Save back to localStorage
-    localStorage.setItem("waitlist_entries", JSON.stringify(entries));
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
-
+/**
+ * Main waitlist form component
+ * Handles user registration for the SchedulEd waitlist
+ */
 export default function WaitlistForm() {
-  // State for form data
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-  });
-
-  // State for form submission
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // State for environment detection
-  const [isDev, setIsDev] = useState(true);
-  const [isConfigured, setIsConfigured] = useState(false);
-
-  // State for validation errors
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
-
-  // Check environment and configuration on mount
-  useEffect(() => {
-    // In production, this will be false
-    setIsDev(process.env.NODE_ENV === "development");
-    
-    // Check if Resend is configured via public environment variable
-    setIsConfigured(process.env.NEXT_PUBLIC_RESEND_CONFIGURED === "true");
-  }, []);
-
-  const validateForm = (): boolean => {
-    // Use Zod validation for consistent validation across frontend and backend
-    const validation = validateInput(waitlistSchema, {
-      name: formData.name,
-      email: formData.email,
-      source: "website-form"
-    });
-
-    if (!validation.success) {
-      // For debugging in production - log the actual validation errors
-      console.log("Form validation failed:", validation.error);
-      
-      // Set validation errors from Zod validation result
-      setValidationErrors(validation.error || {});
-      return false;
-    }
-
-    console.log("Form validation passed successfully");
-    // Clear validation errors if validation passes
-    setValidationErrors({});
-    return true;
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // Clear validation error when user types
-    if (validationErrors[name]) {
-      setValidationErrors((prev) => ({
-        ...prev,
-        [name]: undefined,
-      }));
-    }
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    // Validate form before submission
-    if (!validateForm()) {
-      console.log("Form validation failed in handleSubmit");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      // Save entry locally first as backup
-      saveEntryLocally({
-        name: formData.name,
-        email: formData.email,
-      });
-      
-      // Log what we're about to do
-      console.log(`Submitting waitlist form for ${formData.email}`);
-      
-      // API call to submit the form
-      const response = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          source: "website-form"
-        }),
-      });
-      
-      // First check if the response is ok (status in the 200-299 range)
-      if (!response.ok) {
-        // Get response text first
-        const responseText = await response.text();
-        let errorMessage = responseText;
-        
-        try {
-          // Try to parse as JSON if possible
-          const errorData = JSON.parse(responseText);
-          if (errorData.error) {
-            errorMessage = errorData.error;
-          } else if (errorData.message) {
-            errorMessage = errorData.message;
-          }
-        } catch (jsonError) {
-          // If not valid JSON, use the response text directly
-          console.error("API response is not valid JSON:", responseText);
-          // Truncate long error messages
-          if (responseText.length > 100) {
-            errorMessage = `${responseText.substring(0, 100)}...`;
-          }
-        }
-        
-        throw new Error(errorMessage);
-      }
-      
-      // For successful responses, try to get JSON
-      let responseData = {};
-      try {
-        const responseText = await response.text();
-        // Handle empty response
-        if (responseText.trim() === '') {
-          responseData = { success: true };
-        } else {
-          responseData = JSON.parse(responseText);
-        }
-      } catch (jsonError) {
-        console.warn("Could not parse success response as JSON, but continuing as success");
-        responseData = { success: true };
-      }
-      
-      console.log("API success:", responseData);
-      setIsSubmitted(true);
-      
-      // Track successful conversion for analytics
-      if (typeof window !== "undefined" && window.gtag) {
-        window.gtag("event", "waitlist_signup", {
-          event_category: "engagement",
-          event_label: formData.email,
-        });
-      }
-    } catch (error: any) {
-      console.error("Error in waitlist submission:", error);
-      
-      // Handle various error types
-      if (error.message?.includes("Backend call failure")) {
-        setError("Sorry, our server is experiencing issues. We've saved your submission locally and will try to recover it.");
-      } else if (error.message?.includes("fetch")) {
-        setError("Network error. Please check your connection and try again.");
-      } else if (error.message?.length > 100) {
-        // Truncate very long error messages
-        setError(`Error: ${error.message.substring(0, 100)}...`);
-      } else {
-        setError(error.message || "An error occurred. Please try again later.");
-      }
-      
-      // Track error for analytics
-      if (typeof window !== "undefined" && window.gtag) {
-        window.gtag("event", "waitlist_error", {
-          event_category: "error",
-          event_label: error.message,
-        });
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        when: "beforeChildren",
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-    },
-  };
-
-  // Handle showing thank you message after submission
-  if (isSubmitted) {
-    return (
-      <motion.div
-        className="bg-gradient-to-r from-indigo-50 to-purple-50 p-8 rounded-xl shadow-md"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <motion.div
-          className="text-center"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h3 className="text-2xl font-semibold text-indigo-700 mb-2">
-            Thank you for joining!
-          </h3>
-          <p className="text-gray-600 mb-6">
-            We'll notify you when we launch. You'll receive an email
-            confirmation shortly. Thanks for your interest in AI Study Plans!
-          </p>
-          <div className="inline-block bg-white p-4 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="64"
-              height="64"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-indigo-600"
-            >
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-          </div>
-        </motion.div>
-      </motion.div>
-    );
-  }
-
-  // Only show admin notice in development or if explicitly not configured
-  // We don't want to show admin notices in production
-  const showAdminNotice = isDev && !isConfigured;
+  const {
+    formData,
+    isSubmitting,
+    isSubmitted,
+    error,
+    isDev,
+    isConfigured,
+    validationErrors,
+    handleChange,
+    handleSubmit,
+  } = useWaitlistForm();
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto"
-    >
-      <motion.h3
-        variants={itemVariants}
-        className="text-2xl font-semibold text-center text-gray-800 mb-6"
-      >
-        Join our waitlist
-      </motion.h3>
+    <div className="w-full max-w-md mx-auto">
+      {/* State Messages (Success, Error, Dev Warning) */}
+      <WaitlistFormStates
+        isSubmitted={isSubmitted}
+        error={error}
+        isDev={isDev}
+        isConfigured={isConfigured}
+      />
 
-      {error && (
-        <motion.div
-          className="bg-red-50 text-red-700 p-4 rounded-lg mb-6"
-          initial={{ opacity: 0, y: -10 }}
+      {/* Form - Hide when submitted */}
+      {!isSubmitted && (
+        <motion.form
+          onSubmit={handleSubmit}
+          className="space-y-6 bg-white p-6 rounded-lg shadow-lg border border-gray-200"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          {error}
-        </motion.div>
-      )}
-
-      {showAdminNotice && (
-        <motion.div
-          className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-amber-500"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-amber-800">
-                Administrator Notice
-              </p>
-              <p className="mt-1 text-sm text-amber-700">
-                Now using direct Supabase integration for waitlist:
-              </p>
-              <ul className="mt-2 text-sm text-amber-700 list-disc list-inside">
-                <li>
-                  Set{" "}
-                  <code className="bg-amber-100 px-1 py-0.5 rounded">
-                    NEXT_PUBLIC_SUPABASE_URL
-                  </code>{" "}
-                  and{" "}
-                  <code className="bg-amber-100 px-1 py-0.5 rounded">
-                    NEXT_PUBLIC_SUPABASE_ANON_KEY
-                  </code>
-                </li>
-                <li>Ensure the waitlist table exists in Supabase</li>
-                <li>
-                  Set{" "}
-                  <code className="bg-amber-100 px-1 py-0.5 rounded">
-                    NEXT_PUBLIC_RESEND_CONFIGURED
-                  </code>{" "}
-                  to "true" to hide this notice
-                </li>
-              </ul>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      <motion.form onSubmit={handleSubmit} variants={itemVariants}>
-        <div className="mb-5">
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Full Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border ${
-              validationErrors.name ? "border-red-500" : "border-gray-300"
-            } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition`}
-            placeholder="Your name"
-            aria-invalid={!!validationErrors.name}
-            aria-describedby={validationErrors.name ? "name-error" : undefined}
-          />
-          {validationErrors.name && (
-            <p id="name-error" className="mt-1 text-sm text-red-600 font-medium">{validationErrors.name}</p>
-          )}
-        </div>
-
-        <div className="mb-5">
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 rounded-lg border ${
-              validationErrors.email ? "border-red-500" : "border-gray-300"
-            } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition`}
-            placeholder="you@example.com"
-            aria-invalid={!!validationErrors.email}
-            aria-describedby={validationErrors.email ? "email-error" : undefined}
-          />
-          {validationErrors.email && (
-            <p id="email-error" className="mt-1 text-sm text-red-600 font-medium">
-              {validationErrors.email}
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Join the Waitlist
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Be the first to know when SchedulEd launches
             </p>
-          )}
-        </div>
+          </div>
 
-        <motion.button
-          type="submit"
-          disabled={isSubmitting}
-          className={`w-full bg-indigo-600 text-white py-3 px-6 rounded-lg text-lg font-semibold
-            transition-all hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-            ${isSubmitting ? "opacity-75 cursor-not-allowed" : ""}`}
-          variants={itemVariants}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          {isSubmitting ? (
-            <span className="flex items-center justify-center">
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Joining...
-            </span>
-          ) : (
-            "Join Waitlist"
-          )}
-        </motion.button>
-      </motion.form>
-    </motion.div>
+          {/* Form Fields */}
+          <WaitlistFormFields
+            formData={formData}
+            validationErrors={validationErrors}
+            isSubmitting={isSubmitting}
+            onChange={handleChange}
+          />
+
+          {/* Submit Button */}
+          <motion.button
+            type="submit"
+            disabled={isSubmitting}
+            className={`
+              w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200
+              ${isSubmitting
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+              }
+            `}
+            whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+            whileTap={!isSubmitting ? { scale: 0.98 } : {}}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Joining Waitlist...
+              </div>
+            ) : (
+              "Join Waitlist"
+            )}
+          </motion.button>
+
+          {/* Privacy Notice */}
+          <p className="text-xs text-gray-500 text-center">
+            By joining our waitlist, you agree to receive updates about SchedulEd.
+            We respect your privacy and won't spam you.
+          </p>
+        </motion.form>
+      )}
+    </div>
   );
 }
