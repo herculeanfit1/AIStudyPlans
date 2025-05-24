@@ -12,8 +12,11 @@ export const metadata: Metadata = {
   description:
     "SchedulEd helps students plan their academic journey with AI-powered tools for course selection, scheduling, and degree planning.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" }
+    ],
+    shortcut: "/favicon.ico",
     apple: "/favicon.svg",
   },
 };
@@ -45,6 +48,8 @@ export default function RootLayout({
         />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/favicon.svg" />
+        <meta name="theme-color" content="#4f46e5" />
       </head>
       <body className={`${inter.className} antialiased`}>
         <ErrorBoundary>

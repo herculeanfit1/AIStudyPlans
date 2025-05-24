@@ -145,7 +145,7 @@ function FeedbackFormContent() {
               src="/SchedulEd_new_logo.png" 
               alt="SchedulEd Logo" 
               className="h-30" 
-              style={{ height: "120px" }}
+              style={{ height: "120px", cursor: "default" }}
             />
           </div>
           

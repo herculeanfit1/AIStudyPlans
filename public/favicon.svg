@@ -1,18 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Robot Head - rounded square -->
-  <rect x="20" y="10" width="60" height="70" rx="10" ry="10" fill="#4f46e5" />
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="16" cy="16" r="15" fill="#4f46e5" stroke="#3730a3" stroke-width="2"/>
   
-  <!-- Eyes -->
-  <circle cx="40" cy="35" r="8" fill="white" />
-  <circle cx="60" cy="35" r="8" fill="white" />
-  <circle cx="40" cy="35" r="4" fill="#3730a3" />
-  <circle cx="60" cy="35" r="4" fill="#3730a3" />
+  <!-- Calendar/Schedule Icon -->
+  <!-- Calendar base -->
+  <rect x="7" y="9" width="18" height="15" rx="2" ry="2" fill="#ffffff" opacity="0.95"/>
   
-  <!-- Mouth -->
-  <rect x="35" y="55" width="30" height="10" rx="5" ry="5" fill="white" />
+  <!-- Calendar header -->
+  <rect x="7" y="9" width="18" height="4" rx="2" ry="2" fill="#e0e7ff"/>
   
-  <!-- Antenna -->
-  <line x1="50" y1="10" x2="50" y2="0" stroke="#4f46e5" stroke-width="4" />
-  <circle cx="50" cy="0" r="4" fill="#4f46e5" />
+  <!-- Calendar holes/binding -->
+  <circle cx="10" cy="7" r="1" fill="#4f46e5"/>
+  <circle cx="22" cy="7" r="1" fill="#4f46e5"/>
+  
+  <!-- Calendar grid lines (study schedule) -->
+  <line x1="9" y1="15" x2="23" y2="15" stroke="#4f46e5" stroke-width="0.5" opacity="0.6"/>
+  <line x1="9" y1="18" x2="23" y2="18" stroke="#4f46e5" stroke-width="0.5" opacity="0.6"/>
+  <line x1="9" y1="21" x2="23" y2="21" stroke="#4f46e5" stroke-width="0.5" opacity="0.6"/>
+  
+  <line x1="12" y1="13" x2="12" y2="24" stroke="#4f46e5" stroke-width="0.5" opacity="0.4"/>
+  <line x1="16" y1="13" x2="16" y2="24" stroke="#4f46e5" stroke-width="0.5" opacity="0.4"/>
+  <line x1="20" y1="13" x2="20" y2="24" stroke="#4f46e5" stroke-width="0.5" opacity="0.4"/>
+  
+  <!-- Study session blocks -->
+  <rect x="13" y="16" width="6" height="1.5" rx="0.5" fill="#4f46e5" opacity="0.8"/>
+  <rect x="9" y="19" width="4" height="1.5" rx="0.5" fill="#4f46e5" opacity="0.8"/>
+  <rect x="17" y="22" width="5" height="1.5" rx="0.5" fill="#4f46e5" opacity="0.8"/>
 </svg> 
