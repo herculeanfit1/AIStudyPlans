@@ -20,21 +20,29 @@ function FeedbackFormContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('🚀 Starting feedback submission...');
+    console.log('Form data:', { userId, emailId, feedbackType, feedbackText, rating });
+    
     if (!userId) {
+      console.error('❌ Missing user ID');
       setSubmitStatus('error');
       setErrorMessage('Missing user ID. Please use the link from your email.');
       return;
     }
     
     if (!feedbackText.trim()) {
+      console.error('❌ Missing feedback text');
       setSubmitStatus('error');
       setErrorMessage('Please enter your feedback before submitting.');
       return;
     }
     
     setIsSubmitting(true);
+    setErrorMessage('');
+    console.log('⏳ Setting form to submitting state...');
     
     try {
+      console.log('📡 Calling storeFeedback function...');
       const result = await storeFeedback(
         parseInt(userId, 10),
         feedbackText,
@@ -43,19 +51,26 @@ function FeedbackFormContent() {
         emailId || undefined
       );
       
+      console.log('📝 Feedback submission result:', result);
+      
       if (result.success) {
+        console.log('✅ Feedback submitted successfully!');
         setSubmitStatus('success');
         setFeedbackText('');
         setRating(undefined);
+        setFeedbackType('general');
       } else {
+        console.error('❌ Feedback submission failed:', result.error);
         setSubmitStatus('error');
         setErrorMessage(result.error || 'An error occurred while submitting your feedback.');
       }
     } catch (error: any) {
+      console.error('💥 Exception during feedback submission:', error);
       setSubmitStatus('error');
       setErrorMessage(error.message || 'An error occurred while submitting your feedback.');
     } finally {
       setIsSubmitting(false);
+      console.log('🏁 Feedback submission completed');
     }
   };
   
@@ -124,18 +139,32 @@ function FeedbackFormContent() {
           </h2>
           
           {submitStatus === 'success' ? (
-            <div className="rounded-md bg-green-50 p-4 my-4">
+            <div className="rounded-md bg-green-50 p-6 my-6 border border-green-200">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="h-6 w-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-green-800">Feedback submitted successfully!</h3>
+                  <h3 className="text-lg font-medium text-green-800">Feedback submitted successfully!</h3>
                   <p className="mt-2 text-sm text-green-700">
-                    Thank you for your valuable feedback. Your input helps us improve SchedulEd.
+                    Thank you for your valuable feedback about "{feedbackType.replace('_', ' ')}". 
+                    Your input helps us improve SchedulEd and build features you actually want to use.
                   </p>
+                  <div className="mt-4">
+                    <button
+                      onClick={() => {
+                        setSubmitStatus('idle');
+                        setFeedbackText('');
+                        setRating(undefined);
+                        setFeedbackType('general');
+                      }}
+                      className="text-sm bg-green-100 hover:bg-green-200 text-green-800 font-medium py-2 px-4 rounded-md transition-colors duration-200"
+                    >
+                      Submit More Feedback
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
