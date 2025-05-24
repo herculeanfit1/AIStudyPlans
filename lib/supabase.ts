@@ -203,7 +203,6 @@ export async function storeFeedback(
         feedback_type: feedbackType,
         rating,
         email_id: emailId,
-        user_id: `user-${waitlistUserId}`,
       },
     ]);
 
