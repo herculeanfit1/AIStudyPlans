@@ -17,7 +17,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Only protect /admin routes
+  // Allow access to the custom admin login page (it's the sign-in page)
+  if (path === "/admin/login") {
+    return NextResponse.next();
+  }
+  
+  // Only protect /admin routes (excluding login)
   if (path.startsWith("/admin")) {
     const token = await getToken({ 
       req: request, 
