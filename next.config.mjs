@@ -1,16 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable static export for production builds (needed for Azure Static Web Apps)
-  // but disable it if we're building with auth enabled
-  output:
-    process.env.SKIP_AUTH === "true" && process.env.NODE_ENV === "production"
-      ? "export"
-      : undefined,
-  // Specify 'out' as the output directory for static exports (required for Azure Static Web Apps)
-  distDir:
-    process.env.SKIP_AUTH === "true" && process.env.NODE_ENV === "production"
-      ? "out"
-      : ".next",
   reactStrictMode: process.env.NODE_ENV !== "production",
   swcMinify: true,
   // Set environment variables for client-side access
@@ -49,21 +38,12 @@ const nextConfig = {
   },
   // Enable trailing slashes for Azure Static Web Apps compatibility
   trailingSlash: true,
-  // Include the API routes in the static export, but exclude auth routes
+  // Experimental features
   experimental: {
-    // This will copy the /api directory to the output folder, excluding auth
-    outputFileTracingIncludes: {
-      "/api/**/*": ["./app/api/**/*"],
-    },
-    // Suppress the useSearchParams warnings in client components during static export
+    // Suppress the useSearchParams warnings in client components
     missingSuspenseWithCSRBailout: false,
   },
   pageExtensions: ["js", "jsx", "ts", "tsx"],
 };
-
-// In development mode, add Next-Auth specific configuration
-if (process.env.NODE_ENV !== "production") {
-  nextConfig.output = undefined; // Ensure we're not using export in development
-}
 
 export default nextConfig;

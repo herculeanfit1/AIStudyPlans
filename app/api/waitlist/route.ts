@@ -6,15 +6,8 @@ import {
 import { addToWaitlist, startFeedbackCampaign } from "@/lib/supabase";
 import { waitlistSchema, validateInput } from "@/lib/validation";
 
-// Use edge runtime instead of nodejs for static export compatibility
-// Change from edge to nodejs runtime
+// Use nodejs runtime for Azure Static Web Apps
 export const runtime = "nodejs";
-
-// This is required for static export in Next.js when using output: 'export'
-export function generateStaticParams() {
-  // Return an empty array since we don't want to pre-render any API routes
-  return [];
-}
 
 /**
  * Handle OPTIONS requests for CORS preflight

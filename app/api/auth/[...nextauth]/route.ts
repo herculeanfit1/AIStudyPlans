@@ -1,12 +1,6 @@
 import NextAuth from "next-auth";
 import AzureAD from "next-auth/providers/azure-ad";
 
-// This is required for static export in Next.js when using output: 'export'
-export function generateStaticParams() {
-  // Return an empty array since we don't want to pre-render any NextAuth routes
-  return [];
-}
-
 // Extend the Session interface to include the isAdmin property
 declare module "next-auth" {
   interface Session {
