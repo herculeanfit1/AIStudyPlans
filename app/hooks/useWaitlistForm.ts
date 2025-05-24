@@ -128,10 +128,16 @@ export function useWaitlistForm() {
       
       console.log(`Submitting waitlist form for ${formData.email}`);
       
-      const response = await fetch("/api/waitlist", {
+      // Use the correct API endpoint without trailing slash issues
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/api/waitlist`
+        : "/api/waitlist";
+      
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
         },
         body: JSON.stringify({
           name: formData.name,

@@ -27,12 +27,6 @@
   },
   "routes": [
     {
-      "route": "/api/*",
-      "methods": ["GET", "POST", "PUT", "DELETE"],
-      "allowedRoles": ["anonymous"],
-      "rewrite": "/api/index"
-    },
-    {
       "route": "/api/waitlist",
       "methods": ["POST"],
       "allowedRoles": ["anonymous"]
@@ -41,6 +35,12 @@
       "route": "/api/test-email",
       "methods": ["GET"],
       "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/*",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "allowedRoles": ["anonymous"],
+      "rewrite": "/api/index"
     },
     {
       "route": "/_next/static/*",

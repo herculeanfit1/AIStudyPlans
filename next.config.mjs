@@ -37,7 +37,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   // Enable trailing slashes for Azure Static Web Apps compatibility
-  trailingSlash: true,
+  trailingSlash: false,
   // Experimental features
   experimental: {
     // Suppress the useSearchParams warnings in client components

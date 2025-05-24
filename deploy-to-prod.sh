@@ -72,7 +72,7 @@ if [ -f ".env.production" ]; then
     
     if [[ -n "$key" && -n "$value" ]]; then
       echo "Setting environment variable: $key"
-      az staticwebapp appsettings set --name $STATIC_WEB_APP_NAME --resource-group $RESOURCE_GROUP --setting-names "$key=$value" --no-wait
+      az staticwebapp appsettings set --name $STATIC_WEB_APP_NAME --resource-group $RESOURCE_GROUP --setting-names "$key=$value"
     fi
   done < .env.production
   
@@ -82,7 +82,7 @@ else
 fi
 
 # Deploy the app
-npx @azure/static-web-apps-cli deploy ./out --env production --deployment-token "$DEPLOYMENT_TOKEN" --app-location "." --api-location "api" --output-location out
+npx @azure/static-web-apps-cli deploy --env production --deployment-token "$DEPLOYMENT_TOKEN" --app-location "./out" --api-location "api"
 
 if [ $? -ne 0 ]; then
   echo -e "${RED}Deployment failed. Please check the logs and try again.${NC}"
