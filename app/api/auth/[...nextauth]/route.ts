@@ -36,6 +36,7 @@ const handler = NextAuth({
     async signIn({ user, account }) {
       // Allow only the specific admin emails
       const allowedEmails = [
+        "support@aistudyplans.com",
         "btaiadmin@bridgingtrustai.onmicrosoft.com",
         "terence@bridgingtrust.ai"
       ];
@@ -53,7 +54,11 @@ const handler = NextAuth({
       // If this is a sign-in (user object present)
       if (user) {
         // Check specifically for admin emails
-        const adminEmails = ["btaiadmin@bridgingtrustai.onmicrosoft.com", "terence@bridgingtrust.ai"];
+        const adminEmails = [
+          "support@aistudyplans.com",
+          "btaiadmin@bridgingtrustai.onmicrosoft.com", 
+          "terence@bridgingtrust.ai"
+        ];
         token.isAdmin = adminEmails.includes(user.email || "");
         console.log(`[NextAuth] Admin privileges ${token.isAdmin ? 'granted' : 'denied'} to ${user.email}`);
       }
@@ -75,6 +80,10 @@ const handler = NextAuth({
   },
   jwt: {
     maxAge: 24 * 60 * 60, // 24 hours
+  },
+  pages: {
+    signIn: '/admin/login',
+    error: '/admin/login'
   },
 });
 
