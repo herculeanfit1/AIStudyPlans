@@ -17,12 +17,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Allow access to the custom admin login page (it's the sign-in page)
-  if (path === "/admin/login") {
-    return NextResponse.next();
-  }
-  
-  // Only protect /admin routes (excluding login)
+  // Only protect /admin routes
   if (path.startsWith("/admin")) {
     const token = await getToken({ 
       req: request, 
@@ -31,8 +26,8 @@ export async function middleware(request: NextRequest) {
 
     if (!token) {
       console.log(`No auth token, redirecting from: ${path}`);
-      // Redirect to our custom admin login page instead of NextAuth default
-      const url = new URL("/admin/login", request.url);
+      // Redirect to NextAuth's default sign-in page
+      const url = new URL("/api/auth/signin", request.url);
       url.searchParams.set("callbackUrl", request.nextUrl.pathname);
       return NextResponse.redirect(url);
     }
