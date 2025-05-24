@@ -1,5 +1,8 @@
 import { FeedbackResponse, FeedbackWithUser, FeedbackStats, FeedbackFilters } from './types';
 
+// Re-export types for use in admin components
+export type { FeedbackResponse, FeedbackWithUser, FeedbackStats, FeedbackFilters } from './types';
+
 // Generate dates for the past 14 days
 const generateDates = () => {
   const dates = [];

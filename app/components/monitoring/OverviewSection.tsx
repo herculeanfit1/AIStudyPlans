@@ -1,6 +1,6 @@
 import React from 'react';
 import { format } from 'date-fns';
-import { HealthData, MonitoringStats } from '../../types/monitoring';
+import { MonitoringStats } from '../../types/monitoring';
 
 interface OverviewSectionProps {
   stats: MonitoringStats;

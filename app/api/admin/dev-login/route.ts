@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
 // This is a development-only endpoint for local testing
 // It should never be used in production

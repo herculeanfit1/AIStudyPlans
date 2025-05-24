@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
 import { MonitoringStats } from '../../types/monitoring';
 import OverviewSection from '../../components/monitoring/OverviewSection';
 import CICDSection from '../../components/monitoring/CICDSection';

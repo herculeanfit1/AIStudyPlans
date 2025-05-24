@@ -6,8 +6,9 @@ import {
   getFeedbackStats, 
   getFeedbackTextAnalytics, 
   exportFeedbackToCsv,
-  FeedbackWithUser,
-  FeedbackStats
+  type FeedbackWithUser,
+  type FeedbackStats,
+  type FeedbackFilters
 } from '@/lib/admin-supabase';
 import { 
   FeedbackLineChart, 
@@ -16,7 +17,7 @@ import {
   KeywordCloud 
 } from '@/components/admin/FeedbackChart';
 import FeedbackTable from '@/components/admin/FeedbackTable';
-import FeedbackFilters from '@/components/admin/FeedbackFilters';
+import FeedbackFiltersComponent from '@/components/admin/FeedbackFilters';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -126,15 +127,8 @@ export default function FeedbackDashboard() {
   };
 
   // Handle filter change
-  const handleFilterChange = (newFilters: {
-    type?: string;
-    minRating?: number;
-    maxRating?: number;
-    startDate?: string;
-    endDate?: string;
-    searchTerm?: string;
-  }) => {
-    setFilters(newFilters);
+  const handleFilterChange = (newFilters: Partial<FeedbackFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
     setPage(1); // Reset to first page when filters change
   };
 
@@ -205,13 +199,13 @@ export default function FeedbackDashboard() {
     // Chart data for feedback by type
     const feedbackByTypeData = Object.entries(stats.feedbackByType).map(([label, value]) => ({
       label: label.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-      value,
+      value: value as number,
     }));
 
     // Chart data for feedback by rating
     const feedbackByRatingData = Object.entries(stats.feedbackByRating).map(([label, value]) => ({
       label,
-      value,
+      value: value as number,
     })).sort((a, b) => parseInt(a.label) - parseInt(b.label));
 
     return {
@@ -337,7 +331,7 @@ export default function FeedbackDashboard() {
       )}
 
       {/* Filters */}
-      <FeedbackFilters 
+      <FeedbackFiltersComponent 
         onFilterChange={handleFilterChange} 
         isLoading={isLoading} 
       />

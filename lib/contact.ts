@@ -29,12 +29,13 @@ export async function storeContactSubmission(data: Omit<ContactSubmission, 'id' 
     
     // Add to the admin dashboard data
     addFeedbackSubmission({
-      id: submission.id,
+      id: String(submission.id),
       waitlist_user_id: 0, // Not associated with a waitlist user
       feedback_text: submission.message,
       feedback_type: submission.type === 'sales' ? 'feature_request' : 'general',
       email_id: `${submission.type}_contact`,
-      created_at: submission.created_at
+      created_at: submission.created_at,
+      user_id: `contact-${submission.id}`
     }, submission.name, submission.email);
     
     return { success: true };

@@ -17,11 +17,11 @@ export class ErrorBoundary extends Component<Props, State> {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(_: Error): State {
+  static getDerivedStateFromError(error: Error): State {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log the error instead of tracking
     console.error('Unhandled error:', error, errorInfo);
   }

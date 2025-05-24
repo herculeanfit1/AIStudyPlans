@@ -1,5 +1,3 @@
-import { NextResponse } from 'next/server';
-
 /**
  * API endpoint to check email configuration status
  * Returns whether Resend API key and email addresses are configured

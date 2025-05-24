@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { FeedbackWithUser } from '@/lib/admin-supabase';
 
 interface FeedbackTableProps {

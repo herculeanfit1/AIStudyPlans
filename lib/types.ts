@@ -10,6 +10,8 @@ export interface FeedbackResponse {
   feedback_text: string;
   rating?: number;
   user_id: string;
+  waitlist_user_id?: number | string;
+  email_id?: string;
   platform?: string;
   source_page?: string;
   feature_id?: string;
@@ -23,9 +25,6 @@ export interface FeedbackWithUser extends FeedbackResponse {
     email: string;
     created_at: string;
   };
-  // Additional fields found in admin-supabase.ts
-  email_id?: string;
-  waitlist_user_id?: string;
 }
 
 // Waitlist user type

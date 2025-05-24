@@ -1,6 +1,6 @@
 import React from 'react';
 import { format } from 'date-fns';
-import { CIWorkflow, CISummary, MonitoringStats } from '../../types/monitoring';
+import { MonitoringStats } from '../../types/monitoring';
 
 interface CICDSectionProps {
   stats: MonitoringStats;

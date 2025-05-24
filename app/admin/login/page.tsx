@@ -1,19 +1,18 @@
 'use client';
 
-import { signIn, getSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function AdminLogin() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for error in URL parameters
-    const urlError = searchParams.get('error');
+    const urlError = searchParams?.get('error');
     if (urlError) {
       switch (urlError) {
         case 'AccessDenied':

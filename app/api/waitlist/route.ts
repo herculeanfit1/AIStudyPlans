@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import {
   sendWaitlistConfirmationEmail,
   sendWaitlistAdminNotification,
@@ -80,6 +80,13 @@ export async function POST(request: NextRequest) {
     }
     
     // If validation passes, we can safely use the data
+    if (!validation.success || !validation.data) {
+      console.error("❌ Validation failed but data is missing");
+      return createJsonResponse({ 
+        error: "Invalid input data - validation passed but data is missing"
+      }, 400);
+    }
+    
     const { name, email, source } = validation.data;
 
     console.log(`👤 Received waitlist request for: ${name} (${email})`);

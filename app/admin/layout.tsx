@@ -47,7 +47,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       setIsRedirecting(true);
       setRedirectCount(prev => prev + 1);
       // Use NextAuth's default sign-in page
-      router.push('/api/auth/signin?callbackUrl=' + encodeURIComponent(pathname));
+      router.push('/api/auth/signin?callbackUrl=' + encodeURIComponent(pathname || '/admin'));
       return;
     }
     
