@@ -14,15 +14,7 @@ if [ -d ".next" ]; then
   rm -rf .next/
 fi
 
-# Temporarily move NextAuth route out of the way for static export
-if [ -f "app/api/auth/[...nextauth]/route.ts" ]; then
-  echo "Temporarily removing NextAuth route for static export"
-  mkdir -p temp_backup
-  mv "app/api/auth/[...nextauth]/route.ts" temp_backup/
-fi
-
-# Set environment variable to enable static export
-export SKIP_AUTH=true
+# Set environment for production build with server-side features
 export NODE_ENV=production
 
 # Ensure Supabase environment variables are available
@@ -40,50 +32,23 @@ fi
 echo "Replacing Key Vault references with placeholders for CI build..."
 node scripts/ci-bypass-keyvault.js
 
-# Verify all API routes have proper generateStaticParams
-echo "Verifying API routes for static export compatibility..."
-node scripts/verify-api-routes.js
-
-# Build the app
-echo "Building Next.js static export..."
+# Build the app with server-side features
+echo "Building Next.js application with server-side features..."
 npm run build
 
 # Verify the output directory exists
-if [ -d "out" ]; then
-  echo "Static export directory 'out' was created successfully."
+if [ -d ".next" ]; then
+  echo "Build directory '.next' was created successfully."
   # List contents for debugging
-  ls -la out/
+  ls -la .next/
   
-  # Make sure the routing works
-  echo "Checking for critical files..."
-  if [ -f "out/index.html" ]; then
-    echo "✅ index.html exists"
-  else
-    echo "❌ ERROR: index.html is missing!"
-  fi
-  
-  if [ -f "out/404.html" ]; then
-    echo "✅ 404.html exists"
-  else
-    echo "❌ ERROR: 404.html is missing!"
-  fi
-  
-  # Copy staticwebapp.config.json to the output directory
-  echo "Copying staticwebapp.config.json to out directory"
-  cp staticwebapp.config.json out/
+  echo "✅ Next.js build completed successfully"
+  echo "✅ Server-side rendering and API routes are enabled"
 else
-  echo "ERROR: Static export directory 'out' was not created!"
+  echo "ERROR: Build directory '.next' was not created!"
   echo "Current directory contents:"
   ls -la
   exit 1
 fi
 
-# Restore NextAuth route if it was moved
-if [ -f "temp_backup/route.ts" ]; then
-  echo "Restoring NextAuth route"
-  mkdir -p "app/api/auth/[...nextauth]"
-  mv temp_backup/route.ts "app/api/auth/[...nextauth]/"
-  rmdir temp_backup
-fi
-
-echo "CI build completed successfully!" 
+echo "CI build completed successfully with server-side features!" 
