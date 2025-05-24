@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { storeFeedback } from '@/lib/supabase';
 
 // Client component that uses search params
 function FeedbackFormContent() {
@@ -42,16 +41,32 @@ function FeedbackFormContent() {
     console.log('⏳ Setting form to submitting state...');
     
     try {
-      console.log('📡 Calling storeFeedback function...');
-      const result = await storeFeedback(
-        parseInt(userId, 10),
-        feedbackText,
-        feedbackType,
-        rating,
-        emailId || undefined
-      );
+      console.log('📡 Sending POST request to API...');
       
-      console.log('📝 Feedback submission result:', result);
+      // Use the proper API endpoint instead of calling Supabase directly
+      const response = await fetch('/feedback/api/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: parseInt(userId, 10),
+          feedbackText: feedbackText.trim(),
+          feedbackType,
+          rating,
+          emailId: emailId || undefined
+        }),
+      });
+      
+      console.log('📡 API Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
+        throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('📝 API response data:', result);
       
       if (result.success) {
         console.log('✅ Feedback submitted successfully!');
@@ -60,14 +75,14 @@ function FeedbackFormContent() {
         setRating(undefined);
         setFeedbackType('general');
       } else {
-        console.error('❌ Feedback submission failed:', result.error);
+        console.error('❌ API returned failure:', result.message);
         setSubmitStatus('error');
-        setErrorMessage(result.error || 'An error occurred while submitting your feedback.');
+        setErrorMessage(result.message || 'Server failed to process feedback.');
       }
     } catch (error: any) {
       console.error('💥 Exception during feedback submission:', error);
       setSubmitStatus('error');
-      setErrorMessage(error.message || 'An error occurred while submitting your feedback.');
+      setErrorMessage(error.message || 'Network error. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
       console.log('🏁 Feedback submission completed');
