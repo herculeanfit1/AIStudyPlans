@@ -46,7 +46,7 @@ export default function AdminSettings() {
     }
 
     // If neither auth method worked, redirect
-    router.replace("/admin/login?error=AccessDenied");
+    router.replace("/api/auth/signin?error=AccessDenied");
   }, [session, status, devAdmin, router]);
 
   // Handle clearing all feedback data
@@ -318,9 +318,9 @@ export default function AdminSettings() {
               isLocalAuth
                 ? () => {
                     localStorage.removeItem("isAdmin");
-                    window.location.href = "/admin/login";
+                    window.location.href = "/api/auth/signin";
                   }
-                : () => signOut({ callbackUrl: "/admin/login" })
+                : () => signOut({ callbackUrl: "/" })
             }
             className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-md transition-colors"
           >

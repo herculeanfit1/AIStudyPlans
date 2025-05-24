@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { trackPageView } from '@/lib/monitoring';
 
 export function usePageTracking() {
   const pathname = usePathname();
@@ -28,11 +27,8 @@ export function usePageTracking() {
         }
       }
       
-      // Track the page view
-      trackPageView(pathname, {
-        url,
-        referrer: typeof document !== 'undefined' ? (document.referrer || '') : '',
-      });
+      // Simple console logging instead of tracking
+      console.log(`Page view: ${url}`);
     }
   }, [pathname, searchParamsObj]);
 } 

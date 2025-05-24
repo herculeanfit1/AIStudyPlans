@@ -1,7 +1,6 @@
 'use client';
 
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { trackException } from '@/lib/monitoring';
 
 interface Props {
   children: ReactNode;
@@ -23,11 +22,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Track the error in Application Insights
-    trackException(error, {
-      componentStack: errorInfo.componentStack,
-    });
-    
+    // Log the error instead of tracking
     console.error('Unhandled error:', error, errorInfo);
   }
 

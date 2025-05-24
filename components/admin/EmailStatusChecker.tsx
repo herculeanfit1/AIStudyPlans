@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { trackEvent } from '@/lib/monitoring';
 
 /**
  * Component to check and display email configuration status
@@ -41,8 +40,8 @@ export default function EmailStatusChecker() {
         const data = await response.json();
         setStatus(data);
         
-        // Track the event
-        trackEvent('Admin:EmailConfigurationChecked', {
+        // Log the event instead of tracking
+        console.log('Admin: Email configuration checked', {
           configured: data.configured,
           resendApiKey: data.resendApiKey,
           emailFrom: data.emailFrom,
@@ -50,7 +49,7 @@ export default function EmailStatusChecker() {
         });
       } catch (err: any) {
         setError(err.message || 'Failed to check email configuration');
-        trackEvent('Admin:EmailConfigurationError', {
+        console.log('Admin: Email configuration error', {
           error: err.message,
         });
       } finally {
@@ -85,8 +84,8 @@ export default function EmailStatusChecker() {
       const data = await response.json();
       setTestResult(data);
       
-      // Track the event
-      trackEvent('Admin:TestEmailSent', {
+      // Log the event instead of tracking
+      console.log('Admin: Test email sent', {
         success: data.success,
         to: testEmail,
       });
@@ -95,7 +94,7 @@ export default function EmailStatusChecker() {
         success: false, 
         error: err.message || 'Failed to send test email' 
       });
-      trackEvent('Admin:TestEmailError', {
+      console.log('Admin: Test email error', {
         error: err.message,
         to: testEmail,
       });

@@ -84,7 +84,8 @@ export default function AdminDashboard() {
         console.error("Storage error:", err);
       }
 
-      router.push("/admin/login");
+      // Redirect to NextAuth sign-in instead of custom login page
+      router.push("/api/auth/signin");
       return;
     }
 

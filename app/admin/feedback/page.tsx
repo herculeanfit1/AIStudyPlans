@@ -63,7 +63,7 @@ export default function FeedbackDashboard() {
   useEffect(() => {
     if (status === 'loading') return;
     if (!(session?.user?.isAdmin || devAdmin)) {
-      router.replace('/admin/login?error=AccessDenied');
+      router.replace('/api/auth/signin?error=AccessDenied');
     }
   }, [session, status, devAdmin, router]);
 

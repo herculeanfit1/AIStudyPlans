@@ -43,12 +43,12 @@ export default function AdminErrorPage({
               Try Again
             </button>
             
-            <Link
-              href="/admin/login"
+            <a
+              href="/api/auth/signin"
               className="w-full inline-block py-2 px-4 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-md transition-colors"
             >
-              Return to Login
-            </Link>
+              Sign In Again
+            </a>
           </div>
         </div>
       </div>

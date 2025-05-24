@@ -20,10 +20,10 @@ export default function AdminSimpleLoginPage() {
           Page Not Available
         </h1>
         <p style={{ color: '#4b5563', marginBottom: '24px' }}>
-          This login page has been removed. Please use the main admin login instead.
+          This login page has been removed. Please use the Microsoft SSO authentication instead.
         </p>
         <a 
-          href="/admin/login" 
+          href="/api/auth/signin" 
           style={{
             display: 'inline-block',
             padding: '8px 16px',
@@ -34,7 +34,7 @@ export default function AdminSimpleLoginPage() {
             fontWeight: '500'
           }}
         >
-          Go to Admin Login
+          Sign in with Microsoft
         </a>
       </div>
     </div>

@@ -59,14 +59,6 @@ const nextConfig = {
     missingSuspenseWithCSRBailout: false,
   },
   pageExtensions: ["js", "jsx", "ts", "tsx"],
-  // Suppress the build errors from useSearchParams in static export
-  onBuildError: (error) => {
-    if (error.message.includes('useSearchParams()')) {
-      console.warn('⚠️ Suppressing useSearchParams error in static export');
-      return; // Suppress this specific error
-    }
-    throw error; // Re-throw other errors
-  },
 };
 
 // In development mode, add Next-Auth specific configuration

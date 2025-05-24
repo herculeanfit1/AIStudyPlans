@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import AzureAD from "next-auth/providers/azure-ad";
-import { logAuthEvent } from "@/lib/monitoring";
 
 // This is required for static export in Next.js when using output: 'export'
 export function generateStaticParams() {
@@ -23,16 +22,6 @@ declare module "next-auth" {
   }
 }
 
-// For debugging purposes
-const logAuthEventLocal = (event: string, data: any) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[NextAuth] ${event}:`, JSON.stringify(data, null, 2));
-  } else {
-    // In production, log minimal information for security
-    console.log(`[NextAuth] ${event} processed: ${new Date().toISOString()}`);
-  }
-};
-
 const handler = NextAuth({
   providers: [
     AzureAD({
@@ -51,11 +40,6 @@ const handler = NextAuth({
   debug: process.env.NODE_ENV === 'development',
   callbacks: {
     async signIn({ user, account }) {
-      logAuthEvent('signIn attempt', { 
-        email: user.email,
-        provider: account?.provider
-      });
-      
       // Allow only the specific admin emails
       const allowedEmails = [
         "btaiadmin@bridgingtrustai.onmicrosoft.com",

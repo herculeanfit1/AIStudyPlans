@@ -4,7 +4,6 @@ import {
   sendWaitlistAdminNotification,
 } from "@/lib/email";
 import { addToWaitlist, startFeedbackCampaign } from "@/lib/supabase";
-import { trackEvent, trackException } from "@/lib/monitoring";
 import { waitlistSchema, validateInput } from "@/lib/validation";
 
 // Use edge runtime instead of nodejs for static export compatibility
@@ -75,8 +74,8 @@ export async function POST(request: NextRequest) {
       const errorMessage = Object.values(validation.error || {}).join('. ');
       console.error(`❌ Validation error: ${errorMessage}`);
       
-      // Track validation error
-      trackEvent("WaitlistValidationError", { 
+      // Log validation error instead of tracking
+      console.log("Waitlist validation error", { 
         error: errorMessage,
         input: body
       });
@@ -100,8 +99,8 @@ export async function POST(request: NextRequest) {
 
       if (!dbResult.success) {
         console.error("❌ Error adding user to database:", dbResult.error);
-        // Track database error
-        trackEvent("WaitlistDatabaseError", {
+        // Log database error instead of tracking
+        console.log("Waitlist database error", {
           error: dbResult.error,
           email: email
         });
@@ -111,8 +110,8 @@ export async function POST(request: NextRequest) {
         console.log(
           `✅ Successfully added user to database: ${dbResult.user?.id}`,
         );
-        // Track successful database addition
-        trackEvent("WaitlistDatabaseSuccess", {
+        // Log successful database addition instead of tracking
+        console.log("Waitlist database success", {
           userId: dbResult.user?.id,
           email: email
         });
@@ -121,8 +120,8 @@ export async function POST(request: NextRequest) {
       // Validate required environment variables are set
       if (!process.env.RESEND_API_KEY) {
         console.error("❌ RESEND_API_KEY environment variable is not set");
-        // Track configuration error
-        trackEvent("WaitlistConfigError", {
+        // Log configuration error instead of tracking
+        console.log("Waitlist config error", {
           error: "Missing RESEND_API_KEY"
         });
         return createJsonResponse({
@@ -140,8 +139,8 @@ export async function POST(request: NextRequest) {
         console.log(
           `✅ Confirmation email sent successfully, ID: ${result?.messageId}`,
         );
-        // Track successful email send
-        trackEvent("WaitlistEmailSent", {
+        // Log successful email send instead of tracking
+        console.log("Waitlist email sent", {
           type: "confirmation",
           email: email,
           messageId: result?.messageId
@@ -151,10 +150,11 @@ export async function POST(request: NextRequest) {
           `❌ Error sending confirmation email: ${confirmationError?.message}`,
           confirmationError,
         );
-        // Track email error
-        trackException(confirmationError as Error, {
+        // Log email error instead of tracking
+        console.error("Confirmation email error", {
           type: "confirmation_email",
-          email: email
+          email: email,
+          error: confirmationError
         });
         throw confirmationError;
       }
@@ -166,8 +166,8 @@ export async function POST(request: NextRequest) {
         console.log(
           `✅ Admin notification email sent successfully, ID: ${adminResult?.messageId}`,
         );
-        // Track successful admin notification
-        trackEvent("WaitlistEmailSent", {
+        // Log successful admin notification instead of tracking
+        console.log("Waitlist admin email sent", {
           type: "admin_notification",
           email: email,
           messageId: adminResult?.messageId
@@ -176,10 +176,11 @@ export async function POST(request: NextRequest) {
         console.error(
           `⚠️ Admin notification email failed, but continuing: ${adminEmailError?.message}`,
         );
-        // Track admin email error
-        trackException(adminEmailError as Error, {
+        // Log admin email error instead of tracking
+        console.error("Admin notification email error", {
           type: "admin_notification_email",
-          email: email
+          email: email,
+          error: adminEmailError
         });
         // Don't throw - we still want to continue if admin email fails
       }
@@ -190,15 +191,15 @@ export async function POST(request: NextRequest) {
           `📊 Starting feedback campaign for user: ${dbResult.user.id}`,
         );
         await startFeedbackCampaign(dbResult.user.id);
-        // Track feedback campaign start
-        trackEvent("FeedbackCampaignStarted", {
+        // Log feedback campaign start instead of tracking
+        console.log("Feedback campaign started", {
           userId: dbResult.user.id,
           email: email
         });
       }
 
       // Track overall success
-      trackEvent("WaitlistSignupSuccess", {
+      console.log("Waitlist signup success", {
         email: email,
         name: name,
         source: source
@@ -242,7 +243,7 @@ export async function POST(request: NextRequest) {
       console.error("❌ Error details:", JSON.stringify(errorDetails));
 
       // Track email processing error
-      trackException(emailError as Error, {
+      console.error("Email processing error", {
         error_type: "email_processing",
         details: errorDetails
       });
@@ -264,7 +265,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Track overall process error
-    trackException(error as Error, {
+    console.error("Waitlist signup error", {
       route: "/api/waitlist",
       operation: "POST"
     });

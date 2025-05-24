@@ -39,31 +39,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       return;
     }
     
-    // Clear any stale state after route changes
-    if (pathname.includes('/admin/login')) {
-      setIsRedirecting(false);
-      return; // Don't apply any redirects if already on login page
-    }
+    // Clear any stale state after route changes - no longer checking for login page since we removed it
     
     // Handle authentication redirects
-    if (status === 'unauthenticated' && pathname !== '/admin/login') {
-      console.log('[AdminLayout] Unauthenticated user - redirecting to login');
+    if (status === 'unauthenticated') {
+      console.log('[AdminLayout] Unauthenticated user - redirecting to NextAuth sign-in');
       setIsRedirecting(true);
       setRedirectCount(prev => prev + 1);
-      router.push('/admin/login');
+      // Use NextAuth's default sign-in page
+      router.push('/api/auth/signin?callbackUrl=' + encodeURIComponent(pathname));
       return;
     }
     
     // If authenticated, check admin privileges
     if (status === 'authenticated' && session) {
-      if (!session.user?.isAdmin && pathname !== '/admin/login') {
+      if (!session.user?.isAdmin) {
         console.log('[AdminLayout] User is not admin - signing out and redirecting');
         setIsRedirecting(true);
         setRedirectCount(prev => prev + 1);
         
-        // Sign out and redirect to login with error message
+        // Sign out and redirect to NextAuth sign-in with error message
         signOut({ redirect: false }).then(() => {
-          router.push('/admin/login?error=AccessDenied');
+          router.push('/api/auth/signin?error=AccessDenied');
         });
         return;
       }
@@ -72,8 +69,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   
   // Reset redirect counter when path changes successfully
   useEffect(() => {
-    // Only reset if not redirecting and on a valid page
-    if (!isRedirecting && pathname !== '/admin/login') {
+    // Only reset if not redirecting
+    if (!isRedirecting) {
       setRedirectCount(0);
     }
   }, [pathname, isRedirecting]);
@@ -81,7 +78,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Handle sign out process
   const handleSignOut = () => {
     setIsRedirecting(true);
-    signOut({ callbackUrl: '/admin/login' });
+    signOut({ callbackUrl: '/' });
   };
   
   // If we're still loading authentication state
@@ -114,12 +111,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               We encountered an issue with authentication. Please try again later or contact support.
             </p>
             <div className="space-y-4">
-              <Link
-                href="/admin/login" 
+              <a
+                href="/api/auth/signin" 
                 className="inline-block w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-center"
               >
-                Return to Login
-              </Link>
+                Sign In Again
+              </a>
               <Link
                 href="/" 
                 className="inline-block w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-center"
@@ -133,6 +130,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
   
+  // Don't render admin UI until authenticated with NextAuth - removed login page check
+  
   // Don't render admin UI until authenticated with NextAuth
   if (status !== 'authenticated') {
     // Show login redirect button
@@ -140,12 +139,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <p className="text-gray-600 mb-4">Authentication required</p>
-          <Link
-            href="/admin/login" 
+          <a
+            href="/api/auth/signin" 
             className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           >
-            Go to login page
-          </Link>
+            Sign in with Microsoft
+          </a>
         </div>
       </div>
     );
