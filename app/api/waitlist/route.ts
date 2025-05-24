@@ -5,6 +5,7 @@ import {
 } from "@/lib/email";
 import { addToWaitlist, startFeedbackCampaign } from "@/lib/supabase";
 import { waitlistSchema, validateInput } from "@/lib/validation";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Use nodejs runtime for Azure Static Web Apps
 export const runtime = "nodejs";
@@ -30,6 +31,18 @@ export async function OPTIONS() {
  * API route handler for waitlist signups
  */
 export async function POST(request: NextRequest) {
+  // Apply rate limiting (5 waitlist signups per hour per IP)
+  const rateLimitResult = rateLimit(request, { 
+    limit: 5, 
+    windowMs: 60 * 60 * 1000, // 1 hour
+    message: "Too many waitlist signup attempts. Please wait before trying again.",
+    standardHeaders: true
+  });
+  
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   try {
     // Enhanced logging for production debugging
     console.log(

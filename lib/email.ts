@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import { getWaitlistConfirmationTemplate, getPasswordResetTemplate, getWaitlistAdminNotificationTemplate } from './email-templates';
 import { getFeedbackEmailTemplate } from './feedback-email-templates';
 import { WaitlistUser } from './supabase';
+import { checkEmailQuota, recordEmailSent, recordEmailFailure, getEmailUsageWarnings } from './email-monitor';
 
 // Initialize Resend with API key
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -25,7 +26,7 @@ if (!resendApiKey) {
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 /**
- * Send an email using Resend
+ * Send an email using Resend with usage monitoring and limits
  */
 export async function sendEmail({
   to,
@@ -40,7 +41,24 @@ export async function sendEmail({
 }) {
   if (!resend) {
     console.error('❌ Resend client is not initialized. Cannot send email.');
+    recordEmailFailure();
     throw new Error('Email service not configured - RESEND_API_KEY is missing');
+  }
+
+  // Check email quota before sending
+  const quotaCheck = checkEmailQuota();
+  if (!quotaCheck.allowed) {
+    console.error(`❌ Email quota exceeded: ${quotaCheck.reason}`);
+    const error = new Error(`Email sending blocked: ${quotaCheck.reason}`);
+    (error as any).quotaExceeded = true;
+    (error as any).retryAfter = quotaCheck.retryAfter;
+    throw error;
+  }
+
+  // Check for usage warnings
+  const warnings = getEmailUsageWarnings();
+  if (warnings.length > 0) {
+    console.warn('⚠️ Email usage warnings:', warnings.join(', '));
   }
 
   try {
@@ -79,13 +97,16 @@ export async function sendEmail({
 
     if (error) {
       console.error('❌ Error sending email via Resend:', error);
+      recordEmailFailure();
       throw new Error(error.message);
     }
 
     console.log(`✅ Email sent successfully to ${emailTo}, ID: ${data?.id}`);
+    recordEmailSent();
     return { success: true, messageId: data?.id };
   } catch (error) {
     console.error('❌ Exception when sending email:', error);
+    recordEmailFailure();
     throw error;
   }
 }

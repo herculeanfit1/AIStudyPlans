@@ -1,9 +1,24 @@
+import { NextRequest } from 'next/server';
+import { rateLimit } from '@/lib/rate-limit';
+
 /**
  * API endpoint to check email configuration status
  * Returns whether Resend API key and email addresses are configured
  * Does not return any sensitive values, just boolean status
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Apply rate limiting (30 requests per hour per IP)
+  const rateLimitResult = rateLimit(request, { 
+    limit: 30, 
+    windowMs: 60 * 60 * 1000, // 1 hour
+    message: "Too many configuration check requests. Please wait before trying again.",
+    standardHeaders: true
+  });
+  
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   try {
     // Check if key environment variables are set
     const resendApiKeyConfigured = !!process.env.RESEND_API_KEY;
