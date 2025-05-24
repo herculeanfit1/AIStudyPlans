@@ -1,10 +1,8 @@
-# Main deployment workflow for AI Study Plans static website
-# This workflow builds and deploys the static site directly to Azure Static Web Apps
-# Last modified: May 6, 2025 - Set up for successful deployment
+# Main deployment workflow for AI Study Plans website
+# This workflow builds and deploys the Next.js app with server-side features to Azure Static Web Apps
+# Last modified: May 24, 2025 - Updated for server-side rendering and API routes
 
 name: Azure Static Web Apps CI/CD
-# Main deployment workflow for AI Study Plans static website
-# This workflow builds and deploys the static site directly to Azure Static Web Apps
 
 on:
   push:
@@ -89,40 +87,39 @@ jobs:
           NEXT_PUBLIC_RESEND_CONFIGURED: ${{ env.RESEND_CONFIGURED }}
           # Add any other environment variables needed for the build here
 
-      # Ensure staticwebapp.config.json is in the output directory
+      # Ensure staticwebapp.config.json is in the root directory for Azure Static Web Apps
       - name: Verify staticwebapp.config.json
         run: |
-          if [ ! -f "out/staticwebapp.config.json" ]; then
-            echo "staticwebapp.config.json not found in output directory. Copying from root."
-            cp staticwebapp.config.json out/
+          if [ -f "staticwebapp.config.json" ]; then
+            echo "staticwebapp.config.json found in root directory."
+            echo "Content of staticwebapp.config.json:"
+            cat staticwebapp.config.json
+          else
+            echo "❌ ERROR: staticwebapp.config.json not found in root directory!"
+            exit 1
           fi
-          echo "Content of staticwebapp.config.json:"
-          cat out/staticwebapp.config.json
 
       # Verify security headers in staticwebapp.config.json
       - name: Verify security headers
         run: |
           echo "Checking security headers in staticwebapp.config.json..."
           
-          if grep -q "Strict-Transport-Security" out/staticwebapp.config.json; then
+          if grep -q "Strict-Transport-Security" staticwebapp.config.json; then
             echo "✅ HSTS header found"
           else
-            echo "⚠️ HSTS header missing, updating configuration"
-            # This is just a check - we're not actually modifying since we already did above
+            echo "⚠️ HSTS header missing"
           fi
           
-          if grep -q "Content-Security-Policy" out/staticwebapp.config.json; then
+          if grep -q "Content-Security-Policy" staticwebapp.config.json; then
             echo "✅ CSP header found"
           else
-            echo "⚠️ CSP header missing, updating configuration"
-            # This is just a check - we're not actually modifying since we already did above
+            echo "⚠️ CSP header missing"
           fi
           
-          if grep -q "Access-Control-Allow-Origin" out/staticwebapp.config.json; then
+          if grep -q "Access-Control-Allow-Origin" staticwebapp.config.json; then
             echo "✅ CORS headers found"
           else
-            echo "⚠️ CORS headers missing, updating configuration"
-            # This is just a check - we're not actually modifying since we already did above
+            echo "⚠️ CORS headers missing"
           fi
           
           echo "Security headers verification complete"
@@ -135,16 +132,23 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          app_location: "out" # Only deploy the output directory
+          app_location: "/" # Deploy from root directory
           api_location: "" # No separate API directory, as we use Next.js API routes
-          output_location: "" # No additional output dir, we're already in the output
+          output_location: ".next" # Next.js build output directory
           skip_app_build: true # Skip build as we already built the app
-          is_static_export: true # Explicitly tell Azure this is a static export
           ###### End of Repository/Build Configurations ######
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_RESEND_CONFIGURED: ${{ env.RESEND_CONFIGURED }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_REPLY_TO: ${{ secrets.EMAIL_REPLY_TO }}
+          AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+          AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+          AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
       - name: Report deployment status
         if: always()
