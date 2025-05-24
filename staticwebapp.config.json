@@ -1,20 +1,4 @@
 {
-  // Navigation fallback configuration - controls SPA routing behavior
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": [
-      // Static assets that should never be rewritten to index.html
-      "/images/*.{png,jpg,gif,ico}",
-      "/css/*",
-      "/js/*",
-      "/*.{css,js}",
-      // API routes handled by Next.js
-      "/api/*",
-      // Next.js static assets
-      "/_next/*"
-    ]
-  },
-
   // MIME type configuration for proper content serving
   "mimeTypes": {
     ".json": "application/json",
@@ -24,14 +8,6 @@
     ".html": "text/html",
     ".svg": "image/svg+xml",
     ".ico": "image/x-icon"
-  },
-
-  // Override response behavior for specific status codes
-  "responseOverrides": {
-    "404": {
-      "rewrite": "/index.html",
-      "statusCode": 200
-    }
   },
 
   // Global headers applied to all responses
@@ -51,7 +27,7 @@
 
   // Route-specific configurations
   "routes": [
-    // API routes - Next.js API Routes with Edge Runtime
+    // API routes - Next.js API Routes with server-side functionality
     {
       "route": "/api/waitlist",
       "methods": ["POST", "OPTIONS"],
@@ -63,13 +39,13 @@
       }
     },
     {
-      "route": "/api/test-email",
-      "methods": ["GET", "POST"],
+      "route": "/api/auth/*",
+      "methods": ["GET", "POST", "PUT", "DELETE"],
       "allowedRoles": ["anonymous"],
       "headers": {
-        "Access-Control-Allow-Origin": "https://aistudyplans.com",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
       }
     },
     {
@@ -77,7 +53,7 @@
       "methods": ["GET", "POST", "PUT", "DELETE"],
       "allowedRoles": ["anonymous"],
       "headers": {
-        "Access-Control-Allow-Origin": "https://aistudyplans.com",
+        "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, apikey, x-client-info"
       }
@@ -89,35 +65,6 @@
       "headers": {
         "cache-control": "public, max-age=31536000, immutable"
       }
-    },
-
-    // Authentication routes
-    {
-      "route": "/login",
-      "allowedRoles": ["anonymous"],
-      "rewrite": "/login.html"
-    },
-    {
-      "route": "/logout",
-      "allowedRoles": ["anonymous"],
-      "rewrite": "/logout.html"
-    },
-
-    // Admin routes - redirects
-    {
-      "route": "/admin/direct-login*",
-      "redirect": "/admin/ms-login",
-      "statusCode": 301
-    },
-    {
-      "route": "/admin/emergency*",
-      "redirect": "/admin/ms-login",
-      "statusCode": 301
-    },
-    {
-      "route": "/admin/login*",
-      "redirect": "/admin/ms-login",
-      "statusCode": 301
     },
 
     // Static assets caching
@@ -138,15 +85,5 @@
   // Platform configuration
   "platform": {
     "apiRuntime": "node:18"
-  },
-  
-  // Special configuration for API routes in static export
-  "outputCacheConfig": {
-    "routes": [
-      {
-        "route": "/api/*",
-        "disableCache": true
-      }
-    ]
   }
 }
