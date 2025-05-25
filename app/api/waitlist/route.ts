@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
       // Send confirmation email with detailed logging
       try {
-        const result = await sendWaitlistConfirmationEmail(email);
+        await sendWaitlistConfirmationEmail(email);
       } catch (confirmationError: any) {
         console.error(
           `❌ Error sending confirmation email: ${confirmationError?.message}`,
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
 
       // Send admin notification
       try {
-        const adminResult = await sendWaitlistAdminNotification(name, email);
+        await sendWaitlistAdminNotification(name, email);
       } catch (adminEmailError: any) {
         console.error(
           `⚠️ Admin notification email failed, but continuing: ${adminEmailError?.message}`,

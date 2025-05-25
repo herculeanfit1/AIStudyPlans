@@ -163,17 +163,15 @@ export function useWaitlistForm() {
       }
       
       // Handle successful response
-      let responseData = {};
       try {
         const responseText = await response.text();
         if (responseText.trim() === '') {
-          responseData = { success: true };
+          // Empty response is considered success
         } else {
-          responseData = JSON.parse(responseText);
+          JSON.parse(responseText); // Just validate it's valid JSON
         }
       } catch (jsonError) {
         console.warn("Could not parse success response as JSON, but continuing as success");
-        responseData = { success: true };
       }
       
       setIsSubmitted(true);

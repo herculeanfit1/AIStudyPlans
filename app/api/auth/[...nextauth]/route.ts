@@ -33,7 +33,7 @@ const handler = NextAuth({
   ],
   debug: process.env.NODE_ENV === 'development',
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user }) {
       // Allow only the specific admin emails
       const allowedEmails = [
         "support@aistudyplans.com",

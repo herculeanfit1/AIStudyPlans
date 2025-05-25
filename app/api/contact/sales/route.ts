@@ -7,15 +7,15 @@ export function generateStaticParams() {
   return [];
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, company, phone, message, usersCount, type } = body;
-    
-    // Validate required fields
+    const { name, email, company, message } = body;
+
+    // Basic validation
     if (!name || !email || !message) {
       return NextResponse.json(
-        { success: false, message: 'Missing required fields' },
+        { error: "Name, email, and message are required" },
         { status: 400 }
       );
     }
@@ -25,9 +25,7 @@ export async function POST(request: Request) {
       name,
       email,
       company,
-      phone,
       message,
-      usersCount,
       type: 'sales',
     });
     

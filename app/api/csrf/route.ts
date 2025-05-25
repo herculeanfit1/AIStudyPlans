@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { setCsrfToken } from '@/lib/csrf';
+import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 
-// Use edge runtime for better performance
-export const runtime = 'edge';
+// Use nodejs runtime for Azure Static Web Apps
+export const runtime = "nodejs";
 
 // This is required for static export in Next.js when using output: 'export'
 export function generateStaticParams() {
@@ -11,43 +11,22 @@ export function generateStaticParams() {
 }
 
 /**
- * API route handler for generating a CSRF token
- * This endpoint creates a new CSRF token and returns it to the client
- * The token is also set as an HttpOnly cookie
+ * GET handler for CSRF token
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Set a CSRF token in cookie and get the token value
-    const token = setCsrfToken();
+    // Generate a random CSRF token
+    const token = crypto.randomUUID();
     
-    // Return the token in the response
-    return NextResponse.json(
-      { token },
-      { 
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-        }
-      }
-    );
+    return NextResponse.json({ 
+      csrfToken: token,
+      timestamp: new Date().toISOString()
+    });
   } catch (error: any) {
-    console.error('Error generating CSRF token:', error?.message || error);
-    
+    console.error('Error generating CSRF token:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to generate security token',
-        details: process.env.NODE_ENV === 'development' ? error?.message : undefined 
-      },
-      { 
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        }
-      }
+      { error: 'Failed to generate CSRF token' },
+      { status: 500 }
     );
   }
 } 

@@ -17,13 +17,18 @@ export class ErrorBoundary extends Component<Props, State> {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(_error: Error): State {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log the error instead of tracking
-    console.error('Unhandled error:', error, errorInfo);
+  componentDidCatch(_error: Error, errorInfo: ErrorInfo) {
+    // Log error to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error caught by boundary:', _error, errorInfo);
+    }
+    
+    // Here you could log to an error reporting service
+    // logErrorToService(_error, errorInfo);
   }
 
   render(): ReactNode {
