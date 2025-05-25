@@ -74,12 +74,10 @@ export function useWaitlistForm() {
     });
 
     if (!validation.success) {
-      console.log("Form validation failed:", validation.error);
       setValidationErrors(validation.error || {});
       return false;
     }
 
-    console.log("Form validation passed successfully");
     setValidationErrors({});
     return true;
   };
@@ -112,7 +110,6 @@ export function useWaitlistForm() {
     e.preventDefault();
 
     if (!validateForm()) {
-      console.log("Form validation failed in handleSubmit");
       return;
     }
 
@@ -125,8 +122,6 @@ export function useWaitlistForm() {
         name: formData.name,
         email: formData.email,
       });
-      
-      console.log(`Submitting waitlist form for ${formData.email}`);
       
       // Use the correct API endpoint without trailing slash issues
       const apiUrl = process.env.NODE_ENV === 'production' 
@@ -181,7 +176,6 @@ export function useWaitlistForm() {
         responseData = { success: true };
       }
       
-      console.log("API success:", responseData);
       setIsSubmitted(true);
       
       // Track successful conversion for analytics

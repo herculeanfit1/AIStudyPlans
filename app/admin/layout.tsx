@@ -21,16 +21,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [redirectCount, setRedirectCount] = useState(0);
   
-  // Debug info for development environments only
-  useEffect(() => {
-    console.log(`[AdminLayout] Auth Status: ${status}, Path: ${pathname}, Redirect Count: ${redirectCount}`);
-    
-    // In development, log more detailed information
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[AdminLayout] Session:', session);
-    }
-  }, [status, session, pathname, redirectCount]);
-  
   // Authentication and redirection logic
   useEffect(() => {
     // Skip if we've attempted too many redirects already (prevent loops)
@@ -39,11 +29,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       return;
     }
     
-    // Clear any stale state after route changes - no longer checking for login page since we removed it
-    
     // Handle authentication redirects
     if (status === 'unauthenticated') {
-      console.log('[AdminLayout] Unauthenticated user - redirecting to NextAuth sign-in');
       setIsRedirecting(true);
       setRedirectCount(prev => prev + 1);
       // Use NextAuth's default sign-in page
@@ -54,7 +41,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     // If authenticated, check admin privileges
     if (status === 'authenticated' && session) {
       if (!session.user?.isAdmin) {
-        console.log('[AdminLayout] User is not admin - signing out and redirecting');
         setIsRedirecting(true);
         setRedirectCount(prev => prev + 1);
         

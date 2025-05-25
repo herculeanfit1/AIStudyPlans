@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+// Load environment variables from .env.local
+require('dotenv').config({ path: '.env.local' });
+
 /**
  * Test script for email monitoring system
  * This tests the quota checking and usage tracking without actually sending emails

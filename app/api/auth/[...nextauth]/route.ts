@@ -47,7 +47,6 @@ const handler = NextAuth({
       }
       
       const isAllowed = allowedEmails.includes(user.email);
-      console.log(`[NextAuth] User ${user.email} ${isAllowed ? 'allowed' : 'denied'} access`);
       return isAllowed;
     },
     async jwt({ token, user }) {
@@ -60,7 +59,6 @@ const handler = NextAuth({
           "terence@bridgingtrust.ai"
         ];
         token.isAdmin = adminEmails.includes(user.email || "");
-        console.log(`[NextAuth] Admin privileges ${token.isAdmin ? 'granted' : 'denied'} to ${user.email}`);
       }
       
       return token;
@@ -68,7 +66,6 @@ const handler = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.isAdmin = !!token.isAdmin;
-        console.log(`[NextAuth] Session created for ${session.user.email}, isAdmin: ${session.user.isAdmin}`);
       }
       
       return session;

@@ -19,7 +19,6 @@ export default function DirectAdminAccess() {
     try {
       // Set admin cookie directly in the browser
       document.cookie = 'isAdmin=true; path=/; max-age=86400';
-      console.log('Set admin cookie directly in browser');
       
       // Short delay before redirecting
       setTimeout(() => {

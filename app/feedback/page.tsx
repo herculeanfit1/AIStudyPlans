@@ -19,9 +19,6 @@ function FeedbackFormContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('🚀 Starting feedback submission...');
-    console.log('Form data:', { userId, emailId, feedbackType, feedbackText, rating });
-    
     if (!userId) {
       console.error('❌ Missing user ID');
       setSubmitStatus('error');
@@ -38,11 +35,8 @@ function FeedbackFormContent() {
     
     setIsSubmitting(true);
     setErrorMessage('');
-    console.log('⏳ Setting form to submitting state...');
     
     try {
-      console.log('📡 Sending POST request to API...');
-      
       // Use the proper API endpoint instead of calling Supabase directly
       const response = await fetch('/feedback/api/submit', {
         method: 'POST',
@@ -58,18 +52,14 @@ function FeedbackFormContent() {
         }),
       });
       
-      console.log('📡 API Response status:', response.status);
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Network error' }));
         throw new Error(errorData.message || `Server error: ${response.status}`);
       }
       
       const result = await response.json();
-      console.log('📝 API response data:', result);
       
       if (result.success) {
-        console.log('✅ Feedback submitted successfully!');
         setSubmitStatus('success');
         setFeedbackText('');
         setRating(undefined);
@@ -85,7 +75,6 @@ function FeedbackFormContent() {
       setErrorMessage(error.message || 'Network error. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
-      console.log('🏁 Feedback submission completed');
     }
   };
   

@@ -44,23 +44,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Enhanced logging for production debugging
-    console.log(
-      `🚀 Waitlist API route called (${process.env.NODE_ENV} environment)`,
-    );
-    console.log(
-      `🔧 Environment config: URL=${process.env.NEXT_PUBLIC_APP_URL || "not set"}`,
-    );
-
-    // Explicitly log configuration presence for debugging
-    const resendApiKeyPresent = !!process.env.RESEND_API_KEY;
-    console.log(
-      `📧 Email config: RESEND_API_KEY=${resendApiKeyPresent ? "present" : "MISSING"}, FROM=${!!process.env.EMAIL_FROM ? "present" : "MISSING"}, REPLY=${!!process.env.EMAIL_REPLY_TO ? "present" : "MISSING"}`,
-    );
-    console.log(
-      `📊 Database config: SUPABASE_URL=${!!process.env.NEXT_PUBLIC_SUPABASE_URL ? "present" : "MISSING"}, ANON_KEY=${!!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "present" : "MISSING"}`,
-    );
-
     // Get body data using a more resilient approach with explicit error handling
     let body;
     try {
@@ -80,12 +63,6 @@ export async function POST(request: NextRequest) {
       const errorMessage = Object.values(validation.error || {}).join('. ');
       console.error(`❌ Validation error: ${errorMessage}`);
       
-      // Log validation error instead of tracking
-      console.log("Waitlist validation error", { 
-        error: errorMessage,
-        input: body
-      });
-      
       return createJsonResponse({ 
         error: errorMessage || "Invalid input data",
         validation_errors: validation.error
@@ -102,41 +79,18 @@ export async function POST(request: NextRequest) {
     
     const { name, email, source } = validation.data;
 
-    console.log(`👤 Received waitlist request for: ${name} (${email})`);
-    console.log(`✅ Validated waitlist signup: ${name} (${email})`);
-
     try {
       // Add user to database
-      console.log(`📥 Adding user to database: ${name} (${email})`);
       const dbResult = await addToWaitlist(name, email, source);
 
       if (!dbResult.success) {
         console.error("❌ Error adding user to database:", dbResult.error);
-        // Log database error instead of tracking
-        console.log("Waitlist database error", {
-          error: dbResult.error,
-          email: email
-        });
         // We'll continue even if DB insertion fails to ensure the welcome email is still sent
-        console.log("⚠️ Continuing with email sending despite database error");
-      } else {
-        console.log(
-          `✅ Successfully added user to database: ${dbResult.user?.id}`,
-        );
-        // Log successful database addition instead of tracking
-        console.log("Waitlist database success", {
-          userId: dbResult.user?.id,
-          email: email
-        });
       }
 
       // Validate required environment variables are set
       if (!process.env.RESEND_API_KEY) {
         console.error("❌ RESEND_API_KEY environment variable is not set");
-        // Log configuration error instead of tracking
-        console.log("Waitlist config error", {
-          error: "Missing RESEND_API_KEY"
-        });
         return createJsonResponse({
           error: "Email service not configured",
           success: false,
@@ -146,96 +100,36 @@ export async function POST(request: NextRequest) {
       }
 
       // Send confirmation email with detailed logging
-      console.log(`📧 Sending waitlist confirmation email to ${email}...`);
       try {
         const result = await sendWaitlistConfirmationEmail(email);
-        console.log(
-          `✅ Confirmation email sent successfully, ID: ${result?.messageId}`,
-        );
-        // Log successful email send instead of tracking
-        console.log("Waitlist email sent", {
-          type: "confirmation",
-          email: email,
-          messageId: result?.messageId
-        });
       } catch (confirmationError: any) {
         console.error(
           `❌ Error sending confirmation email: ${confirmationError?.message}`,
           confirmationError,
         );
-        // Log email error instead of tracking
-        console.error("Confirmation email error", {
-          type: "confirmation_email",
-          email: email,
-          error: confirmationError
-        });
         throw confirmationError;
       }
 
       // Send admin notification
-      console.log("📧 Sending admin notification email...");
       try {
         const adminResult = await sendWaitlistAdminNotification(name, email);
-        console.log(
-          `✅ Admin notification email sent successfully, ID: ${adminResult?.messageId}`,
-        );
-        // Log successful admin notification instead of tracking
-        console.log("Waitlist admin email sent", {
-          type: "admin_notification",
-          email: email,
-          messageId: adminResult?.messageId
-        });
       } catch (adminEmailError: any) {
         console.error(
           `⚠️ Admin notification email failed, but continuing: ${adminEmailError?.message}`,
         );
-        // Log admin email error instead of tracking
-        console.error("Admin notification email error", {
-          type: "admin_notification_email",
-          email: email,
-          error: adminEmailError
-        });
         // Don't throw - we still want to continue if admin email fails
       }
 
       // Start feedback campaign (set up, but first email will be sent by cron job)
       if (dbResult.success && dbResult.user) {
-        console.log(
-          `📊 Starting feedback campaign for user: ${dbResult.user.id}`,
-        );
         await startFeedbackCampaign(dbResult.user.id);
-        // Log feedback campaign start instead of tracking
-        console.log("Feedback campaign started", {
-          userId: dbResult.user.id,
-          email: email
-        });
       }
 
       // Track overall success
-      console.log("Waitlist signup success", {
-        email: email,
-        name: name,
-        source: source
-      });
-
-      // Return a successful JSON response
       return createJsonResponse({
         success: true,
         message:
           "Successfully joined the waitlist. Please check your email for confirmation.",
-        debug:
-          process.env.NODE_ENV !== "production"
-            ? {
-                emailConfig: {
-                  apiKey: resendApiKeyPresent ? "present" : "missing",
-                  from: process.env.EMAIL_FROM ? "configured" : "missing",
-                  replyTo: process.env.EMAIL_REPLY_TO
-                    ? "configured"
-                    : "missing",
-                },
-                environment: process.env.NODE_ENV,
-              }
-            : undefined,
       }, 200);
     } catch (emailError: any) {
       console.error(
