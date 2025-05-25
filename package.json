@@ -49,12 +49,13 @@
     "validate:deps": "node scripts/validate-dependencies.js"
   },
   "dependencies": {
-    "@auth/core": "0.34.2",
+    "@auth/core": "0.39.1",
     "@react-three/drei": "9.122.0",
     "@react-three/fiber": "8.15.12",
     "@supabase/supabase-js": "2.49.4",
     "chalk": "5.4.1",
     "chart.js": "4.4.9",
+    "cookie": "0.7.2",
     "date-fns": "4.1.0",
     "framer-motion": "12.9.1",
     "next": "14.2.28",
