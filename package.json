@@ -46,7 +46,15 @@
     "dedupe": "npm dedupe",
     "clean:install": "rm -rf node_modules package-lock.json && npm install",
     "fix:deps": "node scripts/fix-dependencies.js",
-    "validate:deps": "node scripts/validate-dependencies.js"
+    "validate:deps": "node scripts/validate-dependencies.js",
+    "lock:validate": "node scripts/validate-dependency-locks.js",
+    "lock:check": "node scripts/check-dependency-status.js",
+    "lock:audit": "node scripts/audit-dependencies.js",
+    "lock:report": "node scripts/generate-dependency-report.js",
+    "lock:fix": "node scripts/fix-dependency-issues.js",
+    "lock:update": "node scripts/update-dependencies-safe.js",
+    "lock:security": "npm audit --audit-level=moderate && node scripts/audit-dependencies.js",
+    "maintenance:weekly": "node scripts/weekly-maintenance.js"
   },
   "dependencies": {
     "@auth/core": "0.39.1",

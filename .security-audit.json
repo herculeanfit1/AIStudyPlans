@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-05-27T02:51:22.782Z",
+  "npmAudit": {
+    "auditReportVersion": 2,
+    "vulnerabilities": {},
+    "metadata": {
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "dependencies": {
+        "prod": 272,
+        "dev": 744,
+        "optional": 15,
+        "peer": 4,
+        "peerOptional": 0,
+        "total": 1024
+      }
+    }
+  },
+  "customChecks": [
+    {
+      "type": "missing-security-scripts",
+      "severity": "low",
+      "message": "Missing security scripts: audit"
+    }
+  ],
+  "recommendations": [
+    "Add missing security-related npm scripts"
+  ],
+  "riskLevel": "medium"
+}
