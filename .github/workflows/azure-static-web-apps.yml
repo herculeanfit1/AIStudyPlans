@@ -77,7 +77,7 @@ jobs:
 
       - name: Install dependencies and build
         run: |
-          npm ci
+          npm ci --legacy-peer-deps
           chmod +x ci-build.sh
           ./ci-build.sh
         env:

@@ -57,13 +57,13 @@
     "maintenance:weekly": "node scripts/weekly-maintenance.js"
   },
   "dependencies": {
-    "@auth/core": "0.39.1",
+    "@auth/core": "0.34.2",
     "@react-three/drei": "9.122.0",
     "@react-three/fiber": "8.15.12",
     "@supabase/supabase-js": "2.49.4",
     "chalk": "5.4.1",
     "chart.js": "4.4.9",
-    "cookie": "0.7.2",
+    "cookie": "1.0.2",
     "date-fns": "4.1.0",
     "framer-motion": "12.9.1",
     "next": "14.2.28",
@@ -120,5 +120,9 @@
   },
   "resolutions": {
     "postcss": "8.4.31"
+  },
+  "overrides": {
+    "@auth/core": "0.34.2",
+    "cookie": "1.0.2"
   }
 }
