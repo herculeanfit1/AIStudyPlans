@@ -40,7 +40,7 @@ jobs:
           echo "Current Git configuration:"
           git config --global --list
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
           lfs: false
