@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Cross-site standards**: See `STANDARDS.md` in this repo for shared conventions
+> that apply across all TK web properties. This file documents SchedulEd-specific
+> details only. STANDARDS.md takes precedence on any conflicting guidance.
+>
+> **Note**: This repo is currently on Next.js 14 / React 18. STANDARDS.md targets
+> Next.js 15 / React 19 — those upgrades are planned separately. Until then,
+> SchedulEd-specific deviations from the target stack are documented here.
+
 ## Project Overview
 
 SchedulEd (AIStudyPlans) is a Next.js 14 landing page for an AI-powered study plan generator. It's deployed on Azure Static Web Apps and uses Supabase as the backend database, Resend for email delivery, and NextAuth for authentication.
@@ -102,11 +110,9 @@ NextAuth with Azure AD. Admin access is controlled by `ADMIN_EMAILS` env var (co
 ### Environment Variables
 See `.env.example` for required variables. Key ones: `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, Azure AD credentials, `ADMIN_EMAILS`, and Supabase connection details.
 
-## Conventions
+## SchedulEd-Specific Notes
 
-- **Commit messages**: Use conventional commits format (`feat:`, `fix:`, `docs:`, `chore:`, etc.)
-- **TypeScript**: Strict mode enabled
-- **Styling**: Tailwind CSS with Font Awesome icons (loaded via CDN)
-- **Theming**: Dark/light mode via `next-themes` with `class` attribute strategy
-- **Build behavior**: TypeScript errors are ignored in production builds (`ignoreBuildErrors: true`); ESLint is ignored during builds. Run `npm run lint` and `npm run typecheck` separately.
+- **Icons**: Font Awesome loaded via CDN (in `app/layout.tsx` `<head>`)
+- **Build behavior**: TypeScript errors are ignored in production builds (`ignoreBuildErrors: true`); ESLint is ignored during builds. Run `npm run lint` and `npm run typecheck` separately. See `docs/build-error-resolution.md` for the plan to resolve these.
 - **npm install**: Use `--legacy-peer-deps` flag when encountering peer dependency conflicts (next-auth/next version mismatch)
+- **Testing**: Currently on Jest (Vitest migration planned with Next.js 15 upgrade)
