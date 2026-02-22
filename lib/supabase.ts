@@ -48,11 +48,12 @@ function createMockClient() {
           single: () =>
             createMockResponse({
               id: 1,
-              name: "Mock User",
+              name: data && data.length > 0 ? data[0].name : "Mock User",
               email:
                 data && data.length > 0 ? data[0].email : "mock@example.com",
               source: data && data.length > 0 ? data[0].source : undefined,
-              feedback_campaign_started: false,
+              feedback_campaign_started:
+                data && data.length > 0 ? data[0].feedback_campaign_started : false,
             }),
         }),
       }),
