@@ -103,8 +103,8 @@ export function rateLimit(
     
     return NextResponse.json(
       {
-        error: config.message || 'Too many requests, please try again later',
         success: false,
+        message: config.message || 'Too many requests, please try again later',
       },
       {
         status: 429,

@@ -56,6 +56,59 @@ export const contactSchema = z.object({
 export type ContactInput = z.infer<typeof contactSchema>;
 
 /**
+ * Schema for the sales contact form data
+ */
+export const salesContactSchema = z.object({
+  name: z.string()
+    .min(1, { message: "Name is required" })
+    .max(100, { message: "Name must be less than 100 characters" })
+    .trim(),
+  email: z.string()
+    .min(1, { message: "Email is required" })
+    .max(255, { message: "Email must be less than 255 characters" })
+    .email({ message: "Please enter a valid email address" })
+    .trim()
+    .toLowerCase(),
+  company: z.string()
+    .max(200, { message: "Company must be less than 200 characters" })
+    .optional(),
+  message: z.string()
+    .min(10, { message: "Message must be at least 10 characters" })
+    .max(1000, { message: "Message must be less than 1000 characters" })
+    .trim(),
+});
+
+export type SalesContactInput = z.infer<typeof salesContactSchema>;
+
+/**
+ * Schema for the support contact form data
+ */
+export const supportContactSchema = z.object({
+  name: z.string()
+    .min(1, { message: "Name is required" })
+    .max(100, { message: "Name must be less than 100 characters" })
+    .trim(),
+  email: z.string()
+    .min(1, { message: "Email is required" })
+    .max(255, { message: "Email must be less than 255 characters" })
+    .email({ message: "Please enter a valid email address" })
+    .trim()
+    .toLowerCase(),
+  subject: z.string()
+    .max(200, { message: "Subject must be less than 200 characters" })
+    .optional(),
+  message: z.string()
+    .min(10, { message: "Message must be at least 10 characters" })
+    .max(1000, { message: "Message must be less than 1000 characters" })
+    .trim(),
+  issueType: z.string()
+    .max(50, { message: "Issue type must be less than 50 characters" })
+    .optional(),
+});
+
+export type SupportContactInput = z.infer<typeof supportContactSchema>;
+
+/**
  * Schema for feedback form data
  */
 export const feedbackSchema = z.object({

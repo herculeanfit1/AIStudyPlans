@@ -1,32 +1,36 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { rateLimit } from '@/lib/rate-limit';
 
 // Use nodejs runtime for Azure Static Web Apps
 export const runtime = "nodejs";
 
-// This is required for static export in Next.js when using output: 'export'
-export function generateStaticParams() {
-  // Return an empty array since we don't want to pre-render any API routes
-  return [];
-}
+export async function GET(request: NextRequest) {
+  const rateLimitResult = rateLimit(request, {
+    limit: 30,
+    windowMs: 60 * 60 * 1000,
+    message: 'Too many CSRF token requests. Please try again later.',
+    standardHeaders: true,
+  });
 
-/**
- * GET handler for CSRF token
- */
-export async function GET() {
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   try {
-    // Generate a random CSRF token
     const token = crypto.randomUUID();
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
+      success: true,
       csrfToken: token,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-  } catch (error: any) {
-    console.error('Error generating CSRF token:', error);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to generate CSRF token';
+    console.error('Error generating CSRF token:', message);
     return NextResponse.json(
-      { error: 'Failed to generate CSRF token' },
+      { success: false, message },
       { status: 500 }
     );
   }
-} 
+}

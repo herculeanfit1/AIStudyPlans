@@ -1,26 +1,34 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { storeContactSubmission } from '@/lib/contact';
-
-// This is required for static export in Next.js when using output: 'export'
-export function generateStaticParams() {
-  // Return an empty array since we don't want to pre-render this API route
-  return [];
-}
+import { salesContactSchema, validateInput } from '@/lib/validation';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const rateLimitResult = rateLimit(request, {
+    limit: 5,
+    windowMs: 60 * 60 * 1000,
+    message: 'Too many contact submissions. Please try again later.',
+    standardHeaders: true,
+  });
+
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   try {
     const body = await request.json();
-    const { name, email, company, message } = body;
 
-    // Basic validation
-    if (!name || !email || !message) {
+    const validation = validateInput(salesContactSchema, body);
+    if (!validation.success) {
+      const errorMessage = Object.values(validation.error || {}).join('. ');
       return NextResponse.json(
-        { error: "Name, email, and message are required" },
-        { status: 400 }
+        { success: false, message: errorMessage || 'Invalid input data', errors: validation.error },
+        { status: 422 }
       );
     }
-    
-    // Store the submission
+
+    const { name, email, company, message } = validation.data!;
+
     const result = await storeContactSubmission({
       name,
       email,
@@ -28,20 +36,21 @@ export async function POST(request: NextRequest) {
       message,
       type: 'sales',
     });
-    
+
     if (result.success) {
-      return NextResponse.json({ success: true });
-    } else {
-      return NextResponse.json(
-        { success: false, message: result.error || 'Failed to submit contact form' },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: true, message: 'Contact form submitted successfully.' });
     }
-  } catch (error: any) {
-    console.error('Error handling sales contact form:', error);
+
     return NextResponse.json(
-      { success: false, message: error.message || 'An error occurred' },
+      { success: false, message: result.error || 'Failed to submit contact form' },
+      { status: 500 }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An error occurred';
+    console.error('Error handling sales contact form:', message);
+    return NextResponse.json(
+      { success: false, message },
       { status: 500 }
     );
   }
-} 
+}

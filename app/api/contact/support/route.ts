@@ -1,26 +1,34 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { storeContactSubmission } from '@/lib/contact';
+import { supportContactSchema, validateInput } from '@/lib/validation';
+import { rateLimit } from '@/lib/rate-limit';
 
-// This is required for static export in Next.js when using output: 'export'
-export function generateStaticParams() {
-  // Return an empty array since we don't want to pre-render this API route
-  return [];
-}
+export async function POST(request: NextRequest) {
+  const rateLimitResult = rateLimit(request, {
+    limit: 5,
+    windowMs: 60 * 60 * 1000,
+    message: 'Too many contact submissions. Please try again later.',
+    standardHeaders: true,
+  });
 
-export async function POST(request: Request) {
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   try {
     const body = await request.json();
-    const { name, email, subject, message, issueType } = body;
-    
-    // Validate required fields
-    if (!name || !email || !message) {
+
+    const validation = validateInput(supportContactSchema, body);
+    if (!validation.success) {
+      const errorMessage = Object.values(validation.error || {}).join('. ');
       return NextResponse.json(
-        { success: false, message: 'Missing required fields' },
-        { status: 400 }
+        { success: false, message: errorMessage || 'Invalid input data', errors: validation.error },
+        { status: 422 }
       );
     }
-    
-    // Store the submission
+
+    const { name, email, subject, message, issueType } = validation.data!;
+
     const result = await storeContactSubmission({
       name,
       email,
@@ -29,20 +37,21 @@ export async function POST(request: Request) {
       issueType,
       type: 'support',
     });
-    
+
     if (result.success) {
-      return NextResponse.json({ success: true });
-    } else {
-      return NextResponse.json(
-        { success: false, message: result.error || 'Failed to submit contact form' },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: true, message: 'Support request submitted successfully.' });
     }
-  } catch (error: any) {
-    console.error('Error handling support contact form:', error);
+
     return NextResponse.json(
-      { success: false, message: error.message || 'An error occurred' },
+      { success: false, message: result.error || 'Failed to submit contact form' },
+      { status: 500 }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An error occurred';
+    console.error('Error handling support contact form:', message);
+    return NextResponse.json(
+      { success: false, message },
       { status: 500 }
     );
   }
-} 
+}
