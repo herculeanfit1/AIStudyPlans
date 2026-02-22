@@ -15,13 +15,13 @@ export default function Footer() {
               AI-powered study plan generator creating personalized learning paths tailored to individual learning styles.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition">
+              <a href="#" className="text-gray-400 hover:text-white transition" aria-label="Twitter">
                 <i className="fab fa-twitter" aria-hidden="true"></i>
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition">
+              <a href="#" className="text-gray-400 hover:text-white transition" aria-label="LinkedIn">
                 <i className="fab fa-linkedin" aria-hidden="true"></i>
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition">
+              <a href="#" className="text-gray-400 hover:text-white transition" aria-label="Instagram">
                 <i className="fab fa-instagram" aria-hidden="true"></i>
               </a>
             </div>

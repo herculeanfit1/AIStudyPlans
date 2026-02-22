@@ -73,8 +73,10 @@ export default function Header() {
               onClick={() => {
                 setMobileMenuOpen(!mobileMenuOpen);
               }}
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileMenuOpen}
             >
-              <i className={`fas ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars'} text-xl`}></i>
+              <i className={`fas ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars'} text-xl`} aria-hidden="true"></i>
             </button>
           </div>
         </div>
