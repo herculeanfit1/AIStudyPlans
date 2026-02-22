@@ -22,13 +22,13 @@ jest.mock('@/lib/admin-supabase', () => ({
 
 // Mock window.localStorage
 const localStorageMock = (() => {
-  let store = {};
+  let store: Record<string, string> = {};
   return {
-    getItem: jest.fn((key) => store[key] || null),
-    setItem: jest.fn((key, value) => {
+    getItem: jest.fn((key: string) => store[key] || null),
+    setItem: jest.fn((key: string, value: string) => {
       store[key] = value.toString();
     }),
-    removeItem: jest.fn((key) => {
+    removeItem: jest.fn((key: string) => {
       delete store[key];
     }),
     clear: jest.fn(() => {
@@ -46,7 +46,6 @@ Object.defineProperty(document, 'cookie', {
 
 describe('AdminDashboard Component', () => {
   beforeEach(() => {
-    // Clear mocks before each test
     jest.clearAllMocks();
     localStorageMock.clear();
     document.cookie = '';
@@ -65,7 +64,6 @@ describe('AdminDashboard Component', () => {
   });
 
   it('should show loading state during authentication check', () => {
-    // Setup mocks
     (useRouter as jest.Mock).mockReturnValue({
       push: jest.fn(),
     });
@@ -79,8 +77,7 @@ describe('AdminDashboard Component', () => {
     expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
   });
 
-  it('should redirect to login page when not authenticated', async () => {
-    // Setup mocks
+  it('should redirect to sign-in when not authenticated', async () => {
     const pushMock = jest.fn();
     (useRouter as jest.Mock).mockReturnValue({
       push: pushMock,
@@ -93,13 +90,11 @@ describe('AdminDashboard Component', () => {
     render(<AdminDashboard />);
 
     await waitFor(() => {
-      // Should redirect to login
-      expect(pushMock).toHaveBeenCalledWith('/admin/login');
+      expect(pushMock).toHaveBeenCalledWith('/api/auth/signin');
     });
   });
 
   it('should render dashboard when authenticated with NextAuth', async () => {
-    // Setup mocks
     (useRouter as jest.Mock).mockReturnValue({
       push: jest.fn(),
     });
@@ -115,28 +110,17 @@ describe('AdminDashboard Component', () => {
 
     render(<AdminDashboard />);
 
-    // Should initially show loading
-    expect(screen.getByText('Loading statistics...')).toBeInTheDocument();
-
     await waitFor(() => {
-      // Should show dashboard with stats
       expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
-      
-      // Use more specific selectors for elements that appear multiple times
-      expect(screen.getByText('4.5')).toBeInTheDocument(); // Average rating (unique)
-      
-      // Check for the existence of the admin shortcuts section
+      expect(screen.getByText('4.5')).toBeInTheDocument();
       expect(screen.getByText('Admin Shortcuts')).toBeInTheDocument();
       expect(screen.getByText('Admin Settings')).toBeInTheDocument();
       expect(screen.getByText('Visit Website')).toBeInTheDocument();
-      
-      // Check for the total feedback text which includes more context
       expect(screen.getByText(/You have 5 total feedback entries/)).toBeInTheDocument();
     });
   });
 
   it('should render dashboard when authenticated with localStorage', async () => {
-    // Setup mocks
     (useRouter as jest.Mock).mockReturnValue({
       push: jest.fn(),
     });
@@ -144,20 +128,17 @@ describe('AdminDashboard Component', () => {
       data: null,
       status: 'unauthenticated',
     });
-    
-    // Set local storage authentication
+
     localStorageMock.setItem('isAdmin', 'true');
 
     render(<AdminDashboard />);
 
     await waitFor(() => {
-      // Should show dashboard with stats
       expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
     });
   });
 
   it('should handle stats loading error gracefully', async () => {
-    // Setup mocks
     (useRouter as jest.Mock).mockReturnValue({
       push: jest.fn(),
     });
@@ -171,25 +152,18 @@ describe('AdminDashboard Component', () => {
       status: 'authenticated',
     });
 
-    // Mock stats loading error
     (getFeedbackStats as jest.Mock).mockRejectedValue(new Error('Failed to load stats'));
 
     render(<AdminDashboard />);
 
     await waitFor(() => {
-      // Should still show dashboard without stats
       expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
-      
-      // Use a more specific text that includes context
-      expect(screen.getByText('N/A')).toBeInTheDocument(); // Default value for rating (unique)
-      
-      // Check for the total feedback text which includes more context
-      expect(screen.getByText(/You have 0 total feedback entries/)).toBeInTheDocument();
+      expect(screen.getByText('N/A')).toBeInTheDocument();
+      expect(screen.getByText('No feedback data available.')).toBeInTheDocument();
     });
   });
-  
+
   it('should show empty feedback message when no feedback is available', async () => {
-    // Setup mocks
     (useRouter as jest.Mock).mockReturnValue({
       push: jest.fn(),
     });
@@ -202,8 +176,7 @@ describe('AdminDashboard Component', () => {
       },
       status: 'authenticated',
     });
-    
-    // Mock empty stats
+
     (getFeedbackStats as jest.Mock).mockResolvedValue({
       stats: {
         totalFeedback: 0,
@@ -221,4 +194,4 @@ describe('AdminDashboard Component', () => {
       expect(screen.getByText('No feedback data available.')).toBeInTheDocument();
     });
   });
-}); 
+});

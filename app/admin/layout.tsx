@@ -67,6 +67,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     signOut({ callbackUrl: '/' });
   };
   
+  // If we're on the login page, return just the children (skip auth)
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
   // If we're still loading authentication state
   if (status === 'loading' || isRedirecting) {
     return (
@@ -79,11 +84,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </div>
     );
-  }
-
-  // If we're on the login page, return just the children
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
   }
   
   // Show error if too many redirects occurred

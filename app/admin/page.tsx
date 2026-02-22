@@ -7,12 +7,7 @@ import { getFeedbackStats } from "@/lib/admin-supabase";
 import { FeedbackStats } from "@/lib/types";
 import { useSession } from "next-auth/react";
 
-// Better way to detect if we're in a test environment
-const isTestEnvironment = () =>
-  typeof process !== "undefined" &&
-  (process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined);
-
-// Default stats for test environment or error cases
+// Default stats for error cases
 const defaultStats: FeedbackStats = {
   totalFeedback: 0,
   averageRating: null,
@@ -25,22 +20,13 @@ const defaultStats: FeedbackStats = {
 export default function AdminDashboard() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const inTestEnv = isTestEnvironment();
 
-  // Use simplified state in test environments
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
-    inTestEnv ? true : null,
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(!inTestEnv);
-  const [stats, setStats] = useState<FeedbackStats | null>(
-    inTestEnv ? defaultStats : null,
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [stats, setStats] = useState<FeedbackStats | null>(null);
 
   // Load stats for dashboard - defined with useCallback to use in dependency array
   const loadStats = useCallback(async () => {
-    // Skip loading in test environment
-    if (inTestEnv) return;
-
     setIsLoading(true);
 
     try {
@@ -57,12 +43,9 @@ export default function AdminDashboard() {
       // Ensure loading state is updated
       setIsLoading(false);
     }
-  }, [inTestEnv]);
+  }, []);
 
-  // In test environment, skip most of the logic
   useEffect(() => {
-    if (inTestEnv) return;
-
     if (status === "loading") {
       return;
     }
@@ -95,10 +78,10 @@ export default function AdminDashboard() {
       loadStats(); // Load stats when authenticated via NextAuth
       return;
     }
-  }, [status, session, router, inTestEnv, loadStats]);
+  }, [status, session, router, loadStats]);
 
   // Show loading state while Next Auth is still initializing
-  if (status === "loading" && !inTestEnv) {
+  if (status === "loading") {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"></div>
@@ -108,7 +91,7 @@ export default function AdminDashboard() {
   }
 
   // Show loading while we check local auth
-  if (!isAuthenticated && !inTestEnv) {
+  if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"></div>
@@ -119,7 +102,7 @@ export default function AdminDashboard() {
 
   // Show different dashboard states
   const renderDashboardContent = () => {
-    if (isLoading && !inTestEnv) {
+    if (isLoading) {
       return (
         <div className="flex items-center justify-center p-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent" />
