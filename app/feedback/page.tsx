@@ -133,8 +133,7 @@ function FeedbackFormContent() {
             <img 
               src="/SchedulEd_new_logo.png" 
               alt="SchedulEd Logo" 
-              className="h-30" 
-              style={{ height: "120px", cursor: "default" }}
+              className="h-[120px] cursor-default"
             />
           </div>
           

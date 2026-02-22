@@ -74,8 +74,7 @@ export default function SalesContactForm() {
               <img 
                 src="/SchedulEd_new_logo.png" 
                 alt="SchedulEd Logo" 
-                className="h-30" 
-                style={{ height: "120px" }}
+                className="h-[120px]"
               />
             </Link>
           </div>
