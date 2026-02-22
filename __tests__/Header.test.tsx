@@ -42,7 +42,7 @@ describe("Header Component", () => {
   it("toggles mobile menu when button is clicked", () => {
     render(<Header />);
     // Find the mobile menu button by its icon
-    const menuButton = screen.getByRole("button", { name: "" });
+    const menuButton = screen.getByRole("button", { name: "Open menu" });
 
     // Mobile menu should be hidden initially
     expect(screen.queryByText("How It Works")).toBeInTheDocument();
