@@ -2,56 +2,73 @@
 
 ## Status: In Progress
 
-> Baseline captured 2026-02-22. Goal: resolve all errors, then set
+> Goal: resolve all TypeScript errors and ESLint warnings, then set
 > `ignoreBuildErrors: false` and `ignoreDuringBuilds: false` in `next.config.mjs`.
 
 ---
 
-## ESLint
+## TypeScript Errors — RESOLVED
 
-ESLint currently fails to load `next/typescript` config. This needs to be resolved
-before individual lint errors can be catalogued.
-
-| File | Issue | Planned Fix | Status |
-|------|-------|-------------|--------|
-| .eslintrc.json | `next/typescript` config fails to load | Investigate ESLint/Next.js config compatibility | :white_large_square: |
+All 17 TypeScript errors resolved (commit 8df89a03). `ignoreBuildErrors: false` is now active.
 
 ---
 
-## TypeScript Errors (32 total)
+## ESLint Warnings (54 total)
 
-### Test Files (19 errors) — lower priority, fix during Vitest migration
+ESLint exits 0 with zero errors. 54 warnings remain, grouped by rule below.
 
-| File | Error | Planned Fix | Status |
-|------|-------|-------------|--------|
-| `__tests__/admin/AdminDashboard.test.tsx` | TS7053 (3x): implicit `any` index | Add proper type annotations to mock objects | :white_large_square: |
-| `__tests__/admin/AdminLayout.test.tsx` | TS7053 (3x), TS2339, TS7006 (2x) | Add type annotations; fix `children` prop type | :white_large_square: |
-| `__tests__/admin/AdminLogin.test.tsx` | TS2307: missing module, TS7053 (3x), TS2790, TS7006 | Create missing login page or fix import; add types | :white_large_square: |
-| `__tests__/utils/admin-test-utils.tsx` | TS2322, TS7053 (3x) | Fix Session type compatibility | :white_large_square: |
-| `e2e/admin-dashboard.spec.ts` | TS2322: storageState type | Fix Playwright context options type | :white_large_square: |
+### `@typescript-eslint/no-explicit-any` (46 warnings)
 
-### Application Code (10 errors) — higher priority
+| File | Lines | Count |
+|------|-------|-------|
+| `lib/supabase.ts` | 26, 26, 46, 122, 125, 126, 148, 152, 211, 215, 300, 331 | 12 |
+| `app/admin/feedback/page.tsx` | 80, 95, 107, 151, 187 | 5 |
+| `lib/admin-supabase.ts` | 108, 178, 230, 297 | 4 |
+| `components/admin/EmailStatusChecker.tsx` | 16, 22, 50, 92 | 4 |
+| `app/components/StudyPlan3D.tsx` | 9, 37, 70 | 3 |
+| `app/admin/settings/monitoring.tsx` | 9, 64 | 2 |
+| `app/admin/settings/page.tsx` | 79, 123 | 2 |
+| `lib/email.ts` | 53, 54 | 2 |
+| `app/feedback/page.tsx` | 72, 199 | 2 |
+| `app/admin/direct-access/page.tsx` | 28 | 1 |
+| `app/admin/page.tsx` | 38 | 1 |
+| `app/api/admin/dev-login/route.ts` | 89 | 1 |
+| `app/api/debug-email/route.ts` | 71 | 1 |
+| `app/api/debug-waitlist/route.ts` | 47 | 1 |
+| `app/api/email-config/route.ts` | 90 | 1 |
+| `app/feedback/api/submit/route.ts` | 52 | 1 |
+| `app/hooks/useWaitlistForm.ts` | 193 | 1 |
+| `lib/contact.ts` | 42 | 1 |
+| `lib/types.ts` | 18 | 1 |
 
-| File | Error | Planned Fix | Status |
-|------|-------|-------------|--------|
-| `app/admin/settings/monitoring.tsx` | TS2339 (2x): `status`/`lastDeployment` on `never` | Fix type for deployment status object | :white_large_square: |
-| `app/hooks/useWaitlistForm.ts` | TS2345: SetStateAction type mismatch | Fix ValidationErrors type or spread pattern | :white_large_square: |
-| `app/hooks/useWaitlistForm.ts` | TS2339 (2x): `window.gtag` not typed | Add global type declaration for gtag | :white_large_square: |
-| `lib/feedback-templates/index.ts` | TS2552 (4x): missing template functions | Create or import template functions 1-4 | :white_large_square: |
-| `lib/hooks/useFormValidation.ts` | TS2339: `.shape` on ZodType | Use `z.ZodObject` instead of `z.ZodType` | :white_large_square: |
-| `lib/smoothScroll.ts` | TS2683: implicit `this` | Add explicit `this` parameter type | :white_large_square: |
+### `react-hooks/exhaustive-deps` (3 warnings)
 
-### Config Files (3 errors) — fix during tooling upgrade
+| File | Line | Issue |
+|------|------|-------|
+| `app/admin/feedback/page.tsx` | 117 | Missing dependency: `loadFeedback` |
+| `app/admin/feedback/page.tsx` | 122 | Missing dependency: `loadFeedback` |
+| `app/components/HowItWorks.tsx` | 60 | Ref value `stepsRef.current` may change before cleanup |
 
-| File | Error | Planned Fix | Status |
-|------|-------|-------------|--------|
-| `playwright.config.ts` | TS2353: `maxDiffPixelRatio` | Update Playwright or use correct screenshot option | :white_large_square: |
+### `@next/next/no-img-element` (4 warnings)
+
+| File | Line |
+|------|------|
+| `app/admin/layout.tsx` | 234 |
+| `app/contact/sales/page.tsx` | 74 |
+| `app/contact/support/page.tsx` | 71 |
+| `app/feedback/page.tsx` | 133 |
+
+### `@next/next/no-page-custom-font` (1 warning)
+
+| File | Line | Issue |
+|------|------|-------|
+| `app/layout.tsx` | 45 | Google Fonts CDN link in layout instead of using next/font |
 
 ---
 
 ## Target
 
-- [ ] Zero application code TypeScript errors
-- [ ] Zero ESLint errors
-- [ ] Set `ignoreBuildErrors: false` in `next.config.mjs`
+- [x] Zero TypeScript errors (`ignoreBuildErrors: false`)
+- [x] Zero ESLint errors
+- [ ] Zero ESLint warnings
 - [ ] Set `ignoreDuringBuilds: false` in `next.config.mjs`
