@@ -31,7 +31,7 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   // Enable trailing slashes for Azure Static Web Apps compatibility
   trailingSlash: false,
