@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 
 // Client component that uses search params
@@ -131,10 +132,12 @@ function FeedbackFormContent() {
       <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
         <div className="p-8">
           <div className="flex justify-center mb-6">
-            <img 
-              src="/SchedulEd_new_logo.png" 
-              alt="SchedulEd Logo" 
-              className="h-[120px] cursor-default"
+            <Image
+              src="/SchedulEd_new_logo.png"
+              alt="SchedulEd Logo"
+              width={120}
+              height={120}
+              className="h-[120px] w-auto cursor-default"
             />
           </div>
           

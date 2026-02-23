@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function SalesContactForm() {
   const [name, setName] = useState('');
@@ -71,10 +72,12 @@ export default function SalesContactForm() {
         <div className="p-8">
           <div className="flex justify-center mb-6">
             <Link href="/">
-              <img 
-                src="/SchedulEd_new_logo.png" 
-                alt="SchedulEd Logo" 
-                className="h-[120px]"
+              <Image
+                src="/SchedulEd_new_logo.png"
+                alt="SchedulEd Logo"
+                width={120}
+                height={120}
+                className="h-[120px] w-auto"
               />
             </Link>
           </div>
