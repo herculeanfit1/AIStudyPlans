@@ -51,13 +51,14 @@ export default function HowItWorks() {
       { threshold: 0.2 }
     );
     
-    if (stepsRef.current) {
-      observer.observe(stepsRef.current);
+    const currentRef = stepsRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
-    
+
     return () => {
-      if (stepsRef.current) {
-        observer.unobserve(stepsRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [steps.length]);

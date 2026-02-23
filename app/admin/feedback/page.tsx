@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   getAllFeedback, 
   getFeedbackStats, 
@@ -69,12 +69,12 @@ export default function FeedbackDashboard() {
   }, [session, status, devAdmin, router]);
 
   // Load feedback data with current page and filters
-  const loadFeedback = async () => {
+  const loadFeedback = useCallback(async () => {
     setIsLoading(true);
     try {
       const { data, count, error } = await getAllFeedback(page, pageSize, filters);
       if (error) throw new Error(error);
-      
+
       setFeedback(data);
       setTotalCount(count);
     } catch (err: unknown) {
@@ -84,7 +84,7 @@ export default function FeedbackDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page, pageSize, filters]);
 
   // Load stats for dashboard
   const loadStats = async () => {
@@ -115,12 +115,12 @@ export default function FeedbackDashboard() {
     loadFeedback();
     loadStats();
     loadTextAnalytics();
-  }, []);
+  }, [loadFeedback]);
 
   // Reload data when page or filters change
   useEffect(() => {
     loadFeedback();
-  }, [page, filters]);
+  }, [loadFeedback]);
 
   // Handle page change
   const handlePageChange = (newPage: number) => {
