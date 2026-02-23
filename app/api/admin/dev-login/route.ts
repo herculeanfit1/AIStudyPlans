@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     console.log('Dev login: Set admin cookie for', email);
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Dev login error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

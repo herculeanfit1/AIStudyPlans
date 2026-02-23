@@ -49,10 +49,11 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error submitting feedback:', error);
     return NextResponse.json(
-      { success: false, message: error.message || 'An error occurred' },
+      { success: false, message: message || 'An error occurred' },
       { status: 500 }
     );
   }

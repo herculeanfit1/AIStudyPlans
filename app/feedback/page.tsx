@@ -69,10 +69,11 @@ function FeedbackFormContent() {
         setSubmitStatus('error');
         setErrorMessage(result.message || 'Server failed to process feedback.');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('💥 Exception during feedback submission:', error);
       setSubmitStatus('error');
-      setErrorMessage(error.message || 'Network error. Please check your connection and try again.');
+      setErrorMessage(message || 'Network error. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -196,7 +197,7 @@ function FeedbackFormContent() {
                 <select
                   id="feedbackType"
                   value={feedbackType}
-                  onChange={(e) => setFeedbackType(e.target.value as any)}
+                  onChange={(e) => setFeedbackType(e.target.value as 'feature_request' | 'general' | 'improvement' | 'bug')}
                   className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                 >
                   <option value="general">General Feedback</option>

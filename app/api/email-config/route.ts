@@ -87,7 +87,7 @@ export async function OPTIONS() {
  * Helper function to create a JSON Response with proper headers
  * This ensures all responses are consistently formatted
  */
-function createJsonResponse(data: any, status: number = 200) {
+function createJsonResponse(data: Record<string, unknown>, status: number = 200) {
   // Make sure to wrap the response in a try-catch to ensure a proper response
   try {
     const jsonString = JSON.stringify(data);

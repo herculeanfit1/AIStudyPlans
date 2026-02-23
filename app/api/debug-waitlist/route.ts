@@ -44,13 +44,15 @@ export async function POST(request: NextRequest) {
         }
       }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    const errorType = error instanceof Error ? error.constructor.name : "Unknown";
     // Return error information
     return new NextResponse(
       JSON.stringify({
         success: false,
-        error: error.message || "Unknown error",
-        error_type: error.constructor.name
+        error: message,
+        error_type: errorType
       }),
       { 
         status: 500,

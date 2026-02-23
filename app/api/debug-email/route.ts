@@ -68,18 +68,20 @@ export async function POST(request: NextRequest) {
       environment: process.env.NODE_ENV
     });
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Error sending debug email:', error);
-    
+
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    const name = error instanceof Error ? error.name : 'Unknown';
+
     // Return detailed error information for debugging
     return NextResponse.json({
       success: false,
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      error: message,
+      stack: process.env.NODE_ENV === 'development' ? stack : undefined,
       details: {
-        name: error.name,
-        code: error.code,
-        statusCode: error.statusCode
+        name,
       }
     }, { status: 500 });
   }

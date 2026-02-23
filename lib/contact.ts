@@ -39,8 +39,9 @@ export async function storeContactSubmission(data: Omit<ContactSubmission, 'id' 
     }, submission.name, submission.email);
     
     return { success: true };
-  } catch (error: any) {
-    console.error('Error storing contact submission:', error.message);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Error storing contact submission:', message);
+    return { success: false, error: message };
   }
 } 

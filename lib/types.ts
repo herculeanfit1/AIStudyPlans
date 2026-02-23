@@ -15,7 +15,7 @@ export interface FeedbackResponse {
   platform?: string;
   source_page?: string;
   feature_id?: string;
-  custom_fields?: Record<string, any>;
+  custom_fields?: Record<string, unknown>;
 }
 
 // Feedback with user information

@@ -13,13 +13,20 @@ export default function EmailStatusChecker() {
     emailFrom: boolean;
     emailReplyTo: boolean;
     nextPublicResendConfigured: string;
-    debug?: Record<string, any>;
+    debug?: Record<string, unknown>;
   } | null>(null);
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [testEmail, setTestEmail] = useState('');
-  const [testResult, setTestResult] = useState<Record<string, any> | null>(null);
+  const [testResult, setTestResult] = useState<{
+    success?: boolean;
+    error?: string;
+    to?: string;
+    messageId?: string;
+    environment?: string;
+    details?: Record<string, unknown>;
+  } | null>(null);
   const [testLoading, setTestLoading] = useState(false);
   const [debugEnabled, setDebugEnabled] = useState(false);
 
@@ -47,10 +54,11 @@ export default function EmailStatusChecker() {
           emailFrom: data.emailFrom,
           emailReplyTo: data.emailReplyTo,
         });
-      } catch (err: any) {
-        setError(err.message || 'Failed to check email configuration');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message || 'Failed to check email configuration');
         console.log('Admin: Email configuration error', {
-          error: err.message,
+          error: message,
         });
       } finally {
         setLoading(false);
@@ -89,13 +97,14 @@ export default function EmailStatusChecker() {
         success: data.success,
         to: testEmail,
       });
-    } catch (err: any) {
-      setTestResult({ 
-        success: false, 
-        error: err.message || 'Failed to send test email' 
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setTestResult({
+        success: false,
+        error: message || 'Failed to send test email'
       });
       console.log('Admin: Test email error', {
-        error: err.message,
+        error: message,
         to: testEmail,
       });
     } finally {

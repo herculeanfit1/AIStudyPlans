@@ -25,9 +25,10 @@ export default function DirectAdminAccess() {
         setStatus('Redirecting to admin panel...');
         router.push('/admin');
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       console.error('Error setting cookie:', err);
-      setError(err.message || 'Failed to set admin cookie');
+      setError(message || 'Failed to set admin cookie');
     }
   }, [router]);
   

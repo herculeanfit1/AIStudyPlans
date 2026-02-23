@@ -23,6 +23,7 @@ function createMockClient() {
   console.log("Using mock Supabase client - no credentials provided");
 
   // Create a mock response creator function
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createMockResponse = (data: any = [], error: any = null) => {
     return Promise.resolve({ data, error });
   };
@@ -43,6 +44,7 @@ function createMockClient() {
   return {
     from: () => ({
       select: () => createMockQueryBuilder(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       insert: (data: any) => ({
         select: () => ({
           single: () =>
@@ -119,13 +121,14 @@ export async function addToWaitlist(
       .single();
 
     // Handle error safely
-    const error = (response as any)?.error;
+    const { error, data } = response as { error: unknown; data: unknown };
     if (error) throw error;
 
-    return { success: true, user: (response as any)?.data as WaitlistUser };
-  } catch (error: any) {
-    console.error("Error adding to waitlist:", error.message);
-    return { success: false, error: error.message };
+    return { success: true, user: data as WaitlistUser };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Error adding to waitlist:", message);
+    return { success: false, error: message };
   }
 }
 
@@ -144,14 +147,14 @@ export async function startFeedbackCampaign(
       })
       .eq("id", userId);
 
-    // Handle error safely
-    const error = (response as any)?.error;
+    const { error } = response as { error: unknown };
     if (error) throw error;
 
     return { success: true };
-  } catch (error: any) {
-    console.error("Error starting feedback campaign:", error.message);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Error starting feedback campaign:", message);
+    return { success: false, error: message };
   }
 }
 
@@ -207,14 +210,14 @@ export async function storeFeedback(
       },
     ]);
 
-    // Handle error safely
-    const error = (response as any)?.error;
+    const { error } = response as { error: unknown };
     if (error) throw error;
 
     return { success: true };
-  } catch (error: any) {
-    console.error("Error storing feedback:", error.message);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Error storing feedback:", message);
+    return { success: false, error: message };
   }
 }
 
@@ -297,9 +300,10 @@ export async function getUsersForNextFeedbackEmail(): Promise<{
     });
 
     return { users: filteredUsers || [] };
-  } catch (error: any) {
-    console.error("Error getting users for feedback emails:", error.message);
-    return { users: [], error: error.message };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Error getting users for feedback emails:", message);
+    return { users: [], error: message };
   }
 }
 
@@ -328,8 +332,9 @@ export async function updateEmailSequencePosition(
     if (error) throw error;
 
     return { success: true };
-  } catch (error: any) {
-    console.error("Error updating email sequence position:", error.message);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Error updating email sequence position:", message);
+    return { success: false, error: message };
   }
 }

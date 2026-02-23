@@ -105,12 +105,13 @@ export async function getAllFeedback(
       data: paginatedData,
       count: totalCount
     };
-  } catch (error: any) {
-    console.error('Error fetching feedback:', error.message);
-    return { 
-      data: [], 
-      count: 0, 
-      error: error.message 
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Error fetching feedback:', message);
+    return {
+      data: [],
+      count: 0,
+      error: message
     };
   }
 }
@@ -175,9 +176,10 @@ export async function getFeedbackStats(): Promise<{ stats: FeedbackStats; error?
         recentFeedback
       }
     };
-  } catch (error: any) {
-    console.error('Error getting feedback stats:', error.message);
-    return { 
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Error getting feedback stats:', message);
+    return {
       stats: {
         totalFeedback: 0,
         averageRating: null,
@@ -186,7 +188,7 @@ export async function getFeedbackStats(): Promise<{ stats: FeedbackStats; error?
         feedbackByDay: [],
         recentFeedback: 0
       }, 
-      error: error.message 
+      error: message
     };
   }
 }
@@ -227,9 +229,10 @@ export async function getFeedbackTextAnalytics(): Promise<{
       .map(([text, count]) => ({ text, count }));
     
     return { keywords };
-  } catch (error: any) {
-    console.error('Error analyzing text:', error.message);
-    return { keywords: [], error: error.message };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Error analyzing text:', message);
+    return { keywords: [], error: message };
   }
 }
 
@@ -294,8 +297,9 @@ export async function exportFeedbackToCsv(filters: FeedbackFilters = {}): Promis
     const csv = [headers, ...rows].join('\n');
     
     return { csv };
-  } catch (error: any) {
-    console.error('Error exporting feedback to CSV:', error.message);
-    return { csv: '', error: error.message };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Error exporting feedback to CSV:', message);
+    return { csv: '', error: message };
   }
 } 

@@ -35,7 +35,7 @@ export default function AdminDashboard() {
 
       // Update state with the received stats
       setStats(response.stats);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error loading stats:", err);
       // Use default stats in case of error
       setStats(defaultStats);

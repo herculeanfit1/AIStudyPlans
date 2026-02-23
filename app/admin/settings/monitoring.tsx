@@ -6,7 +6,7 @@ import EmailSection from '../../components/monitoring/EmailSection';
 
 export default function MonitoringDashboard() {
   const [stats, setStats] = useState<MonitoringStats>({
-    apiStatus: 'unknown' as any,
+    apiStatus: 'unknown',
     lastChecked: '',
     uptime: 0,
     emailDeliveryRate: 0,
@@ -61,9 +61,10 @@ export default function MonitoringDashboard() {
           ciWorkflows: ciData.workflows || [],
           ciSummary: ciData.summary
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         console.error('Error fetching monitoring data:', err);
-        setError(err.message || 'Failed to fetch monitoring data');
+        setError(message || 'Failed to fetch monitoring data');
         
         // Set default offline status
         setStats(prev => ({

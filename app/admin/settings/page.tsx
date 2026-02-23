@@ -76,8 +76,9 @@ export default function AdminSettings() {
       } else {
         throw new Error(data.message || "Failed to clear feedback data");
       }
-    } catch (err: any) {
-      alert(`Error: ${err.message || "An error occurred while clearing data"}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      alert(`Error: ${message || "An error occurred while clearing data"}`);
       console.error("Error clearing feedback data:", err);
     } finally {
       setIsClearingData(false);
@@ -120,9 +121,10 @@ export default function AdminSettings() {
       } else {
         throw new Error(data.message || "Failed to add test feedback");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       alert(
-        `Error: ${err.message || "An error occurred while adding test feedback"}`,
+        `Error: ${message || "An error occurred while adding test feedback"}`,
       );
       console.error("Error adding test feedback:", err);
     } finally {

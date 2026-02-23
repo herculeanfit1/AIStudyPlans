@@ -77,8 +77,9 @@ export default function FeedbackDashboard() {
       
       setFeedback(data);
       setTotalCount(count);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
       console.error('Error loading feedback:', err);
     } finally {
       setIsLoading(false);
@@ -92,7 +93,7 @@ export default function FeedbackDashboard() {
       if (error) throw new Error(error);
       
       setStats(stats);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading stats:', err);
     }
   };
@@ -104,7 +105,7 @@ export default function FeedbackDashboard() {
       if (error) throw new Error(error);
       
       setKeywords(keywords);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error analyzing text:', err);
     }
   };
@@ -148,8 +149,9 @@ export default function FeedbackDashboard() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
       console.error('Error exporting feedback:', err);
     } finally {
       setIsLoading(false);
@@ -184,8 +186,9 @@ export default function FeedbackDashboard() {
       } else {
         throw new Error(data.message || 'Failed to clear feedback data');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
       console.error('Error clearing feedback data:', err);
     } finally {
       setIsClearingData(false);

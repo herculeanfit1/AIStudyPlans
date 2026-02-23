@@ -49,9 +49,10 @@ export async function sendEmail({
   const quotaCheck = checkEmailQuota();
   if (!quotaCheck.allowed) {
     console.error(`❌ Email quota exceeded: ${quotaCheck.reason}`);
-    const error = new Error(`Email sending blocked: ${quotaCheck.reason}`);
-    (error as any).quotaExceeded = true;
-    (error as any).retryAfter = quotaCheck.retryAfter;
+    const error = Object.assign(
+      new Error(`Email sending blocked: ${quotaCheck.reason}`),
+      { quotaExceeded: true, retryAfter: quotaCheck.retryAfter }
+    );
     throw error;
   }
 

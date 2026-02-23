@@ -190,18 +190,19 @@ export function useWaitlistForm() {
           event_label: formData.email,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error in waitlist submission:", error);
-      
+      const message = error instanceof Error ? error.message : String(error);
+
       // Handle various error types
-      if (error.message?.includes("Backend call failure")) {
+      if (message?.includes("Backend call failure")) {
         setError("Sorry, our server is experiencing issues. We've saved your submission locally and will try to recover it.");
-      } else if (error.message?.includes("fetch")) {
+      } else if (message?.includes("fetch")) {
         setError("Network error. Please check your connection and try again.");
-      } else if (error.message?.length > 100) {
+      } else if (message?.length > 100) {
         setError("Sorry, something went wrong. Please try again.");
       } else {
-        setError(error.message || "Sorry, something went wrong. Please try again.");
+        setError(message || "Sorry, something went wrong. Please try again.");
       }
     } finally {
       setIsSubmitting(false);

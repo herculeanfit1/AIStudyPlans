@@ -6,7 +6,7 @@ import { Text, PerspectiveCamera, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Animated calendar box component
-function CalendarBox(props: any) {
+function CalendarBox(props: JSX.IntrinsicElements['mesh']) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHover] = useState(false);
   const [active, setActive] = useState(false);
@@ -34,7 +34,7 @@ function CalendarBox(props: any) {
 }
 
 // Book stack component
-function BookStack(props: any) {
+function BookStack(props: JSX.IntrinsicElements['group']) {
   const groupRef = useRef<THREE.Group>(null);
   
   useFrame((state) => {
@@ -67,7 +67,7 @@ function BookStack(props: any) {
 }
 
 // Study progress chart
-function ProgressChart(props: any) {
+function ProgressChart(props: JSX.IntrinsicElements['group']) {
   const meshRef = useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
