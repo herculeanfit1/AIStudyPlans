@@ -110,6 +110,22 @@ NextAuth with Azure AD. Admin access is controlled by `ADMIN_EMAILS` env var (co
 ### Environment Variables
 See `.env.example` for required variables. Key ones: `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, Azure AD credentials, `ADMIN_EMAILS`, and Supabase connection details.
 
+**Important**: `.env.development` and `.env.production` are gitignored. Only `.env.example` and `.env.local.example` are tracked.
+
+### Docker Infrastructure
+Five compose files, each serving a distinct purpose:
+- **`docker-compose.yml`** — Primary. `nextjs` (prod runner, port 3000) and `web` (dev with hot-reload, port 3001)
+- **`docker-compose.prod.yml`** — Production. Adds nginx reverse proxy with SSL and certbot auto-renewal. Resource limits and `no-new-privileges` security
+- **`docker-compose.test.yml`** — Profile-based test runner using YAML anchors. Profiles: `unit`, `e2e`, `a11y`, `visual`, `perf`, `all`
+- **`docker-compose.email-test.yml`** — Lightweight email template testing via `scripts/email-test.js`
+- **`docker-compose.override.yml`** — Dev volume mounts for hot-reload
+
+### CI/CD Workflows (`.github/workflows/`)
+- **`azure-static-web-apps.yml`** — Production deployment to Azure SWA on push to main. Generates PR preview URLs. Runs `ci-build.sh`
+- **`pr-validation.yml`** — PR quality gates: lint → typecheck → tests → build, then parallel security scan + deployment validation
+- **`dependency-checks.yml`** — Weekly + on-change: exact version enforcement, shrinkwrap presence, audit
+- **`backup-repository.yml`** — Weekly mirror to backup repo
+
 ## SchedulEd-Specific Notes
 
 - **Icons**: Font Awesome loaded via CDN (in `app/layout.tsx` `<head>`)
