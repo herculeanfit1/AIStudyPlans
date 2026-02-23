@@ -3,37 +3,36 @@
 # modifies code they own.
 # For more info, see: https://docs.github.com/articles/about-code-owners/
 
-# Default owners for everything in the repo
-*                       @herculeanfit1
+# Default owner for everything
+* @herculeanfit1
 
-# GitHub Actions workflow files
-.github/workflows/       @herculeanfit1
+# CI/CD and Docker
+.github/ @herculeanfit1
+docker-compose*.yml @herculeanfit1
+Dockerfile* @herculeanfit1
+ci-build.sh @herculeanfit1
+
+# Security-sensitive files
+lib/supabase.ts @herculeanfit1
+lib/admin-supabase.ts @herculeanfit1
+lib/rate-limit.ts @herculeanfit1
+lib/csrf.ts @herculeanfit1
+app/api/ @herculeanfit1
+.npmrc @herculeanfit1
+staticwebapp.config.json @herculeanfit1
 
 # Dependency management
-package.json            @herculeanfit1
-npm-shrinkwrap.json     @herculeanfit1
+package.json @herculeanfit1
+npm-shrinkwrap.json @herculeanfit1
 scripts/validate-dependencies.js @herculeanfit1
 scripts/fix-dependencies.js @herculeanfit1
 scripts/post-install.js @herculeanfit1
 
-# Security-related files
-.npmrc                  @herculeanfit1
-staticwebapp.config.json @herculeanfit1
-
-# Azure deployment files
-azure-functions/        @herculeanfit1
-staticwebapp.config.json @herculeanfit1
-ci-build.sh             @herculeanfit1
-
-# Application code
-app/                    @herculeanfit1
-components/             @herculeanfit1
-pages/                  @herculeanfit1
-styles/                 @herculeanfit1
-lib/                    @herculeanfit1
-utils/                  @herculeanfit1
+# Standards documents
+STANDARDS.md @herculeanfit1
+CLAUDE.md @herculeanfit1
 
 # Configuration files
-next.config.js          @herculeanfit1
-tsconfig.json           @herculeanfit1
-.eslintrc.json          @herculeanfit1 
+next.config.mjs @herculeanfit1
+tsconfig.json @herculeanfit1
+.eslintrc.json @herculeanfit1

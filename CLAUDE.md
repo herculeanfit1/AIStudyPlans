@@ -126,6 +126,20 @@ Five compose files, each serving a distinct purpose:
 - **`dependency-checks.yml`** — Weekly + on-change: exact version enforcement, shrinkwrap presence, audit
 - **`backup-repository.yml`** — Weekly mirror to backup repo
 
+### Service Layer & Data Flow
+Request flow: **Client → Next.js API route → lib/ utilities → Supabase/Resend**
+
+Key abstractions in `lib/`:
+- **`supabase.ts`** — Public Supabase client with graceful fallback to mock client when env vars are missing (enables local dev without Supabase). All waitlist operations go through here.
+- **`admin-supabase.ts`** — Service-role client for admin operations (feedback queries, user management). Higher privilege level.
+- **`email.ts`** — Resend wrapper with quota tracking and retry logic. Rate-limited.
+- **`rate-limit.ts`** — In-memory IP-based rate limiter (resets on restart; production should use Redis).
+- **`csrf.ts`** — CSRF token generation/validation for form submissions.
+- **`validation.ts`** — Zod schemas for all API input validation.
+
+### Monitoring
+Admin dashboard at `/admin/settings/monitoring` tracks API health, email delivery rates, and CI/CD status. Types defined in `app/types/monitoring.ts`. Azure Application Insights is configured for production (connection string via env var).
+
 ## SchedulEd-Specific Notes
 
 - **Icons**: Font Awesome loaded via CDN (in `app/layout.tsx` `<head>`)
