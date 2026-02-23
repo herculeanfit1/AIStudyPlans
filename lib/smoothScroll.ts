@@ -11,12 +11,12 @@ export function initSmoothScroll() {
   
   // Add click event listeners to each anchor link
   anchorLinks.forEach((link) => {
-    link.addEventListener('click', function (e) {
+    link.addEventListener('click', function (this: HTMLAnchorElement, e) {
       // Prevent default anchor click behavior
       e.preventDefault();
-      
+
       // Get the href attribute
-      const href = (this as HTMLAnchorElement).getAttribute('href');
+      const href = this.getAttribute('href');
       
       if (!href) return;
       

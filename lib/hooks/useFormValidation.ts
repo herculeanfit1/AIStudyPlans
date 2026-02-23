@@ -6,15 +6,16 @@ import { z } from 'zod';
  * @param schema The Zod schema to validate against
  * @returns Validation state and functions
  */
-export function useFormValidation<T>(schema: z.ZodType<T>) {
+export function useFormValidation<T extends z.ZodRawShape>(schema: z.ZodObject<T>) {
+  type Output = z.infer<typeof schema>;
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   /**
    * Validates data against the schema
    * @param data Data to validate
    * @returns Object with validation result and validated data if successful
    */
-  const validate = (data: unknown): { isValid: boolean; data?: T } => {
+  const validate = (data: unknown): { isValid: boolean; data?: Output } => {
     try {
       const validData = schema.parse(data);
       setErrors({});
@@ -31,7 +32,7 @@ export function useFormValidation<T>(schema: z.ZodType<T>) {
       return { isValid: false };
     }
   };
-  
+
   /**
    * Validates a single field against the schema
    * @param field Field name to validate
@@ -43,14 +44,14 @@ export function useFormValidation<T>(schema: z.ZodType<T>) {
       // Create a partial schema with just this field
       const partialSchema = z.object({ [field]: schema.shape[field] });
       partialSchema.parse({ [field]: value });
-      
+
       // Clear error for this field if it exists
       if (errors[field]) {
         const newErrors = { ...errors };
         delete newErrors[field];
         setErrors(newErrors);
       }
-      
+
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -64,19 +65,19 @@ export function useFormValidation<T>(schema: z.ZodType<T>) {
       return false;
     }
   };
-  
+
   /**
    * Clears all validation errors
    */
   const clearErrors = () => {
     setErrors({});
   };
-  
-  return { 
-    errors, 
-    validate, 
-    validateField, 
+
+  return {
+    errors,
+    validate,
+    validateField,
     clearErrors,
-    hasErrors: Object.keys(errors).length > 0 
+    hasErrors: Object.keys(errors).length > 0
   };
-} 
+}

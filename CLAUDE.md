@@ -113,6 +113,6 @@ See `.env.example` for required variables. Key ones: `RESEND_API_KEY`, `EMAIL_FR
 ## SchedulEd-Specific Notes
 
 - **Icons**: Font Awesome loaded via CDN (in `app/layout.tsx` `<head>`)
-- **Build behavior**: TypeScript errors are ignored in production builds (`ignoreBuildErrors: true`); ESLint is ignored during builds. Run `npm run lint` and `npm run typecheck` separately. See `docs/build-error-resolution.md` for the plan to resolve these.
+- **Build behavior**: TypeScript errors will fail the build (`ignoreBuildErrors: false`). ESLint is ignored during builds but should be run separately with `npm run lint`.
 - **npm install**: Use `--legacy-peer-deps` flag when encountering peer dependency conflicts (next-auth/next version mismatch)
 - **Testing**: Currently on Jest (Vitest migration planned with Next.js 15 upgrade)

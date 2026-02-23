@@ -8,6 +8,7 @@ export type MockSessionConfig = {
   user?: {
     name?: string;
     email?: string;
+    image?: string | null;
     isAdmin?: boolean;
   };
 };
@@ -46,7 +47,7 @@ export const AdminProvider = ({
 }: AdminProviderProps) => {
   const session = {
     expires: new Date(Date.now() + 3600 * 1000).toISOString(),
-    user: sessionConfig.user,
+    user: sessionConfig.user ?? { name: null, email: null, image: null },
   };
 
   return (
@@ -76,13 +77,13 @@ export const renderWithAdminContext = (
  */
 export const mockLocalStorage = () => {
   const localStorageMock = (() => {
-    let store = {};
+    let store: Record<string, string> = {};
     return {
-      getItem: jest.fn((key) => store[key] || null),
-      setItem: jest.fn((key, value) => {
+      getItem: jest.fn((key: string) => store[key] || null),
+      setItem: jest.fn((key: string, value: string) => {
         store[key] = value.toString();
       }),
-      removeItem: jest.fn((key) => {
+      removeItem: jest.fn((key: string) => {
         delete store[key];
       }),
       clear: jest.fn(() => {

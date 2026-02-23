@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MonitoringStats } from '../../types/monitoring';
+import { MonitoringStats, CIWorkflow, CISummary } from '../../types/monitoring';
 import OverviewSection from '../../components/monitoring/OverviewSection';
 import CICDSection from '../../components/monitoring/CICDSection';
 import EmailSection from '../../components/monitoring/EmailSection';
@@ -39,7 +39,7 @@ export default function MonitoringDashboard() {
         
         // Get CI/CD status
         const ciResponse = await fetch('/api/admin/ci-status');
-        let ciData = { workflows: [], summary: null };
+        let ciData: { workflows: CIWorkflow[]; summary: CISummary | null } = { workflows: [], summary: null };
         
         if (ciResponse.ok) {
           ciData = await ciResponse.json();
@@ -55,7 +55,7 @@ export default function MonitoringDashboard() {
           emailDeliveryRate: 98.5, // Mock data
           emailsLastWeek: 45, // Mock data
           averageResponseTime: 285, // Mock data in ms
-          cicdStatus: ciData.summary?.status || 'unknown',
+          cicdStatus: (ciData.summary?.status as MonitoringStats['cicdStatus']) || 'unknown',
           lastDeployment: ciData.summary?.lastDeployment || new Date().toISOString(),
           healthData: healthData,
           ciWorkflows: ciData.workflows || [],

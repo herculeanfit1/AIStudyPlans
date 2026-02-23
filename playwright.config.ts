@@ -10,6 +10,12 @@ const config: PlaywrightTestConfig = {
     ['html', { open: 'never' }],
     ['list']
   ],
+  expect: {
+    toHaveScreenshot: {
+      // Allow for some pixel differences across environments
+      maxDiffPixelRatio: 0.05,
+    },
+  },
   use: {
     actionTimeout: 15000,
     // Use environment variable BASE_URL for Docker compatibility
@@ -24,17 +30,12 @@ const config: PlaywrightTestConfig = {
   projects: [
     {
       name: 'chromium',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         // Use the system installed browser in Docker
         launchOptions: {
           executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
         },
-        // For visual tests, we need to allow for some pixel differences
-        // due to differences in rendering across environments
-        screenshot: {
-          maxDiffPixelRatio: 0.05
-        }
       },
     },
   ],

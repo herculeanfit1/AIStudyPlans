@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 test.use({
   contextOptions: {
     permissions: ['clipboard-read', 'clipboard-write'],
-    storageState: {},
+    storageState: { cookies: [], origins: [] },
   }
 });
 

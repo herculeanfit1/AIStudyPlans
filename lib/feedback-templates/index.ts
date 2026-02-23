@@ -1,10 +1,12 @@
 // Central export for all feedback email templates
 export type { FeedbackEmailProps } from './template1';
 
-export { getFeedbackEmailTemplate1 } from './template1';
-export { getFeedbackEmailTemplate2 } from './template2';
-export { getFeedbackEmailTemplate3 } from './template3';
-export { getFeedbackEmailTemplate4 } from './template4';
+import { getFeedbackEmailTemplate1 } from './template1';
+import { getFeedbackEmailTemplate2 } from './template2';
+import { getFeedbackEmailTemplate3 } from './template3';
+import { getFeedbackEmailTemplate4 } from './template4';
+
+export { getFeedbackEmailTemplate1, getFeedbackEmailTemplate2, getFeedbackEmailTemplate3, getFeedbackEmailTemplate4 };
 
 /**
  * Get the appropriate feedback email template based on sequence position

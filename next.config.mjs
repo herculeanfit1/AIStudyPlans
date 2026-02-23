@@ -27,11 +27,8 @@ const nextConfig = {
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
-  // Typescript and ESLint are ignored during builds to speed up CI/CD
   typescript: {
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    ignoreBuildErrors: process.env.NODE_ENV === "production",
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: true,

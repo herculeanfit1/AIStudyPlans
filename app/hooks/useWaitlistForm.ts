@@ -1,6 +1,12 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { waitlistSchema, validateInput } from '@/lib/validation';
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 interface FormData {
   name: string;
   email: string;
@@ -95,10 +101,11 @@ export function useWaitlistForm() {
 
     // Clear validation error when user types
     if (validationErrors[name]) {
-      setValidationErrors((prev) => ({
-        ...prev,
-        [name]: undefined,
-      }));
+      setValidationErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
     }
   };
 
