@@ -85,12 +85,4 @@ export async function POST(request: NextRequest) {
       }
     }, { status: 500 });
   }
-}
-
-/**
- * Required for static export compatibility
- * This generates static paths for the API route
- */
-export function generateStaticParams() {
-  return [];
 } 

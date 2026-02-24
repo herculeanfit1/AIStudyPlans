@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: process.env.NODE_ENV !== "production",
-  swcMinify: true,
   // Set environment variables for client-side access
   env: {
     // Make email configuration status available on the client side
@@ -35,11 +34,6 @@ const nextConfig = {
   },
   // Enable trailing slashes for Azure Static Web Apps compatibility
   trailingSlash: false,
-  // Experimental features
-  experimental: {
-    // Suppress the useSearchParams warnings in client components
-    missingSuspenseWithCSRBailout: false,
-  },
   pageExtensions: ["js", "jsx", "ts", "tsx"],
 };
 

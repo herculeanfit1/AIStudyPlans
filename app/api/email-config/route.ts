@@ -60,14 +60,6 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Required for static export compatibility
- * This generates static paths for the API route
- */
-export function generateStaticParams() {
-  return [];
-}
-
-/**
  * Handle OPTIONS requests for CORS preflight
  */
 export async function OPTIONS() {

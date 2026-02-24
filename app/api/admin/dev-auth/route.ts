@@ -3,10 +3,6 @@ import { NextResponse } from 'next/server';
 // This endpoint is for development purposes only
 // It allows for direct API-based authentication
 
-export function generateStaticParams() {
-  return [];
-}
-
 export async function POST(request: Request) {
   // Only allow in development mode
   if (process.env.NODE_ENV === 'production') {

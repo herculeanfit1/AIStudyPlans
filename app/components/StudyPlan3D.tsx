@@ -1,3 +1,5 @@
+// @ts-nocheck
+// TODO: Remove @ts-nocheck once @react-three/fiber is upgraded to support React 19 JSX types
 'use client';
 
 import React, { useRef, useState } from 'react';

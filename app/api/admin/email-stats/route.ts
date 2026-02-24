@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server';
 
-// For static export in Next.js
-export function generateStaticParams() {
-  return [];
-}
-
 export async function GET() {
   try {
     // Mock data - in production you would fetch this from your email provider's API
