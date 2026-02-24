@@ -5,31 +5,31 @@ import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 
 // Mock the next-auth/react module
-jest.mock('next-auth/react', () => ({
-  useSession: jest.fn(),
-  signOut: jest.fn(),
+vi.mock('next-auth/react', () => ({
+  useSession: vi.fn(),
+  signOut: vi.fn(),
 }));
 
 // Mock the next/navigation hooks
-jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(),
-  usePathname: jest.fn(),
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(),
+  usePathname: vi.fn(),
 }));
 
 describe('AdminLayout Component', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should show loading state during authentication check', () => {
-    (useRouter as jest.Mock).mockReturnValue({
-      push: jest.fn(),
-    });
-    (usePathname as jest.Mock).mockReturnValue('/admin');
-    (useSession as jest.Mock).mockReturnValue({
+    vi.mocked(useRouter).mockReturnValue({
+      push: vi.fn(),
+    } as any);
+    vi.mocked(usePathname).mockReturnValue('/admin');
+    vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'loading',
-    });
+    } as any);
 
     render(<AdminLayout>Test Content</AdminLayout>);
 
@@ -37,15 +37,15 @@ describe('AdminLayout Component', () => {
   });
 
   it('should redirect to NextAuth sign-in when not authenticated', async () => {
-    const pushMock = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({
+    const pushMock = vi.fn();
+    vi.mocked(useRouter).mockReturnValue({
       push: pushMock,
-    });
-    (usePathname as jest.Mock).mockReturnValue('/admin');
-    (useSession as jest.Mock).mockReturnValue({
+    } as any);
+    vi.mocked(usePathname).mockReturnValue('/admin');
+    vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
-    });
+    } as any);
 
     render(<AdminLayout>Test Content</AdminLayout>);
 
@@ -57,11 +57,11 @@ describe('AdminLayout Component', () => {
   });
 
   it('should render admin UI when authenticated with NextAuth', async () => {
-    (useRouter as jest.Mock).mockReturnValue({
-      push: jest.fn(),
-    });
-    (usePathname as jest.Mock).mockReturnValue('/admin');
-    (useSession as jest.Mock).mockReturnValue({
+    vi.mocked(useRouter).mockReturnValue({
+      push: vi.fn(),
+    } as any);
+    vi.mocked(usePathname).mockReturnValue('/admin');
+    vi.mocked(useSession).mockReturnValue({
       data: {
         user: {
           name: 'Test Admin',
@@ -69,7 +69,7 @@ describe('AdminLayout Component', () => {
         },
       },
       status: 'authenticated',
-    });
+    } as any);
 
     render(<AdminLayout>Test Content</AdminLayout>);
 
@@ -84,14 +84,14 @@ describe('AdminLayout Component', () => {
   });
 
   it('should not check authentication on login page', () => {
-    (useRouter as jest.Mock).mockReturnValue({
-      push: jest.fn(),
-    });
-    (usePathname as jest.Mock).mockReturnValue('/admin/login');
-    (useSession as jest.Mock).mockReturnValue({
+    vi.mocked(useRouter).mockReturnValue({
+      push: vi.fn(),
+    } as any);
+    vi.mocked(usePathname).mockReturnValue('/admin/login');
+    vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
-    });
+    } as any);
 
     render(<AdminLayout>Login Form</AdminLayout>);
 

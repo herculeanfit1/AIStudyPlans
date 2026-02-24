@@ -4,27 +4,27 @@ import Hero from "../../app/components/Hero";
 import ParticlesBackground from "../../app/components/ParticlesBackground";
 
 // Mock the next-themes hook
-jest.mock("next-themes", () => ({
+vi.mock("next-themes", () => ({
   useTheme: () => ({
     theme: "light",
     resolvedTheme: "light",
-    setTheme: jest.fn(),
+    setTheme: vi.fn(),
   }),
 }));
 
 // Mock canvas getContext for ParticlesBackground
-HTMLCanvasElement.prototype.getContext = jest.fn().mockReturnValue({
-  clearRect: jest.fn(),
-  beginPath: jest.fn(),
-  arc: jest.fn(),
-  fill: jest.fn(),
-  moveTo: jest.fn(),
-  lineTo: jest.fn(),
-  stroke: jest.fn(),
+HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
+  clearRect: vi.fn(),
+  beginPath: vi.fn(),
+  arc: vi.fn(),
+  fill: vi.fn(),
+  moveTo: vi.fn(),
+  lineTo: vi.fn(),
+  stroke: vi.fn(),
   strokeStyle: "",
   fillStyle: "",
   lineWidth: 1,
-});
+}) as unknown as typeof HTMLCanvasElement.prototype.getContext;
 
 describe("Components with useEffect optimizations", () => {
   test("ThemeToggle component renders after mount without crashing", () => {

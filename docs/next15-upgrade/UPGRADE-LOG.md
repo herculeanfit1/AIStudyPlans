@@ -24,8 +24,9 @@
 - [x] **Phase 2** — Migrate NextAuth v4 → Auth.js v5
 - [x] **Phase 3** — Replace heavy 3D/particle deps with lightweight alternatives
 - [x] **Phase 4** — ESLint 8→9 flat config migration
-- [ ] **Phase 5** — Clean up deprecated patterns and update configs
-- [ ] **Phase 6** — Final validation, docs update, merge to main
+- [x] **Phase 5** — Migrate Jest to Vitest
+- [ ] **Phase 6** — Clean up deprecated patterns and update configs
+- [ ] **Phase 7** — Final validation, docs update, merge to main
 
 ## Phase Notes
 
@@ -96,3 +97,22 @@
   - Added all @next/next recommended + core-web-vitals rules explicitly
 - **Code fixes**: Prefixed 6 unused catch variables with `_`, added comments to 2 empty catch blocks, added eslint-disable for 3 auth `<a>` links (intentional full-page navigation to auth API)
 - Gate checks: lint PASS (0 warnings, 0 errors), typecheck PASS, build PASS (37 static pages), tests 54/54 PASS
+
+### Phase 5 — Jest to Vitest Migration (2026-02-24)
+
+- **Installed**: vitest@3.2.4, @vitejs/plugin-react@4.7.0, @vitest/coverage-v8@3.2.4, happy-dom@17.6.3, @testing-library/dom@10.4.0
+- **Removed**: jest@29.7.0, jest-environment-jsdom@29.7.0, @types/jest@29.5.12, @types/testing-library__jest-dom@5.14.9 (288 packages removed)
+- **Upgraded**: @testing-library/react 14→16 (React 19 support), @testing-library/jest-dom 6.6.3, @testing-library/user-event 14.6.1
+- **Config**: Created `vitest.config.ts` (happy-dom, globals:true, retry:2, 10s timeouts, v8 coverage with 70% thresholds). Deleted `jest.config.js` and `jest.setup.js`.
+- **Setup file**: Created `vitest.setup.tsx` — migrated all mocks from jest.setup.js (`vi.mock` for next/navigation, next/image, next/link, next-themes). Uses `@testing-library/jest-dom/vitest` import path.
+- **Type support**: Created `vitest.d.ts` with `/// <reference types="vitest/globals" />` for global `vi`, `describe`, `it`, `expect` types.
+- **Path aliases**: Simplified to single `@` → project root (matching tsconfig `@/*` → `./*`). Removed specific `@/components`, `@/app`, `@/lib` overrides — they incorrectly pointed `@/components` to `app/components/` instead of root `components/`.
+- **Test file migration (8 files)**:
+  - `jest.mock()` → `vi.mock()`, `jest.fn()` → `vi.fn()`, `jest.clearAllMocks()` → `vi.clearAllMocks()`
+  - `jest.requireActual()` → async `vi.importActual()` (contact.test.ts, supabase.test.ts)
+  - `as jest.Mock` → `vi.mocked()` (AdminLayout.test.tsx, AdminDashboard.test.tsx)
+  - `require()` inline mock access → direct import + `vi.mocked()` (contact.test.ts)
+  - Canvas prototype mock type assertion added for TypeScript (OptimizedUseEffect.test.tsx)
+- **Utility files**: Migrated test-utils.tsx (`jest.resetAllMocks` → `vi.resetAllMocks`) and admin-test-utils.tsx (`jest.fn` → `vi.fn`)
+- **Scripts**: `"test": "vitest run"`, `"test:watch": "vitest"`, `"test:coverage": "vitest run --coverage"`
+- Gate checks: lint PASS, typecheck PASS, build PASS (37 static pages), tests 54/54 PASS
