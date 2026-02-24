@@ -1,49 +1,43 @@
 import { NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
-import type { NextRequest } from "next/server";
+import { auth } from "@/auth";
 
-export async function middleware(request: NextRequest) {
+export default auth((request) => {
   const path = request.nextUrl.pathname;
-  const isDevEnv = process.env.NODE_ENV !== 'production';
-  
+
   // Always allow access to admin-simple routes (development bypass)
   if (path.startsWith("/admin-simple")) {
     console.log(`Admin-simple bypass: allowing access to ${path}`);
     return NextResponse.next();
   }
-  
-  // Allow access to NextAuth routes
+
+  // Allow access to auth routes
   if (path.startsWith("/api/auth")) {
     return NextResponse.next();
   }
-  
+
   // Only protect /admin routes
   if (path.startsWith("/admin")) {
-    const token = await getToken({ 
-      req: request, 
-      secret: process.env.NEXTAUTH_SECRET 
-    });
+    const session = request.auth;
 
-    if (!token) {
-      console.log(`No auth token, redirecting from: ${path}`);
-      // Redirect to NextAuth's default sign-in page
+    if (!session) {
+      console.log(`No auth session, redirecting from: ${path}`);
       const url = new URL("/api/auth/signin", request.url);
       url.searchParams.set("callbackUrl", request.nextUrl.pathname);
       return NextResponse.redirect(url);
     }
-    
-    // If token exists, check admin status
-    if (!token.isAdmin) {
+
+    // If session exists, check admin status
+    if (!session.user?.isAdmin) {
       return new NextResponse("Access Denied: Admin role required", { status: 403 });
     }
-    
-    // Admin user with valid token - allow access
+
+    // Admin user with valid session - allow access
     console.log(`Authenticated admin access to: ${path}`);
   }
-  
+
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: ["/admin/:path*", "/api/admin/:path*", "/admin-simple/:path*"],
-}; 
+};
