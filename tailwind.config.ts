@@ -1,3 +1,6 @@
+// Tailwind CSS v3 — this file is actively used (unlike BTAISite which
+// uses v4 @theme blocks). Do NOT migrate to v4 without reading
+// BTAISite CLAUDE.md "Critical: Tailwind CSS v4 Rules" first.
 import type { Config } from 'tailwindcss';
 
 const config: Config = {

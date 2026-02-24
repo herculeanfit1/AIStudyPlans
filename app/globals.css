@@ -2,91 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Simple reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 248, 250, 255;
-  --background-end-rgb: 255, 255, 255;
-  --primary: 79, 70, 229; /* indigo-600 */
-  --primary-light: 224, 231, 255; /* indigo-100 */
-  --primary-dark: 67, 56, 202; /* indigo-700 */
-  --primary-hover: #4f46e5;
-  --text-primary: #1f2937;
-  --text-secondary: #4b5563;
-  --accent: #8b5cf6;
-  --link: #4361ee;
-  --link-hover: #3730a3;
-  --bg-light: #f9fafb;
-  --border-color: #e5e7eb;
-  --animation-duration: 0.8s;
-  --card-bg: #ffffff;
-  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  --input-bg: #ffffff;
-  --input-border: #e5e7eb;
-}
-
-[data-theme='dark'] {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 10, 10, 20;
-  --background-end-rgb: 20, 20, 30;
-  --primary: 122, 113, 252; /* lighter indigo for dark mode */
-  --primary-light: 40, 40, 70; /* darker indigo-100 for dark mode */
-  --primary-dark: 99, 90, 231; /* lighter indigo-700 for dark mode */
-  --primary-hover: #6d62ff;
-  --text-primary: #f3f4f6;
-  --text-secondary: #d1d5db;
-  --accent: #a78bfa;
-  --link: #818cf8;
-  --link-hover: #a5b4fc;
-  --bg-light: #111827;
-  --border-color: #374151;
-  --card-bg: #1f2937;
-  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  --input-bg: #111827;
-  --input-border: #374151;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: rgb(var(--foreground-rgb));
-  line-height: 1.6;
-  background: linear-gradient(
-      to bottom,
-      rgb(var(--background-start-rgb)),
-      rgb(var(--background-end-rgb))
-    )
-    fixed;
-}
-
-a {
-  color: var(--link);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-a:hover {
-  color: var(--link-hover);
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  line-height: 1.3;
-  margin-bottom: 0.5em;
-}
-
-p {
-  margin-bottom: 1rem;
-}
+/* Wrapped in @layer for Tailwind v4 forward-compatibility */
 
 .container {
   width: 100%;
@@ -207,6 +123,91 @@ p {
 }
 
 @layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 248, 250, 255;
+    --background-end-rgb: 255, 255, 255;
+    --primary: 79, 70, 229; /* indigo-600 */
+    --primary-light: 224, 231, 255; /* indigo-100 */
+    --primary-dark: 67, 56, 202; /* indigo-700 */
+    --primary-hover: #4f46e5;
+    --text-primary: #1f2937;
+    --text-secondary: #4b5563;
+    --accent: #8b5cf6;
+    --link: #4361ee;
+    --link-hover: #3730a3;
+    --bg-light: #f9fafb;
+    --border-color: #e5e7eb;
+    --animation-duration: 0.8s;
+    --card-bg: #ffffff;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --input-bg: #ffffff;
+    --input-border: #e5e7eb;
+  }
+
+  [data-theme='dark'] {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 10, 10, 20;
+    --background-end-rgb: 20, 20, 30;
+    --primary: 122, 113, 252;
+    --primary-light: 40, 40, 70;
+    --primary-dark: 99, 90, 231;
+    --primary-hover: #6d62ff;
+    --text-primary: #f3f4f6;
+    --text-secondary: #d1d5db;
+    --accent: #a78bfa;
+    --link: #818cf8;
+    --link-hover: #a5b4fc;
+    --bg-light: #111827;
+    --border-color: #374151;
+    --card-bg: #1f2937;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --input-bg: #111827;
+    --input-border: #374151;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: rgb(var(--foreground-rgb));
+    line-height: 1.6;
+    background: linear-gradient(
+        to bottom,
+        rgb(var(--background-start-rgb)),
+        rgb(var(--background-end-rgb))
+      )
+      fixed;
+  }
+
+  a {
+    color: var(--link);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: var(--link-hover);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 0.5em;
+  }
+
+  p {
+    margin-bottom: 1rem;
+  }
+
   h1 {
     @apply text-4xl font-bold md:text-5xl;
   }

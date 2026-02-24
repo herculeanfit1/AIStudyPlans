@@ -142,7 +142,19 @@ Admin dashboard at `/admin/settings/monitoring` tracks API health, email deliver
 
 ## SchedulEd-Specific Notes
 
+- **Node version**: Pinned to 20.19.1 (`.nvmrc`, `package.json` engines, CI workflows). Run `nvm use` to switch.
 - **Icons**: Font Awesome loaded via CDN (in `app/layout.tsx` `<head>`)
 - **Build behavior**: Both TypeScript and ESLint are enforced during builds (`ignoreBuildErrors: false`, `ignoreDuringBuilds: false`). The build will fail on any type error or lint warning.
 - **npm install**: Use `--legacy-peer-deps` flag when encountering peer dependency conflicts (next-auth/next version mismatch)
 - **Testing**: Currently on Jest (Vitest migration planned with Next.js 15 upgrade)
+- **Tailwind CSS**: v3 with `tailwind.config.ts`. Do NOT migrate to v4 without reading BTAISite CLAUDE.md "Critical: Tailwind CSS v4 Rules" first.
+- **CSS layers**: All base resets and element selectors in `globals.css` are wrapped in `@layer base` for Tailwind v4 forward-compatibility.
+
+## Cross-Site References
+
+| Topic | Reference |
+|-------|-----------|
+| Shared conventions | `STANDARDS.md` (this repo) |
+| Tailwind v4 migration guide | BTAISite `CLAUDE.md` — "Critical: Tailwind CSS v4 Rules" |
+| Node version standard | `.nvmrc` — pinned to 20.19.1 (aligned with BTAISite) |
+| CODEOWNERS template | `.github/CODEOWNERS` (this repo) |
