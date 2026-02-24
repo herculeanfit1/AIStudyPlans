@@ -19,7 +19,7 @@ export function usePageTracking() {
             url = `${pathname}?${query}`;
           }
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn('SearchParams not available during static export');
       }
       

@@ -23,7 +23,7 @@
 - [x] **Phase 1** — Upgrade Next.js 14→15, React 18→19, fix breaking changes
 - [x] **Phase 2** — Migrate NextAuth v4 → Auth.js v5
 - [x] **Phase 3** — Replace heavy 3D/particle deps with lightweight alternatives
-- [ ] **Phase 4** — ESLint flat config migration (eslint-config-next 15)
+- [x] **Phase 4** — ESLint 8→9 flat config migration
 - [ ] **Phase 5** — Clean up deprecated patterns and update configs
 - [ ] **Phase 6** — Final validation, docs update, merge to main
 
@@ -79,3 +79,20 @@
 - **react-use**: Zero imports found in codebase — no action needed
 - **Bundle impact**: Home page 6.4 kB / 172 kB first load. Removed ~114 transitive packages.
 - Gate checks: lint PASS, typecheck PASS, build PASS (37 static pages), tests 54/54 PASS
+
+### Phase 4 — ESLint 8→9 Flat Config Migration (2026-02-24)
+
+- **Upgraded**: eslint 8.57.0→9.39.2, @eslint/js 9.39.2, typescript-eslint 8.39.0 (replaces @typescript-eslint/eslint-plugin@6.21.0 + @typescript-eslint/parser@6.21.0), globals 17.3.0
+- **Replaced eslint-config-next** with @next/eslint-plugin-next@15.4.6 (direct plugin import). eslint-config-next uses @rushstack/eslint-patch which is incompatible with ESLint 9.
+- **Dropped eslint-plugin-unused-imports**: The plugin uses `context.getScope()` (removed in ESLint 9) via @typescript-eslint/utils. Replaced with `@typescript-eslint/no-unused-vars` at "error" level with `argsIgnorePattern: "^_"`, `varsIgnorePattern: "^_"`, `caughtErrorsIgnorePattern: "^_"`.
+- **Config format**: Deleted `.eslintrc.json`, created `eslint.config.mjs` (flat config)
+- **Lint script**: Changed from `next lint` to `eslint app/ components/ lib/ --max-warnings 0`. Added `lint:fix` script.
+- **ESLint runs during builds**: `eslint.ignoreDuringBuilds: false` kept (unchanged)
+- **Rule changes vs original**:
+  - `unused-imports/no-unused-imports: error` → replaced by `@typescript-eslint/no-unused-vars: error` (catches unused vars + imports)
+  - `@typescript-eslint/no-explicit-any: warn` → kept as-is
+  - `react/no-unescaped-entities: off` → kept as-is
+  - Added `@typescript-eslint/no-require-imports: off` for test files
+  - Added all @next/next recommended + core-web-vitals rules explicitly
+- **Code fixes**: Prefixed 6 unused catch variables with `_`, added comments to 2 empty catch blocks, added eslint-disable for 3 auth `<a>` links (intentional full-page navigation to auth API)
+- Gate checks: lint PASS (0 warnings, 0 errors), typecheck PASS, build PASS (37 static pages), tests 54/54 PASS

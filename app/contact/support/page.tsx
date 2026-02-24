@@ -55,7 +55,7 @@ export default function SupportContactForm() {
         setSubmitStatus('error');
         setErrorMessage(data.message || 'Something went wrong. Please try again.');
       }
-    } catch (error) {
+    } catch (_error) {
       setSubmitStatus('error');
       setErrorMessage('An error occurred. Please try again later.');
     } finally {
