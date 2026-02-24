@@ -42,9 +42,11 @@ npm run validate:quick   # Fast: lint + typecheck + build (no tests)
 
 ### Linting & Type Checking
 ```bash
-npm run lint         # ESLint (next/core-web-vitals + next/typescript)
+npm run lint         # ESLint (next/core-web-vitals + unused-imports plugin)
 npm run typecheck    # tsc --noEmit
 ```
+
+**Lint gotchas**: `unused-imports/no-unused-imports` is set to `"error"` — any unused import fails lint. `@typescript-eslint/no-explicit-any` is `"warn"` — `any` usage produces warnings (which fail the build since `eslint.ignoreDuringBuilds: false`).
 
 ### Docker
 ```bash
@@ -90,12 +92,13 @@ Components live in three locations:
 - **`feedback-campaign/`** — Feedback collection
 
 ### Shared Libraries (`lib/`)
-- **`supabase.ts` / `admin-supabase.ts`** — Supabase client (public and service-role)
-- **`email.ts`** — Email sending via Resend
+- **`supabase.ts`** — Public Supabase client with graceful fallback to mock client when env vars are missing (enables local dev without Supabase)
+- **`admin-supabase.ts`** — Service-role client for admin operations (higher privilege)
+- **`email.ts`** — Resend wrapper with quota tracking and retry logic, rate-limited
 - **`email-templates.ts` / `feedback-templates/`** — HTML email templates
-- **`csrf.ts`** — CSRF protection utilities
-- **`rate-limit.ts`** — API rate limiting
-- **`validation.ts`** — Zod-based input validation
+- **`csrf.ts`** — CSRF token generation/validation for form submissions
+- **`rate-limit.ts`** — In-memory IP-based rate limiter (resets on restart; production should use Redis)
+- **`validation.ts`** — Zod schemas for all API input validation
 - **`types.ts`** — Shared TypeScript types
 
 ### Path Aliases
@@ -137,13 +140,7 @@ CI in GitHub Actions is **deployment-only**. Run `npm run validate` locally befo
 ### Service Layer & Data Flow
 Request flow: **Client → Next.js API route → lib/ utilities → Supabase/Resend**
 
-Key abstractions in `lib/`:
-- **`supabase.ts`** — Public Supabase client with graceful fallback to mock client when env vars are missing (enables local dev without Supabase). All waitlist operations go through here.
-- **`admin-supabase.ts`** — Service-role client for admin operations (feedback queries, user management). Higher privilege level.
-- **`email.ts`** — Resend wrapper with quota tracking and retry logic. Rate-limited.
-- **`rate-limit.ts`** — In-memory IP-based rate limiter (resets on restart; production should use Redis).
-- **`csrf.ts`** — CSRF token generation/validation for form submissions.
-- **`validation.ts`** — Zod schemas for all API input validation.
+API route pipeline (per STANDARDS.md): Zod validation → rate limiting → business logic → typed `NextResponse.json()`. Public forms use honeypot fields (`_gotcha`).
 
 ### Monitoring
 Admin dashboard at `/admin/settings/monitoring` tracks API health, email delivery rates, and CI/CD status. Types defined in `app/types/monitoring.ts`. Azure Application Insights is configured for production (connection string via env var).
@@ -152,6 +149,9 @@ Admin dashboard at `/admin/settings/monitoring` tracks API health, email deliver
 
 - **Node version**: Pinned to 20.19.1 in `.nvmrc` and CI workflows. `package.json` engines requires `>=20.19.1` to allow local dev on newer Node versions. Run `nvm use` to match CI.
 - **Icons**: Font Awesome loaded via CDN (in `app/layout.tsx` `<head>`)
+- **3D/Animation**: Three.js via `@react-three/fiber` + `@react-three/drei`; `framer-motion` for animations; `tsparticles` for particle effects
+- **Charts**: `chart.js` + `react-chartjs-2` (admin dashboard)
+- **Next.js config**: `next.config.mjs` (ESM). `reactStrictMode` is enabled in dev only. `experimental.missingSuspenseWithCSRBailout: false` suppresses useSearchParams warnings.
 - **Build behavior**: Both TypeScript and ESLint are enforced during builds (`ignoreBuildErrors: false`, `ignoreDuringBuilds: false`). The build will fail on any type error or lint warning.
 - **npm install**: Use `--legacy-peer-deps` flag when encountering peer dependency conflicts (next-auth/next version mismatch)
 - **Testing**: Currently on Jest (Vitest migration planned with Next.js 15 upgrade)
