@@ -3,25 +3,25 @@ import Header from "../app/components/Header";
 import { ImageProps } from "next/image";
 
 // Mock the next/image component
-jest.mock("next/image", () => ({
+vi.mock("next/image", () => ({
   __esModule: true,
   default: (props: ImageProps) => {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img 
-      src={props.src as string} 
-      alt={props.alt as string} 
-      width={props.width} 
-      height={props.height} 
+    return <img
+      src={props.src as string}
+      alt={props.alt as string}
+      width={props.width}
+      height={props.height}
     />;
   },
 }));
 
 // Mock the next-themes hook
-jest.mock("next-themes", () => ({
+vi.mock("next-themes", () => ({
   useTheme: () => ({
     theme: "light",
     resolvedTheme: "light",
-    setTheme: jest.fn(),
+    setTheme: vi.fn(),
   }),
 }));
 

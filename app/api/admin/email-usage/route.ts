@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { auth } from '@/auth';
 import { getEmailUsageStats, getEmailUsageWarnings, resetEmailUsage } from '@/lib/email-monitor';
 import { rateLimit } from '@/lib/rate-limit';
 
@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
 
   try {
     // Check authentication
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    
-    if (!token || !token.isAdmin) {
+    const session = await auth();
+
+    if (!session?.user?.isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }
@@ -105,9 +105,9 @@ export async function POST(request: NextRequest) {
 
   try {
     // Check authentication
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    
-    if (!token || !token.isAdmin) {
+    const session = await auth();
+
+    if (!session?.user?.isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }
@@ -120,18 +120,19 @@ export async function POST(request: NextRequest) {
     if (action === 'reset' && confirm === true) {
       // Get stats before reset for logging
       const statsBefore = getEmailUsageStats();
-      
+
       // Reset the counters
       resetEmailUsage();
-      
+
       // Log the reset action
-      console.log(`🔄 Email usage counters reset by admin ${token.email}`, {
+      // eslint-disable-next-line no-console
+      console.log(`🔄 Email usage counters reset by admin ${session.user.email}`, {
         previousStats: {
           daily: statsBefore.daily,
           monthly: statsBefore.monthly,
           consecutiveFailures: statsBefore.consecutiveFailures
         },
-        adminEmail: token.email,
+        adminEmail: session.user.email,
         timestamp: new Date().toISOString()
       });
 
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest) {
           monthly: statsBefore.monthly,
           consecutiveFailures: statsBefore.consecutiveFailures
         },
-        resetBy: token.email,
+        resetBy: session.user.email,
         timestamp: new Date().toISOString()
       });
     } else {

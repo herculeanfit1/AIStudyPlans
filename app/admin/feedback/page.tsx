@@ -54,7 +54,9 @@ export default function FeedbackDashboard() {
     let isDevAdmin = false;
     try {
       isDevAdmin = localStorage.getItem('isAdmin') === 'true';
-    } catch {}
+    } catch {
+      // localStorage may throw in SSR or private browsing
+    }
     if (!isDevAdmin) {
       isDevAdmin = document.cookie.includes('isAdmin=true');
     }

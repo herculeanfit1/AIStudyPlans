@@ -46,7 +46,7 @@ export function rateLimit(
 ): NextResponse | null {
   // Get IP address from the request
   // X-Forwarded-For header might be set by a proxy
-  let ip = request.headers.get('x-forwarded-for') || request.ip || 'unknown';
+  let ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   
   // For privacy, hash or truncate the IP in production
   if (process.env.NODE_ENV === 'production') {

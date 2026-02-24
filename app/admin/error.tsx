@@ -42,6 +42,7 @@ export default function AdminErrorPage({
               Try Again
             </button>
             
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- auth redirect needs full navigation */}
             <a
               href="/api/auth/signin"
               className="w-full inline-block py-2 px-4 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-md transition-colors"

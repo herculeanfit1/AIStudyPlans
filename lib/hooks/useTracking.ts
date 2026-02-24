@@ -19,11 +19,12 @@ export function usePageTracking() {
             url = `${pathname}?${query}`;
           }
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn('SearchParams not available during static export');
       }
       
       // Simple console logging instead of tracking
+      // eslint-disable-next-line no-console
       console.log(`Page view: ${url}`);
     }
   }, [pathname, searchParams]);

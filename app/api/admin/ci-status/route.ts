@@ -4,11 +4,6 @@ import { NextResponse } from 'next/server';
 // In a production environment, you would integrate with GitHub's API
 // using a service account or personal access token
 
-// For static export in Next.js
-export function generateStaticParams() {
-  return [];
-}
-
 export async function GET() {
   try {
     // Mock data for now - in production you would fetch this from GitHub API

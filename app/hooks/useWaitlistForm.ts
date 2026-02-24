@@ -34,7 +34,7 @@ const saveEntryLocally = (entry: { name: string; email: string }): boolean => {
 
     localStorage.setItem("waitlist_entries", JSON.stringify(entries));
     return true;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 };
@@ -159,7 +159,7 @@ export function useWaitlistForm() {
           } else if (errorData.message) {
             errorMessage = errorData.message;
           }
-        } catch (jsonError) {
+        } catch (_jsonError) {
           console.error("API response is not valid JSON:", responseText);
           if (responseText.length > 100) {
             errorMessage = `${responseText.substring(0, 100)}...`;
@@ -177,7 +177,7 @@ export function useWaitlistForm() {
         } else {
           JSON.parse(responseText); // Just validate it's valid JSON
         }
-      } catch (jsonError) {
+      } catch (_jsonError) {
         console.warn("Could not parse success response as JSON, but continuing as success");
       }
       

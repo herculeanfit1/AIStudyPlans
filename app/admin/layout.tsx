@@ -98,8 +98,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               We encountered an issue with authentication. Please try again later or contact support.
             </p>
             <div className="space-y-4">
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- auth redirect needs full navigation */}
               <a
-                href="/api/auth/signin" 
+                href="/api/auth/signin"
                 className="inline-block w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-center"
               >
                 Sign In Again
@@ -126,8 +127,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <p className="text-gray-600 mb-4">Authentication required</p>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- auth redirect needs full navigation */}
           <a
-            href="/api/auth/signin" 
+            href="/api/auth/signin"
             className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           >
             Sign in with Microsoft

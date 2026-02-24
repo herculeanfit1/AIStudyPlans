@@ -26,9 +26,4 @@ export async function GET() {
   });
   
   return response;
-}
-
-// This is required for static export in Next.js
-export function generateStaticParams() {
-  return [];
 } 

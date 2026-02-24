@@ -20,6 +20,7 @@ export const supabase = isMockMode
 
 // Create a mock client for development without Supabase
 function createMockClient() {
+  // eslint-disable-next-line no-console
   console.log("Using mock Supabase client - no credentials provided");
 
   // Create a mock response creator function
@@ -90,6 +91,7 @@ export async function addToWaitlist(
   source?: string,
 ): Promise<{ success: boolean; error?: string; user?: WaitlistUser }> {
   try {
+    // eslint-disable-next-line no-console
     console.log(`Attempting to add user to waitlist: ${name} (${email}) with Supabase URL: ${supabaseUrl.substring(0, 15)}...`);
     
     // Check if user already exists
@@ -167,6 +169,7 @@ export async function storeFeedback(
   emailId?: string,
 ): Promise<{ success: boolean; error?: string }> {
   if (isMockMode) {
+    // eslint-disable-next-line no-console
     console.log("MOCK: Storing feedback:", {
       waitlistUserId,
       feedbackText,
@@ -313,6 +316,7 @@ export async function updateEmailSequencePosition(
   newPosition: number,
 ): Promise<{ success: boolean; error?: string }> {
   if (isMockMode) {
+    // eslint-disable-next-line no-console
     console.log("MOCK: Updating email sequence position:", {
       userId,
       newPosition,

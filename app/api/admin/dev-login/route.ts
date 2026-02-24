@@ -3,10 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 // This is a development-only endpoint for local testing
 // It should never be used in production
 
-export function generateStaticParams() {
-  return [];
-}
-
 export async function GET() {
   if (process.env.NODE_ENV === 'production') {
     return NextResponse.json(
@@ -83,6 +79,7 @@ export async function POST(request: NextRequest) {
       secure: false,
     });
 
+    // eslint-disable-next-line no-console
     console.log('Dev login: Set admin cookie for', email);
 
     return response;

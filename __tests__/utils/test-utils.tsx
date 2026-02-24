@@ -37,7 +37,7 @@ export const MOCK_DATE = '2023-01-15T12:00:00Z';
  */
 export function setupMockReset() {
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 }
 

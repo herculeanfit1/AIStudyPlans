@@ -24,11 +24,13 @@ export async function POST(request: NextRequest) {
     const { to = 'delivered@resend.dev' } = body;
     
     // Log environment information for debugging
+    /* eslint-disable no-console */
     console.log('📧 Debug Email API called with environment:');
     console.log('NODE_ENV:', process.env.NODE_ENV);
     console.log('RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
     console.log('EMAIL_FROM:', process.env.EMAIL_FROM);
     console.log('EMAIL_REPLY_TO:', process.env.EMAIL_REPLY_TO);
+    /* eslint-enable no-console */
     
     // Simple HTML and text content for testing
     const html = `
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
     `;
     
     // Send the test email
+    // eslint-disable-next-line no-console
     console.log(`📧 Sending test email to ${to}...`);
     
     const result = await sendEmail({
@@ -58,6 +61,7 @@ export async function POST(request: NextRequest) {
       text
     });
     
+    // eslint-disable-next-line no-console
     console.log('✅ Email sent successfully:', result);
     
     // Return success response
@@ -85,12 +89,4 @@ export async function POST(request: NextRequest) {
       }
     }, { status: 500 });
   }
-}
-
-/**
- * Required for static export compatibility
- * This generates static paths for the API route
- */
-export function generateStaticParams() {
-  return [];
 } 

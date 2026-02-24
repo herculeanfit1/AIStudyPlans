@@ -2,12 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { storeFeedback } from '@/lib/supabase';
 import { rateLimit } from '@/lib/rate-limit';
 
-// This is required for static export in Next.js when using output: 'export'
-export function generateStaticParams() {
-  // Return an empty array since we don't want to pre-render this API route
-  return [];
-}
-
 export async function POST(request: NextRequest) {
   // Apply rate limiting (3 feedback submissions per hour per IP)
   const rateLimitResult = rateLimit(request, { 

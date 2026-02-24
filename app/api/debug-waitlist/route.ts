@@ -3,12 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 // Use edge runtime like the main waitlist API
 export const runtime = "edge";
 
-// This is required for static export in Next.js when using output: 'export'
-export function generateStaticParams() {
-  // Return an empty array since we don't want to pre-render any API routes
-  return [];
-}
-
 /**
  * Simple debug endpoint that echoes back request data and environment
  */

@@ -30,8 +30,4 @@ export async function GET() {
       'Cache-Control': 'no-cache, no-store, must-revalidate'
     }
   });
-}
-
-export function generateStaticParams() {
-  return [];
 } 

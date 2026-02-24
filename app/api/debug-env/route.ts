@@ -3,12 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 // Instead of using force-dynamic, use the edge runtime which is compatible with static exports
 export const runtime = 'edge';
 
-// This is required for static export in Next.js when using output: 'export'
-export function generateStaticParams() {
-  // Return an empty array since we don't want to pre-render this API route
-  return [];
-}
-
 /**
  * Debug environment variables API route
  * This helps troubleshoot email configuration issues in production

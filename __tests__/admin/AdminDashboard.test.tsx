@@ -6,32 +6,32 @@ import { useRouter } from 'next/navigation';
 import { getFeedbackStats } from '@/lib/admin-supabase';
 
 // Mock the next-auth/react module
-jest.mock('next-auth/react', () => ({
-  useSession: jest.fn(),
+vi.mock('next-auth/react', () => ({
+  useSession: vi.fn(),
 }));
 
 // Mock the next/navigation hooks
-jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(),
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(),
 }));
 
 // Mock the admin-supabase module
-jest.mock('@/lib/admin-supabase', () => ({
-  getFeedbackStats: jest.fn(),
+vi.mock('@/lib/admin-supabase', () => ({
+  getFeedbackStats: vi.fn(),
 }));
 
 // Mock window.localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
       store[key] = value.toString();
     }),
-    removeItem: jest.fn((key: string) => {
+    removeItem: vi.fn((key: string) => {
       delete store[key];
     }),
-    clear: jest.fn(() => {
+    clear: vi.fn(() => {
       store = {};
     }),
   };
@@ -46,12 +46,12 @@ Object.defineProperty(document, 'cookie', {
 
 describe('AdminDashboard Component', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorageMock.clear();
     document.cookie = '';
 
     // Default mock implementation for getFeedbackStats
-    (getFeedbackStats as jest.Mock).mockResolvedValue({
+    vi.mocked(getFeedbackStats).mockResolvedValue({
       stats: {
         totalFeedback: 5,
         averageRating: 4.5,
@@ -64,13 +64,13 @@ describe('AdminDashboard Component', () => {
   });
 
   it('should show loading state during authentication check', () => {
-    (useRouter as jest.Mock).mockReturnValue({
-      push: jest.fn(),
-    });
-    (useSession as jest.Mock).mockReturnValue({
+    vi.mocked(useRouter).mockReturnValue({
+      push: vi.fn(),
+    } as any);
+    vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'loading',
-    });
+    } as any);
 
     render(<AdminDashboard />);
 
@@ -78,14 +78,14 @@ describe('AdminDashboard Component', () => {
   });
 
   it('should redirect to sign-in when not authenticated', async () => {
-    const pushMock = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({
+    const pushMock = vi.fn();
+    vi.mocked(useRouter).mockReturnValue({
       push: pushMock,
-    });
-    (useSession as jest.Mock).mockReturnValue({
+    } as any);
+    vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
-    });
+    } as any);
 
     render(<AdminDashboard />);
 
@@ -95,10 +95,10 @@ describe('AdminDashboard Component', () => {
   });
 
   it('should render dashboard when authenticated with NextAuth', async () => {
-    (useRouter as jest.Mock).mockReturnValue({
-      push: jest.fn(),
-    });
-    (useSession as jest.Mock).mockReturnValue({
+    vi.mocked(useRouter).mockReturnValue({
+      push: vi.fn(),
+    } as any);
+    vi.mocked(useSession).mockReturnValue({
       data: {
         user: {
           name: 'Test Admin',
@@ -106,7 +106,7 @@ describe('AdminDashboard Component', () => {
         },
       },
       status: 'authenticated',
-    });
+    } as any);
 
     render(<AdminDashboard />);
 
@@ -121,13 +121,13 @@ describe('AdminDashboard Component', () => {
   });
 
   it('should render dashboard when authenticated with localStorage', async () => {
-    (useRouter as jest.Mock).mockReturnValue({
-      push: jest.fn(),
-    });
-    (useSession as jest.Mock).mockReturnValue({
+    vi.mocked(useRouter).mockReturnValue({
+      push: vi.fn(),
+    } as any);
+    vi.mocked(useSession).mockReturnValue({
       data: null,
       status: 'unauthenticated',
-    });
+    } as any);
 
     localStorageMock.setItem('isAdmin', 'true');
 
@@ -139,10 +139,10 @@ describe('AdminDashboard Component', () => {
   });
 
   it('should handle stats loading error gracefully', async () => {
-    (useRouter as jest.Mock).mockReturnValue({
-      push: jest.fn(),
-    });
-    (useSession as jest.Mock).mockReturnValue({
+    vi.mocked(useRouter).mockReturnValue({
+      push: vi.fn(),
+    } as any);
+    vi.mocked(useSession).mockReturnValue({
       data: {
         user: {
           name: 'Test Admin',
@@ -150,9 +150,9 @@ describe('AdminDashboard Component', () => {
         },
       },
       status: 'authenticated',
-    });
+    } as any);
 
-    (getFeedbackStats as jest.Mock).mockRejectedValue(new Error('Failed to load stats'));
+    vi.mocked(getFeedbackStats).mockRejectedValue(new Error('Failed to load stats'));
 
     render(<AdminDashboard />);
 
@@ -164,10 +164,10 @@ describe('AdminDashboard Component', () => {
   });
 
   it('should show empty feedback message when no feedback is available', async () => {
-    (useRouter as jest.Mock).mockReturnValue({
-      push: jest.fn(),
-    });
-    (useSession as jest.Mock).mockReturnValue({
+    vi.mocked(useRouter).mockReturnValue({
+      push: vi.fn(),
+    } as any);
+    vi.mocked(useSession).mockReturnValue({
       data: {
         user: {
           name: 'Test Admin',
@@ -175,9 +175,9 @@ describe('AdminDashboard Component', () => {
         },
       },
       status: 'authenticated',
-    });
+    } as any);
 
-    (getFeedbackStats as jest.Mock).mockResolvedValue({
+    vi.mocked(getFeedbackStats).mockResolvedValue({
       stats: {
         totalFeedback: 0,
         averageRating: null,
