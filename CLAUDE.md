@@ -34,6 +34,12 @@ npm run test:e2e:ui         # Playwright with interactive UI
 npm run test:all            # lint + typecheck + unit + e2e
 ```
 
+### Validation (run before pushing)
+```bash
+npm run validate         # Full: lint + typecheck + tests + build
+npm run validate:quick   # Fast: lint + typecheck + build (no tests)
+```
+
 ### Linting & Type Checking
 ```bash
 npm run lint         # ESLint (next/core-web-vitals + next/typescript)
@@ -110,7 +116,7 @@ NextAuth with Azure AD. Admin access is controlled by `ADMIN_EMAILS` env var (co
 ### Environment Variables
 See `.env.example` for required variables. Key ones: `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, Azure AD credentials, `ADMIN_EMAILS`, and Supabase connection details.
 
-**Important**: `.env.development` and `.env.production` are gitignored. Only `.env.example` and `.env.local.example` are tracked.
+**Important**: `.env.development` and `.env.production` are gitignored. Only `.env.example` is tracked.
 
 ### Docker Infrastructure
 Five compose files, each serving a distinct purpose:
@@ -120,10 +126,12 @@ Five compose files, each serving a distinct purpose:
 - **`docker-compose.email-test.yml`** — Lightweight email template testing via `scripts/email-test.js`
 - **`docker-compose.override.yml`** — Dev volume mounts for hot-reload
 
-### CI/CD Workflows (`.github/workflows/`)
-- **`azure-static-web-apps.yml`** — Production deployment to Azure SWA on push to main. Generates PR preview URLs. Runs `ci-build.sh`
-- **`pr-validation.yml`** — PR quality gates: lint → typecheck → tests → build, then parallel security scan + deployment validation
-- **`dependency-checks.yml`** — Weekly + on-change: exact version enforcement, shrinkwrap presence, audit
+### CI/CD Model
+CI in GitHub Actions is **deployment-only**. Run `npm run validate` locally before pushing to main. There is no PR validation workflow — all lint, typecheck, and test checks run on the developer's machine.
+
+**Active workflows (`.github/workflows/`):**
+- **`azure-static-web-apps.yml`** — Build + deploy to Azure SWA on push to main. PR preview URLs on pull requests. Deployment-only, no lint/test.
+- **`dependency-checks.yml`** — Weekly + on-change guardrail: exact version enforcement, shrinkwrap presence, audit
 - **`backup-repository.yml`** — Weekly mirror to backup repo
 
 ### Service Layer & Data Flow
