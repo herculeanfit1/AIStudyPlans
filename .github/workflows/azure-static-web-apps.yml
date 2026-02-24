@@ -1,8 +1,8 @@
-# Main deployment workflow for AI Study Plans website
-# This workflow builds and deploys the Next.js app with server-side features to Azure Static Web Apps
-# Last modified: May 24, 2025 - Updated for server-side rendering and API routes
+# Deployment-only workflow for SchedulEd
+# Validation (lint, typecheck, tests) runs locally before push via: npm run validate
+# This workflow only builds and deploys to Azure Static Web Apps
 
-name: Azure Static Web Apps CI/CD
+name: Deploy to Azure Static Web Apps
 
 on:
   push:
@@ -12,135 +12,60 @@ on:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
-  workflow_dispatch: # Allow manual triggering
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  id-token: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build_and_deploy_job:
+  build_and_deploy:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
+    name: Build and Deploy
+    timeout-minutes: 10
+
     steps:
-      # Remove any existing .git/config extraheader
-      - name: Configure Git
-        shell: bash
-        run: |
-          # Ensure Git is properly initialized with safe directories and no extraheader
-          git config --global --add safe.directory '*'
-          git config --global core.longpaths true
-
-          # First check if the extraheader exists before trying to remove it
-          if git config --global --get http.https://github.com/.extraheader > /dev/null 2>&1; then
-            echo "Removing existing extraheader..."
-            git config --global --unset-all http.https://github.com/.extraheader
-          else
-            echo "No extraheader found to remove"
-          fi
-
-          # Display current git config for debugging
-          echo "Current Git configuration:"
-          git config --global --list
-
       - uses: actions/checkout@v6
-        with:
-          submodules: true
-          lfs: false
-
-      - name: Setup Git config
-        run: |
-          git config --global core.longpaths true
-          git config --list
 
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: "20.19.1"
+          cache: "npm"
 
-      - name: Setup caching
-        uses: actions/cache@v5
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
 
-      # Set NEXT_PUBLIC_RESEND_CONFIGURED based on whether the API key is present
-      - name: Check email configuration
-        id: email_config
+      - name: Build
         run: |
-          if [[ -n "${{ secrets.RESEND_API_KEY }}" && -n "${{ secrets.EMAIL_FROM }}" && -n "${{ secrets.EMAIL_REPLY_TO }}" ]]; then
-            echo "RESEND_CONFIGURED=true" >> $GITHUB_ENV
-            echo "Email configuration is available"
-          else
-            echo "RESEND_CONFIGURED=false" >> $GITHUB_ENV
-            echo "Email configuration is missing or incomplete"
-          fi
-
-      - name: Install dependencies and build
-        run: |
-          npm ci --legacy-peer-deps
           chmod +x ci-build.sh
           ./ci-build.sh
         env:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://aistudyplans.com' }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_RESEND_CONFIGURED: ${{ env.RESEND_CONFIGURED }}
-          # Add any other environment variables needed for the build here
+          NEXT_PUBLIC_RESEND_CONFIGURED: ${{ secrets.RESEND_API_KEY && secrets.EMAIL_FROM && secrets.EMAIL_REPLY_TO && 'true' || 'false' }}
 
-      # Ensure staticwebapp.config.json is in the root directory for Azure Static Web Apps
-      - name: Verify staticwebapp.config.json
-        run: |
-          if [ -f "staticwebapp.config.json" ]; then
-            echo "staticwebapp.config.json found in root directory."
-            echo "Content of staticwebapp.config.json:"
-            cat staticwebapp.config.json
-          else
-            echo "❌ ERROR: staticwebapp.config.json not found in root directory!"
-            exit 1
-          fi
-
-      # Verify security headers in staticwebapp.config.json
-      - name: Verify security headers
-        run: |
-          echo "Checking security headers in staticwebapp.config.json..."
-          
-          if grep -q "Strict-Transport-Security" staticwebapp.config.json; then
-            echo "✅ HSTS header found"
-          else
-            echo "⚠️ HSTS header missing"
-          fi
-          
-          if grep -q "Content-Security-Policy" staticwebapp.config.json; then
-            echo "✅ CSP header found"
-          else
-            echo "⚠️ CSP header missing"
-          fi
-          
-          if grep -q "Access-Control-Allow-Origin" staticwebapp.config.json; then
-            echo "✅ CORS headers found"
-          else
-            echo "⚠️ CORS headers missing"
-          fi
-          
-          echo "Security headers verification complete"
-
-      - name: Build And Deploy
-        id: builddeploy
+      - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          app_location: "/" # Deploy from root directory
-          api_location: "" # No separate API directory, as we use Next.js API routes
-          output_location: ".next" # Next.js build output directory
-          skip_app_build: true # Skip build as we already built the app
-          ###### End of Repository/Build Configurations ######
+          app_location: "/"
+          api_location: ""
+          output_location: ".next"
+          skip_app_build: true
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_RESEND_CONFIGURED: ${{ env.RESEND_CONFIGURED }}
+          NEXT_PUBLIC_RESEND_CONFIGURED: ${{ secrets.RESEND_API_KEY && secrets.EMAIL_FROM && secrets.EMAIL_REPLY_TO && 'true' || 'false' }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_REPLY_TO: ${{ secrets.EMAIL_REPLY_TO }}
@@ -150,25 +75,15 @@ jobs:
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
-      - name: Report deployment status
-        if: always()
-        run: |
-          if [ "${{ steps.builddeploy.outcome }}" == "success" ]; then
-            echo "✅ Deployment succeeded"
-          else
-            echo "❌ Deployment failed"
-            echo "Please check the logs for more information"
-          fi
-
-  close_pull_request_job:
+  close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
-    name: Close Pull Request Job
+    name: Close PR Preview
+    timeout-minutes: 5
     steps:
       - name: Close Pull Request
-        id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: "close"
-          app_location: "/" # App source code path
+          app_location: "/"
