@@ -5,14 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > **Cross-site standards**: See `STANDARDS.md` in this repo for shared conventions
 > that apply across all TK web properties. This file documents SchedulEd-specific
 > details only. STANDARDS.md takes precedence on any conflicting guidance.
->
-> **Note**: This repo is currently on Next.js 14 / React 18. STANDARDS.md targets
-> Next.js 15 / React 19 — those upgrades are planned separately. Until then,
-> SchedulEd-specific deviations from the target stack are documented here.
 
 ## Project Overview
 
-SchedulEd (AIStudyPlans) is a Next.js 14 landing page for an AI-powered study plan generator. It's deployed on Azure Static Web Apps and uses Supabase as the backend database, Resend for email delivery, and NextAuth for authentication.
+SchedulEd (AIStudyPlans) is a Next.js 15 landing page for an AI-powered study plan generator. It's deployed on Azure Static Web Apps and uses Supabase as the backend database, Resend for email delivery, and Auth.js v5 (next-auth) for authentication.
 
 ## Commands
 
@@ -25,13 +21,13 @@ npm run start        # Serve production build
 
 ### Testing
 ```bash
-npm test                    # Run Jest unit tests
-npm test -- --testPathPattern="Header"  # Run a single test file
-npm run test:watch          # Jest in watch mode
-npm run test:coverage       # Jest with coverage (70% threshold)
-npm run test:e2e            # Playwright E2E tests (auto-starts dev server)
-npm run test:e2e:ui         # Playwright with interactive UI
-npm run test:all            # lint + typecheck + unit + e2e
+npm test                                # Run Vitest unit tests
+npm test -- __tests__/Header.test.tsx   # Run a single test file
+npm run test:watch                      # Vitest in watch mode
+npm run test:coverage                   # Vitest with v8 coverage (70% threshold)
+npm run test:e2e                        # Playwright E2E tests (auto-starts dev server)
+npm run test:e2e:ui                     # Playwright with interactive UI
+npm run test:all                        # lint + typecheck + unit + e2e
 ```
 
 ### Validation (run before pushing)
@@ -42,11 +38,12 @@ npm run validate:quick   # Fast: lint + typecheck + build (no tests)
 
 ### Linting & Type Checking
 ```bash
-npm run lint         # ESLint (next/core-web-vitals + unused-imports plugin)
+npm run lint         # ESLint 9 flat config (eslint.config.mjs)
+npm run lint:fix     # ESLint with auto-fix
 npm run typecheck    # tsc --noEmit
 ```
 
-**Lint gotchas**: `unused-imports/no-unused-imports` is set to `"error"` — any unused import fails lint. `@typescript-eslint/no-explicit-any` is `"warn"` — `any` usage produces warnings (which fail the build since `eslint.ignoreDuringBuilds: false`).
+**Lint gotchas**: `@typescript-eslint/no-unused-vars` is `"error"` — any unused import or variable fails lint. `@typescript-eslint/no-explicit-any` is `"warn"` — `any` usage produces warnings. `no-console` is `"warn"` — use `// eslint-disable-next-line no-console` for intentional console.log. The `--max-warnings 0` flag means any warning fails CI.
 
 ### Docker
 ```bash
@@ -85,7 +82,7 @@ Components live in three locations:
 ### API Routes (`app/api/`)
 - **`waitlist/`** — Waitlist signup (stores in Supabase, sends confirmation via Resend)
 - **`contact/sales/` and `contact/support/`** — Contact forms
-- **`auth/[...nextauth]/`** — NextAuth with Azure AD provider
+- **`auth/[...nextauth]/`** — Auth.js v5 with Microsoft Entra ID provider
 - **`csrf/`** — CSRF token generation
 - **`health/`** — Health check endpoint
 - **`admin/`** — Admin endpoints (email stats, CI status, dev auth)
@@ -102,19 +99,17 @@ Components live in three locations:
 - **`types.ts`** — Shared TypeScript types
 
 ### Path Aliases
-`@/*` maps to the project root (configured in `tsconfig.json`). In Jest, aliases are mapped explicitly:
-- `@/components/*` → `app/components/*`
-- `@/app/*` → `app/*`
-- `@/lib/*` → `lib/*`
+`@/*` maps to the project root (configured in `tsconfig.json` and `vitest.config.ts`). Single alias: `@` → project root.
 
 ### Testing Structure
-- **`__tests__/`** — Jest unit tests (mirrors app structure)
+- **`__tests__/`** — Vitest unit tests (mirrors app structure)
 - **`__tests__/utils/test-utils.tsx`** — Shared test utilities (excluded from test runs)
 - **`e2e/`** — Playwright E2E tests (landing, admin dashboard, visual regression)
-- Jest setup file: `jest.setup.js`
+- Vitest config: `vitest.config.ts` (happy-dom environment, globals enabled)
+- Setup file: `vitest.setup.tsx` (mocks for next/navigation, next/image, next/link, next-themes)
 
 ### Authentication
-NextAuth with Azure AD. Admin access is controlled by `ADMIN_EMAILS` env var (comma-separated list). Admin pages live under `app/admin/`.
+Auth.js v5 (next-auth@5.0.0-beta.29) with Microsoft Entra ID (formerly Azure AD). Server-side auth uses the `auth()` function exported from `auth.ts` at project root. Client-side auth uses `useSession`/`SessionProvider` from `next-auth/react`. Admin access is controlled by `ADMIN_EMAILS` env var (comma-separated list). Admin pages live under `app/admin/`.
 
 ### Environment Variables
 See `.env.example` for required variables. Key ones: `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, Azure AD credentials, `ADMIN_EMAILS`, and Supabase connection details.
@@ -149,12 +144,13 @@ Admin dashboard at `/admin/settings/monitoring` tracks API health, email deliver
 
 - **Node version**: Pinned to 20.19.1 in `.nvmrc` and CI workflows. `package.json` engines requires `>=20.19.1` to allow local dev on newer Node versions. Run `nvm use` to match CI.
 - **Icons**: Font Awesome loaded via CDN (in `app/layout.tsx` `<head>`)
-- **3D/Animation**: Three.js via `@react-three/fiber` + `@react-three/drei`; `framer-motion` for animations; `tsparticles` for particle effects
+- **Animation**: `motion` (formerly framer-motion) for animations; lightweight canvas-based particle effects (no external deps)
 - **Charts**: `chart.js` + `react-chartjs-2` (admin dashboard)
-- **Next.js config**: `next.config.mjs` (ESM). `reactStrictMode` is enabled in dev only. `experimental.missingSuspenseWithCSRBailout: false` suppresses useSearchParams warnings.
-- **Build behavior**: Both TypeScript and ESLint are enforced during builds (`ignoreBuildErrors: false`, `ignoreDuringBuilds: false`). The build will fail on any type error or lint warning.
-- **npm install**: Use `--legacy-peer-deps` flag when encountering peer dependency conflicts (next-auth/next version mismatch)
-- **Testing**: Currently on Jest (Vitest migration planned with Next.js 15 upgrade)
+- **Next.js config**: `next.config.mjs` (ESM). `reactStrictMode` is enabled in dev only.
+- **Build behavior**: Both TypeScript and ESLint are enforced during builds (`ignoreBuildErrors: false`, `ignoreDuringBuilds: false`). The build will fail on any type error or lint warning. The build shows a cosmetic "Next.js plugin was not detected in ESLint configuration" warning — this is harmless because lint runs via `eslint` directly, not `next lint`.
+- **npm install**: Use `--legacy-peer-deps` flag when encountering peer dependency conflicts (@types/node version mismatch with vite)
+- **Testing**: Vitest 3.x with happy-dom environment and `@testing-library/react@16` (React 19 compatible). Use `vi.mock()`, `vi.fn()`, `vi.mocked()` for mocks.
+- **ESLint**: Flat config in `eslint.config.mjs` (ESLint 9). NOT `.eslintrc.json`. Uses `typescript-eslint` and `@next/eslint-plugin-next` directly.
 - **Tailwind CSS**: v3 with `tailwind.config.ts`. Do NOT migrate to v4 without reading BTAISite CLAUDE.md "Critical: Tailwind CSS v4 Rules" first.
 - **CSS layers**: All base resets and element selectors in `globals.css` are wrapped in `@layer base` for Tailwind v4 forward-compatibility.
 

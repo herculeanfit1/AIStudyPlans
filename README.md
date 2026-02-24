@@ -26,7 +26,7 @@ This application is deployed on Azure Static Web Apps.
 
 # AIStudyPlans Landing Page
 
-A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan generator. This landing page is built with Next.js 14 and Tailwind CSS, showcasing modern web development techniques and best practices.
+A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan generator. This landing page is built with Next.js 15 and Tailwind CSS, showcasing modern web development techniques and best practices.
 
 ## Key Features
 
@@ -39,12 +39,12 @@ A modern, eye-catching landing page for AIStudyPlans - an AI-powered study plan 
 
 ## Tech Stack
 
-- **Framework**: [Next.js 14](https://nextjs.org/) with App Router
+- **Framework**: [Next.js 15](https://nextjs.org/) with App Router (React 19)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **API Routes**: Next.js Edge API Routes for serverless functionality
 - **Email Service**: [Resend](https://resend.com) for reliable email delivery
 - **Testing**:
-  - [Jest](https://jestjs.io/) and [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for unit tests
+  - [Vitest](https://vitest.dev/) and [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for unit tests
   - [Playwright](https://playwright.dev/) for end-to-end testing
   - [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) for performance testing
 - **Containerization**: Docker & Docker Compose
