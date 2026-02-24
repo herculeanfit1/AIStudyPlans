@@ -28,11 +28,8 @@ if [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
   export NEXT_PUBLIC_SUPABASE_ANON_KEY="placeholder-key-for-build-process"
 fi
 
-# Replace Key Vault references with placeholders for CI build
-echo "Replacing Key Vault references with placeholders for CI build..."
-node scripts/ci-bypass-keyvault.js
-
-# Build the app with server-side features
+# Build the app (NEXT_PUBLIC_* vars are read from process environment by Next.js)
+# No .env.production file needed — env vars are injected by GitHub Actions
 echo "Building Next.js application with server-side features..."
 npm run build
 
