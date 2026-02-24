@@ -24,6 +24,8 @@
     "verify:deploy": "node scripts/verify-deployment.js",
     "verify:validation": "node scripts/verify-validation.js",
     "verify:auth": "node scripts/verify-auth.js",
+    "validate": "./scripts/validate-before-push.sh",
+    "validate:quick": "npm run lint && npm run typecheck && npm run build",
     "test:all": "npm run lint && npm run typecheck && npm run test && npm run test:e2e",
     "test:ci": "npm run lint && npm run typecheck && npm run test:coverage && npm run test:e2e",
     "test:a11y": "pa11y-ci",
