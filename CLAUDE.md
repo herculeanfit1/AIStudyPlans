@@ -142,7 +142,7 @@ Admin dashboard at `/admin/settings/monitoring` tracks API health, email deliver
 
 ## SchedulEd-Specific Notes
 
-- **Node version**: Pinned to 20.19.1 (`.nvmrc`, `package.json` engines, CI workflows). Run `nvm use` to switch.
+- **Node version**: Pinned to 20.19.1 in `.nvmrc` and CI workflows. `package.json` engines requires `>=20.19.1` to allow local dev on newer Node versions. Run `nvm use` to match CI.
 - **Icons**: Font Awesome loaded via CDN (in `app/layout.tsx` `<head>`)
 - **Build behavior**: Both TypeScript and ESLint are enforced during builds (`ignoreBuildErrors: false`, `ignoreDuringBuilds: false`). The build will fail on any type error or lint warning.
 - **npm install**: Use `--legacy-peer-deps` flag when encountering peer dependency conflicts (next-auth/next version mismatch)
