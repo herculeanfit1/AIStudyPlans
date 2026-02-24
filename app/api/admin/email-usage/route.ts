@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
       resetEmailUsage();
 
       // Log the reset action
+      // eslint-disable-next-line no-console
       console.log(`🔄 Email usage counters reset by admin ${session.user.email}`, {
         previousStats: {
           daily: statsBefore.daily,

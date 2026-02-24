@@ -24,6 +24,7 @@ export function usePageTracking() {
       }
       
       // Simple console logging instead of tracking
+      // eslint-disable-next-line no-console
       console.log(`Page view: ${url}`);
     }
   }, [pathname, searchParams]);

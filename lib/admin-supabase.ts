@@ -19,6 +19,7 @@ let realFeedbackData: FeedbackWithUser[] = [];
 
 // Add a function to clear all feedback data
 export function clearAllFeedbackData(): void {
+  // eslint-disable-next-line no-console
   console.log('Clearing all feedback data from admin dashboard');
   realFeedbackData = [];
 }
@@ -37,6 +38,7 @@ export function addFeedbackSubmission(feedback: FeedbackResponse, userName: stri
   // Add to beginning to show newest first
   realFeedbackData = [feedbackWithUser, ...realFeedbackData];
   
+  // eslint-disable-next-line no-console
   console.log('Added feedback submission to admin dashboard:', feedbackWithUser);
   return feedbackWithUser;
 }
@@ -50,6 +52,7 @@ export async function getAllFeedback(
   filters: FeedbackFilters = {}
 ): Promise<{ data: FeedbackWithUser[]; count: number; error?: string }> {
   try {
+    // eslint-disable-next-line no-console
     console.log('Fetching feedback with filters:', filters);
     // Simulate a delay to mimic API call
     await new Promise(resolve => setTimeout(resolve, 300));
@@ -100,6 +103,7 @@ export async function getAllFeedback(
     const startIndex = (page - 1) * pageSize;
     const paginatedData = filtered.slice(startIndex, startIndex + pageSize);
     
+    // eslint-disable-next-line no-console
     console.log(`Returning ${paginatedData.length} feedback items (total: ${totalCount})`);
     return { 
       data: paginatedData,

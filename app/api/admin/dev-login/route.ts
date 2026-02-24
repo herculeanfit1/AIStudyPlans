@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
       secure: false,
     });
 
+    // eslint-disable-next-line no-console
     console.log('Dev login: Set admin cookie for', email);
 
     return response;

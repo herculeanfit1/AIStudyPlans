@@ -25,7 +25,7 @@
 - [x] **Phase 3** — Replace heavy 3D/particle deps with lightweight alternatives
 - [x] **Phase 4** — ESLint 8→9 flat config migration
 - [x] **Phase 5** — Migrate Jest to Vitest
-- [ ] **Phase 6** — Clean up deprecated patterns and update configs
+- [x] **Phase 6** — Clean up deprecated patterns and update configs
 - [ ] **Phase 7** — Final validation, docs update, merge to main
 
 ## Phase Notes
@@ -88,7 +88,7 @@
 - **Dropped eslint-plugin-unused-imports**: The plugin uses `context.getScope()` (removed in ESLint 9) via @typescript-eslint/utils. Replaced with `@typescript-eslint/no-unused-vars` at "error" level with `argsIgnorePattern: "^_"`, `varsIgnorePattern: "^_"`, `caughtErrorsIgnorePattern: "^_"`.
 - **Config format**: Deleted `.eslintrc.json`, created `eslint.config.mjs` (flat config)
 - **Lint script**: Changed from `next lint` to `eslint app/ components/ lib/ --max-warnings 0`. Added `lint:fix` script.
-- **ESLint runs during builds**: `eslint.ignoreDuringBuilds: false` kept (unchanged)
+- **ESLint runs during builds**: No explicit `eslint.ignoreDuringBuilds` in next.config.mjs; Next.js default (`false`) applies — ESLint runs during builds
 - **Rule changes vs original**:
   - `unused-imports/no-unused-imports: error` → replaced by `@typescript-eslint/no-unused-vars: error` (catches unused vars + imports)
   - `@typescript-eslint/no-explicit-any: warn` → kept as-is
@@ -116,3 +116,19 @@
 - **Utility files**: Migrated test-utils.tsx (`jest.resetAllMocks` → `vi.resetAllMocks`) and admin-test-utils.tsx (`jest.fn` → `vi.fn`)
 - **Scripts**: `"test": "vitest run"`, `"test:watch": "vitest"`, `"test:coverage": "vitest run --coverage"`
 - Gate checks: lint PASS, typecheck PASS, build PASS (37 static pages), tests 54/54 PASS
+
+### Phase 6 — Cleanup and Lint Hardening (2026-02-24)
+
+- **Removed packages** (56 transitive packages removed):
+  - `react-use@17.6.0` — zero imports in codebase (phantom dependency)
+  - `@types/cors@2.8.18`, `@types/express@5.0.2`, `@types/helmet@0.0.48`, `@types/pino@7.0.4`, `@types/uuid@10.0.0` — only used by mcp-server/ which has its own package.json
+- **No Babel packages found**: Jest's Babel transpilation packages were already absent (never explicitly listed in devDependencies; Vitest uses esbuild)
+- **tsconfig.json**: Added `mcp-server` to `exclude` array — mcp-server has its own tsconfig and should not be typechecked by the root config
+- **.gitignore**: Added `playwright-report/` and `test-results/` (test artifact directories)
+- **ESLint hardening**: Re-added `no-console` rule as `["warn", { allow: ["warn", "error"] }]`. Added 41 eslint-disable comments across 9 files to suppress existing `console.log` calls. New code adding `console.log` will now trigger lint warnings.
+- **ESLint config cleanup**: Updated ignore patterns from `jest.config.*`/`jest.setup.*` to `vitest.config.*`/`vitest.setup.*`
+- **UPGRADE-LOG fix**: Corrected Phase 4 documentation — `eslint.ignoreDuringBuilds: false` is Next.js's default behavior, not an explicit config setting
+- **.npmrc cleanup**: Removed 3 invalid entries that produced npm warnings (`scripts-prepend-node-path`, `resolution-mode`, `force-node-version`)
+- **Docker note**: Docker compose test configs (`docker-compose.test.yml`) still reference Jest internally — should be updated when Docker configs are refreshed
+- **Package count**: 42 top-level packages (down from 53 at baseline)
+- Gate checks: lint PASS (0 warnings, 0 errors), typecheck PASS, build PASS (37 static pages), tests 54/54 PASS

@@ -74,7 +74,8 @@ export default tseslint.config(
       // React (migrated from .eslintrc.json)
       "react/no-unescaped-entities": "off",
 
-      // no-console not enforced (existing codebase uses console.log extensively)
+      // Warn on console.log — existing calls are suppressed with eslint-disable-next-line
+      "no-console": ["warn", { allow: ["warn", "error"] }],
     },
   },
 
@@ -118,8 +119,8 @@ export default tseslint.config(
       "*.config.mjs",
       "*.config.cjs",
       "*.config.ts",
-      "jest.config.*",
-      "jest.setup.*",
+      "vitest.config.*",
+      "vitest.setup.*",
       "postcss.config.*",
       "tailwind.config.*",
       "next.config.*",

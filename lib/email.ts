@@ -16,10 +16,12 @@ const feedbackFormUrl = `${appUrl}/feedback`;
 if (!resendApiKey) {
   console.warn('⚠️ RESEND_API_KEY is not defined. Email functionality will not work.');
 } else {
+  /* eslint-disable no-console */
   console.log('✅ Resend API key is configured');
   console.log(`✅ FROM email configured: ${fromEmail}`);
   console.log(`✅ REPLY-TO email configured: ${replyToEmail}`);
   console.log(`✅ App URL configured: ${appUrl}`);
+  /* eslint-enable no-console */
 }
 
 // Initialize Resend client
@@ -74,15 +76,19 @@ export async function sendEmail({
     // Check if we're sending on optimal days (Tues-Thurs)
     const isOptimalDay = dayOfWeek >= 2 && dayOfWeek <= 4;
     
+    // eslint-disable-next-line no-console
     console.log(`📧 Sending email to ${to} on ${dayNames[dayOfWeek]} at ${hour}:${now.getMinutes().toString().padStart(2, '0')} - ${isOptimalDay ? 'Optimal day' : 'Non-optimal day'}, ${isOptimalTime ? 'Optimal time' : 'Non-optimal time'}`);
 
     // Production debugging - log partial email content for verification
+    // eslint-disable-next-line no-console
     console.log(`📧 Email Subject: ${subject}`);
+    // eslint-disable-next-line no-console
     console.log(`📧 Email Text Preview: ${text.substring(0, 50)}...`);
     
     // Use delivered@resend.dev for testing in development
     let emailTo = to;
     if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_EMAIL === 'true') {
+      // eslint-disable-next-line no-console
       console.log(`⚠️ DEV/DEBUG MODE: Redirecting email from ${to} to delivered@resend.dev`);
       emailTo = 'delivered@resend.dev';
     }
@@ -102,6 +108,7 @@ export async function sendEmail({
       throw new Error(error.message);
     }
 
+    // eslint-disable-next-line no-console
     console.log(`✅ Email sent successfully to ${emailTo}, ID: ${data?.id}`);
     recordEmailSent();
     return { success: true, messageId: data?.id };
@@ -120,6 +127,7 @@ export async function sendEmail({
 export async function sendWaitlistConfirmationEmail(email: string) {
   const subject = 'Welcome to the SchedulEd Waitlist!';
   
+  // eslint-disable-next-line no-console
   console.log('📊 Sending immediate welcome email - 74% of subscribers expect this and open rates average 80%');
   
   // Get the email template
@@ -196,6 +204,7 @@ export async function sendFeedbackCampaignEmail(user: WaitlistUser) {
     "Final feedback request (satisfaction)"
   ];
   
+  // eslint-disable-next-line no-console
   console.log(`📧 Sending ${emailNames[nextPosition]} to ${user.email} (sequence position ${sequencePosition}->${nextPosition})`);
   
   // Log time since last email
@@ -203,6 +212,7 @@ export async function sendFeedbackCampaignEmail(user: WaitlistUser) {
     const lastEmailDate = new Date(user.last_email_sent_at);
     const now = new Date();
     const daysSinceLastEmail = Math.round((now.getTime() - lastEmailDate.getTime()) / (1000 * 60 * 60 * 24));
+    // eslint-disable-next-line no-console
     console.log(`⏱️ It has been ${daysSinceLastEmail} days since their last email (research recommends 3-7 days for first email, 7-14 days for subsequent emails)`);
   }
   
@@ -225,6 +235,7 @@ export async function sendFeedbackCampaignEmail(user: WaitlistUser) {
       text,
     });
     
+    // eslint-disable-next-line no-console
     console.log(`✅ Successfully sent ${emailNames[nextPosition]} to ${user.email} (ID: ${result?.messageId})`);
     
     return result;

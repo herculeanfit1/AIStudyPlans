@@ -43,6 +43,7 @@ function resetDailyCounterIfNeeded(): void {
       now.getFullYear() !== lastReset.getFullYear()) {
     emailUsage.daily = 0;
     emailUsage.lastDailyReset = now;
+    // eslint-disable-next-line no-console
     console.log('📊 Daily email counter reset');
   }
 }
@@ -59,6 +60,7 @@ function resetMonthlyCounterIfNeeded(): void {
       now.getFullYear() !== lastReset.getFullYear()) {
     emailUsage.monthly = 0;
     emailUsage.lastMonthlyReset = now;
+    // eslint-disable-next-line no-console
     console.log('📊 Monthly email counter reset');
   }
 }
@@ -87,6 +89,7 @@ export function checkEmailQuota(): { allowed: boolean; reason?: string; retryAft
       // Reset circuit breaker after timeout
       emailUsage.consecutiveFailures = 0;
       emailUsage.lastFailureTime = undefined;
+      // eslint-disable-next-line no-console
       console.log('🔄 Email circuit breaker reset after timeout');
     }
   }
@@ -122,11 +125,13 @@ export function recordEmailSent(): void {
   
   // Reset consecutive failures on successful send
   if (emailUsage.consecutiveFailures > 0) {
+    // eslint-disable-next-line no-console
     console.log(`🔄 Resetting consecutive failures counter (was ${emailUsage.consecutiveFailures})`);
     emailUsage.consecutiveFailures = 0;
     emailUsage.lastFailureTime = undefined;
   }
   
+  // eslint-disable-next-line no-console
   console.log(`📧 Email sent. Daily: ${emailUsage.daily}/${EMAIL_LIMITS.DAILY_LIMIT}, Monthly: ${emailUsage.monthly}/${EMAIL_LIMITS.MONTHLY_LIMIT}`);
 }
 
@@ -195,5 +200,6 @@ export function resetEmailUsage(): void {
     lastMonthlyReset: new Date(),
     consecutiveFailures: 0,
   };
+  // eslint-disable-next-line no-console
   console.log('🔄 Email usage counters manually reset');
 } 

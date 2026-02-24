@@ -48,6 +48,7 @@ export default function EmailStatusChecker() {
         setStatus(data);
         
         // Log the event instead of tracking
+        // eslint-disable-next-line no-console
         console.log('Admin: Email configuration checked', {
           configured: data.configured,
           resendApiKey: data.resendApiKey,
@@ -57,6 +58,7 @@ export default function EmailStatusChecker() {
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         setError(message || 'Failed to check email configuration');
+        // eslint-disable-next-line no-console
         console.log('Admin: Email configuration error', {
           error: message,
         });
@@ -93,6 +95,7 @@ export default function EmailStatusChecker() {
       setTestResult(data);
       
       // Log the event instead of tracking
+      // eslint-disable-next-line no-console
       console.log('Admin: Test email sent', {
         success: data.success,
         to: testEmail,
@@ -103,6 +106,7 @@ export default function EmailStatusChecker() {
         success: false,
         error: message || 'Failed to send test email'
       });
+      // eslint-disable-next-line no-console
       console.log('Admin: Test email error', {
         error: message,
         to: testEmail,
