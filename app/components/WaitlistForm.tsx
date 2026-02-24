@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useWaitlistForm } from "@/app/hooks/useWaitlistForm";
 import WaitlistFormFields from "./waitlist/WaitlistFormFields";
 import WaitlistFormStates from "./waitlist/WaitlistFormStates";

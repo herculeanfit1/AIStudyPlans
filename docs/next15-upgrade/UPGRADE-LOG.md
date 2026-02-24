@@ -22,9 +22,10 @@
 - [x] **Phase 0** — Create upgrade branch and establish baseline
 - [x] **Phase 1** — Upgrade Next.js 14→15, React 18→19, fix breaking changes
 - [x] **Phase 2** — Migrate NextAuth v4 → Auth.js v5
-- [ ] **Phase 3** — ESLint flat config migration (eslint-config-next 15)
-- [ ] **Phase 4** — Clean up deprecated patterns and update configs
-- [ ] **Phase 5** — Final validation, docs update, merge to main
+- [x] **Phase 3** — Replace heavy 3D/particle deps with lightweight alternatives
+- [ ] **Phase 4** — ESLint flat config migration (eslint-config-next 15)
+- [ ] **Phase 5** — Clean up deprecated patterns and update configs
+- [ ] **Phase 6** — Final validation, docs update, merge to main
 
 ## Phase Notes
 
@@ -63,4 +64,18 @@
 - SessionProvider, useSession, signOut imports unchanged (still from next-auth/react in v5)
 - Module augmentation: JWT type now declared in @auth/core/jwt instead of next-auth
 - Deleted unused out.ts artifact
+- Gate checks: lint PASS, typecheck PASS, build PASS (37 static pages), tests 54/54 PASS
+
+### Phase 3 — Replace Heavy 3D/Particle Deps (2026-02-23)
+
+- **Removed packages**: @react-three/fiber, @react-three/drei, three, @types/three, react-tsparticles, tsparticles-slim, tsparticles-engine (114 packages total)
+- **Replaced framer-motion with motion@12.9.1** (same version, new package name with motion/react entry point)
+- **ParticlesBackground.tsx**: Rewrote from react-tsparticles to lightweight canvas-based implementation (~95 lines, no external deps). Same visual: floating dots with connecting lines, dark mode aware, requestAnimationFrame loop.
+- **StudyPlan3D.tsx**: Deleted (exported but never imported/rendered on any page). Removed @ts-nocheck added in Phase 1.
+- **ParticleBackground.tsx**: Deleted (duplicate component, never imported)
+- **types/react-three-fiber-shim.d.ts**: Deleted (R3F compatibility shim no longer needed)
+- Updated all framer-motion imports (5 files) from `"framer-motion"` → `"motion/react"`
+- Updated test mocks: replaced react-tsparticles mock with canvas getContext mock
+- **react-use**: Zero imports found in codebase — no action needed
+- **Bundle impact**: Home page 6.4 kB / 172 kB first load. Removed ~114 transitive packages.
 - Gate checks: lint PASS, typecheck PASS, build PASS (37 static pages), tests 54/54 PASS
