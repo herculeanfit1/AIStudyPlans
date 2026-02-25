@@ -1,4 +1,4 @@
-FROM node:20-alpine as base
+FROM node:25-alpine as base
 
 # Set environment variable to skip browser downloads during install
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
