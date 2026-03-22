@@ -1,7 +1,7 @@
-import React from 'react';
-import Pricing from '../components/Pricing';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import React from "react";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
+import Pricing from "../components/Pricing";
 
 export default function PricingPage() {
   return (
@@ -17,11 +17,11 @@ export default function PricingPage() {
               Choose the plan that works best for your educational journey
             </p>
           </div>
-          
+
           <Pricing />
         </div>
       </main>
       <Footer />
     </div>
   );
-} 
+}

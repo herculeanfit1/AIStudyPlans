@@ -1,22 +1,22 @@
-import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import AdminDashboard from '../../app/admin/page';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { getFeedbackStats } from '@/lib/admin-supabase';
+import { render, screen, waitFor } from "@testing-library/react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import React from "react";
+import { getFeedbackStats } from "@/lib/admin-supabase";
+import AdminDashboard from "../../app/admin/page";
 
 // Mock the next-auth/react module
-vi.mock('next-auth/react', () => ({
+vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
 }));
 
 // Mock the next/navigation hooks
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter: vi.fn(),
 }));
 
 // Mock the admin-supabase module
-vi.mock('@/lib/admin-supabase', () => ({
+vi.mock("@/lib/admin-supabase", () => ({
   getFeedbackStats: vi.fn(),
 }));
 
@@ -36,19 +36,19 @@ const localStorageMock = (() => {
     }),
   };
 })();
-Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+Object.defineProperty(window, "localStorage", { value: localStorageMock });
 
 // Mock document.cookie
-Object.defineProperty(document, 'cookie', {
+Object.defineProperty(document, "cookie", {
   writable: true,
-  value: '',
+  value: "",
 });
 
-describe('AdminDashboard Component', () => {
+describe("AdminDashboard Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorageMock.clear();
-    document.cookie = '';
+    document.cookie = "";
 
     // Default mock implementation for getFeedbackStats
     vi.mocked(getFeedbackStats).mockResolvedValue({
@@ -56,125 +56,125 @@ describe('AdminDashboard Component', () => {
         totalFeedback: 5,
         averageRating: 4.5,
         feedbackByType: { suggestion: 3, issue: 2 },
-        feedbackByRating: { '4': 2, '5': 3 },
-        feedbackByDay: [{ date: '2023-05-01', count: 5 }],
+        feedbackByRating: { "4": 2, "5": 3 },
+        feedbackByDay: [{ date: "2023-05-01", count: 5 }],
         recentFeedback: 5,
       },
     });
   });
 
-  it('should show loading state during authentication check', () => {
+  it("should show loading state during authentication check", () => {
     vi.mocked(useRouter).mockReturnValue({
       push: vi.fn(),
     } as any);
     vi.mocked(useSession).mockReturnValue({
       data: null,
-      status: 'loading',
+      status: "loading",
     } as any);
 
     render(<AdminDashboard />);
 
-    expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
+    expect(screen.getByText("Checking authentication...")).toBeInTheDocument();
   });
 
-  it('should redirect to sign-in when not authenticated', async () => {
+  it("should redirect to sign-in when not authenticated", async () => {
     const pushMock = vi.fn();
     vi.mocked(useRouter).mockReturnValue({
       push: pushMock,
     } as any);
     vi.mocked(useSession).mockReturnValue({
       data: null,
-      status: 'unauthenticated',
+      status: "unauthenticated",
     } as any);
 
     render(<AdminDashboard />);
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith('/api/auth/signin');
+      expect(pushMock).toHaveBeenCalledWith("/api/auth/signin");
     });
   });
 
-  it('should render dashboard when authenticated with NextAuth', async () => {
+  it("should render dashboard when authenticated with NextAuth", async () => {
     vi.mocked(useRouter).mockReturnValue({
       push: vi.fn(),
     } as any);
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: {
-          name: 'Test Admin',
+          name: "Test Admin",
           isAdmin: true,
         },
       },
-      status: 'authenticated',
+      status: "authenticated",
     } as any);
 
     render(<AdminDashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
-      expect(screen.getByText('4.5')).toBeInTheDocument();
-      expect(screen.getByText('Admin Shortcuts')).toBeInTheDocument();
-      expect(screen.getByText('Admin Settings')).toBeInTheDocument();
-      expect(screen.getByText('Visit Website')).toBeInTheDocument();
+      expect(screen.getByText("Admin Dashboard")).toBeInTheDocument();
+      expect(screen.getByText("4.5")).toBeInTheDocument();
+      expect(screen.getByText("Admin Shortcuts")).toBeInTheDocument();
+      expect(screen.getByText("Admin Settings")).toBeInTheDocument();
+      expect(screen.getByText("Visit Website")).toBeInTheDocument();
       expect(screen.getByText(/You have 5 total feedback entries/)).toBeInTheDocument();
     });
   });
 
-  it('should render dashboard when authenticated with localStorage', async () => {
+  it("should render dashboard when authenticated with localStorage", async () => {
     vi.mocked(useRouter).mockReturnValue({
       push: vi.fn(),
     } as any);
     vi.mocked(useSession).mockReturnValue({
       data: null,
-      status: 'unauthenticated',
+      status: "unauthenticated",
     } as any);
 
-    localStorageMock.setItem('isAdmin', 'true');
+    localStorageMock.setItem("isAdmin", "true");
 
     render(<AdminDashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
+      expect(screen.getByText("Admin Dashboard")).toBeInTheDocument();
     });
   });
 
-  it('should handle stats loading error gracefully', async () => {
+  it("should handle stats loading error gracefully", async () => {
     vi.mocked(useRouter).mockReturnValue({
       push: vi.fn(),
     } as any);
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: {
-          name: 'Test Admin',
+          name: "Test Admin",
           isAdmin: true,
         },
       },
-      status: 'authenticated',
+      status: "authenticated",
     } as any);
 
-    vi.mocked(getFeedbackStats).mockRejectedValue(new Error('Failed to load stats'));
+    vi.mocked(getFeedbackStats).mockRejectedValue(new Error("Failed to load stats"));
 
     render(<AdminDashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
-      expect(screen.getByText('N/A')).toBeInTheDocument();
-      expect(screen.getByText('No feedback data available.')).toBeInTheDocument();
+      expect(screen.getByText("Admin Dashboard")).toBeInTheDocument();
+      expect(screen.getByText("N/A")).toBeInTheDocument();
+      expect(screen.getByText("No feedback data available.")).toBeInTheDocument();
     });
   });
 
-  it('should show empty feedback message when no feedback is available', async () => {
+  it("should show empty feedback message when no feedback is available", async () => {
     vi.mocked(useRouter).mockReturnValue({
       push: vi.fn(),
     } as any);
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: {
-          name: 'Test Admin',
+          name: "Test Admin",
           isAdmin: true,
         },
       },
-      status: 'authenticated',
+      status: "authenticated",
     } as any);
 
     vi.mocked(getFeedbackStats).mockResolvedValue({
@@ -191,7 +191,7 @@ describe('AdminDashboard Component', () => {
     render(<AdminDashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText('No feedback data available.')).toBeInTheDocument();
+      expect(screen.getByText("No feedback data available.")).toBeInTheDocument();
     });
   });
 });

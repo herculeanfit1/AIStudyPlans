@@ -1,12 +1,12 @@
 /**
  * Consolidated Email Testing Utility
- * 
+ *
  * This script combines functionality from:
  * - test-email-simple.js
  * - test-email-specific.js
  * - test-email-local.js
  * - test-resend.js
- * 
+ *
  * Usage:
  *   node scripts/email-test.js simple [email@example.com]
  *   node scripts/email-test.js waitlist [email@example.com]
@@ -14,23 +14,23 @@
  *   node scripts/email-test.js all [email@example.com]
  */
 
-require('dotenv').config({ path: '.env.local' });
-const { Resend } = require('resend');
+require("dotenv").config({ path: ".env.local" });
+const { Resend } = require("resend");
 
 // Check for required environment variables
 if (!process.env.RESEND_API_KEY) {
-  console.error('Error: RESEND_API_KEY environment variable is not set');
-  console.log('Set this in your .env.local file or environment variables');
+  console.error("Error: RESEND_API_KEY environment variable is not set");
+  console.log("Set this in your .env.local file or environment variables");
   process.exit(1);
 }
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const DEFAULT_TEST_EMAIL = 'delivered@resend.dev';
+const DEFAULT_TEST_EMAIL = "delivered@resend.dev";
 
 // Simple email template
 const simpleEmailTemplate = {
-  from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
-  subject: 'Test Email from AIStudyPlans',
+  from: process.env.EMAIL_FROM || "onboarding@resend.dev",
+  subject: "Test Email from AIStudyPlans",
   html: `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h1 style="color: #4F46E5;">Test Email</h1>
@@ -43,8 +43,8 @@ const simpleEmailTemplate = {
 
 // Waitlist confirmation email template
 const waitlistEmailTemplate = {
-  from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
-  subject: 'Welcome to the AIStudyPlans Waitlist!',
+  from: process.env.EMAIL_FROM || "onboarding@resend.dev",
+  subject: "Welcome to the AIStudyPlans Waitlist!",
   html: `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h1 style="color: #4F46E5;">Welcome to AIStudyPlans!</h1>
@@ -57,8 +57,8 @@ const waitlistEmailTemplate = {
 
 // Feedback email template
 const feedbackEmailTemplate = {
-  from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
-  subject: 'Share Your Feedback with AIStudyPlans',
+  from: process.env.EMAIL_FROM || "onboarding@resend.dev",
+  subject: "Share Your Feedback with AIStudyPlans",
   html: `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h1 style="color: #4F46E5;">We Value Your Feedback</h1>
@@ -78,37 +78,37 @@ const feedbackEmailTemplate = {
 async function sendTestEmail(type, recipient) {
   const to = recipient || DEFAULT_TEST_EMAIL;
   console.log(`Sending ${type} test email to: ${to}`);
-  
+
   try {
-    let results = [];
-    
-    if (type === 'simple' || type === 'all') {
+    const results = [];
+
+    if (type === "simple" || type === "all") {
       const data = await resend.emails.send({
         ...simpleEmailTemplate,
         to,
         reply_to: process.env.EMAIL_REPLY_TO || undefined,
       });
-      results.push({ type: 'simple', result: data });
+      results.push({ type: "simple", result: data });
     }
-    
-    if (type === 'waitlist' || type === 'all') {
+
+    if (type === "waitlist" || type === "all") {
       const data = await resend.emails.send({
         ...waitlistEmailTemplate,
         to,
         reply_to: process.env.EMAIL_REPLY_TO || undefined,
       });
-      results.push({ type: 'waitlist', result: data });
+      results.push({ type: "waitlist", result: data });
     }
-    
-    if (type === 'feedback' || type === 'all') {
+
+    if (type === "feedback" || type === "all") {
       const data = await resend.emails.send({
         ...feedbackEmailTemplate,
         to,
         reply_to: process.env.EMAIL_REPLY_TO || undefined,
       });
-      results.push({ type: 'feedback', result: data });
+      results.push({ type: "feedback", result: data });
     }
-    
+
     results.forEach(({ type, result }) => {
       if (result.error) {
         console.error(`❌ ${type.toUpperCase()} EMAIL ERROR:`, result.error);
@@ -116,24 +116,23 @@ async function sendTestEmail(type, recipient) {
         console.log(`✅ ${type.toUpperCase()} EMAIL SENT:`, result.data.id);
       }
     });
-    
   } catch (error) {
-    console.error('❌ ERROR:', error.message);
+    console.error("❌ ERROR:", error.message);
     process.exit(1);
   }
 }
 
 // Parse command line arguments
-const emailType = process.argv[2] || 'simple';
+const emailType = process.argv[2] || "simple";
 const recipient = process.argv[3];
 
 // Validate email type
-const validTypes = ['simple', 'waitlist', 'feedback', 'all'];
+const validTypes = ["simple", "waitlist", "feedback", "all"];
 if (!validTypes.includes(emailType)) {
-  console.error(`Error: Invalid email type. Must be one of: ${validTypes.join(', ')}`);
-  console.log('Usage: node scripts/email-test.js [type] [recipient@example.com]');
+  console.error(`Error: Invalid email type. Must be one of: ${validTypes.join(", ")}`);
+  console.log("Usage: node scripts/email-test.js [type] [recipient@example.com]");
   process.exit(1);
 }
 
 // Run the script
-sendTestEmail(emailType, recipient); 
+sendTestEmail(emailType, recipient);

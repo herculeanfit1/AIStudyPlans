@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { addFeedbackSubmission } from "./admin-supabase";
-import { FeedbackResponse as FeedbackResponseType } from "./types";
+import type { FeedbackResponse as FeedbackResponseType } from "./types";
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -14,8 +14,8 @@ export const supabase = isMockMode
   ? createMockClient()
   : createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
-        persistSession: false // Don't persist the session in local storage
-      }
+        persistSession: false, // Don't persist the session in local storage
+      },
     });
 
 // Create a mock client for development without Supabase
@@ -52,8 +52,7 @@ function createMockClient() {
             createMockResponse({
               id: 1,
               name: data && data.length > 0 ? data[0].name : "Mock User",
-              email:
-                data && data.length > 0 ? data[0].email : "mock@example.com",
+              email: data && data.length > 0 ? data[0].email : "mock@example.com",
               source: data && data.length > 0 ? data[0].source : undefined,
               feedback_campaign_started:
                 data && data.length > 0 ? data[0].feedback_campaign_started : false,
@@ -92,8 +91,10 @@ export async function addToWaitlist(
 ): Promise<{ success: boolean; error?: string; user?: WaitlistUser }> {
   try {
     // eslint-disable-next-line no-console
-    console.log(`Attempting to add user to waitlist: ${name} (${email}) with Supabase URL: ${supabaseUrl.substring(0, 15)}...`);
-    
+    console.log(
+      `Attempting to add user to waitlist: ${name} (${email}) with Supabase URL: ${supabaseUrl.substring(0, 15)}...`,
+    );
+
     // Check if user already exists
     const { data: existingUsers, error: checkError } = await supabase
       .from("waitlist_users")
@@ -193,11 +194,7 @@ export async function storeFeedback(
     };
 
     // Add to admin dashboard data
-    addFeedbackSubmission(
-      feedback,
-      `User ${waitlistUserId}`,
-      `user${waitlistUserId}@example.com`,
-    );
+    addFeedbackSubmission(feedback, `User ${waitlistUserId}`, `user${waitlistUserId}@example.com`);
 
     return { success: true };
   }
@@ -240,9 +237,7 @@ export async function getUsersForNextFeedbackEmail(): Promise<{
           created_at: new Date().toISOString(),
           feedback_campaign_started: true,
           email_sequence_position: 1,
-          last_email_sent_at: new Date(
-            Date.now() - 6 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
+          last_email_sent_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
         },
       ],
     };
@@ -258,7 +253,7 @@ export async function getUsersForNextFeedbackEmail(): Promise<{
     // Third feedback (position 3) -> Final feedback (position 4): 7-14 days
 
     // Get the appropriate time threshold based on sequence position
-    const getTimeThresholdForPosition = function (position: number): Date {
+    const getTimeThresholdForPosition = (position: number): Date => {
       // For new signups (position 0), send first feedback email after 5 days (middle of 3-7 day range)
       if (position === 0) {
         return new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);

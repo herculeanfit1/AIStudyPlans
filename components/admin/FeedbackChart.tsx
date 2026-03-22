@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
   ArcElement,
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
-} from 'chart.js';
+} from "chart.js";
+import React from "react";
+import { Bar, Doughnut, Line } from "react-chartjs-2";
 
 // Register ChartJS components
 ChartJS.register(
@@ -25,7 +25,7 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 interface LineChartProps {
@@ -45,17 +45,17 @@ interface DoughnutChartProps {
 
 export function FeedbackLineChart({ title, data }: LineChartProps) {
   const chartData = {
-    labels: data.map(item => {
+    labels: data.map((item) => {
       // Format date as MM/DD
       const date = new Date(item.date);
       return `${date.getMonth() + 1}/${date.getDate()}`;
     }),
     datasets: [
       {
-        label: 'Feedback Received',
-        data: data.map(item => item.count),
-        borderColor: 'rgb(99, 102, 241)',
-        backgroundColor: 'rgba(99, 102, 241, 0.5)',
+        label: "Feedback Received",
+        data: data.map((item) => item.count),
+        borderColor: "rgb(99, 102, 241)",
+        backgroundColor: "rgba(99, 102, 241, 0.5)",
         tension: 0.2,
       },
     ],
@@ -65,7 +65,7 @@ export function FeedbackLineChart({ title, data }: LineChartProps) {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: "top" as const,
       },
       title: {
         display: true,
@@ -91,24 +91,24 @@ export function FeedbackLineChart({ title, data }: LineChartProps) {
 
 export function FeedbackBarChart({ title, data }: BarChartProps) {
   const chartData = {
-    labels: data.map(item => item.label),
+    labels: data.map((item) => item.label),
     datasets: [
       {
-        label: 'Count',
-        data: data.map(item => item.value),
+        label: "Count",
+        data: data.map((item) => item.value),
         backgroundColor: [
-          'rgba(99, 102, 241, 0.6)',
-          'rgba(139, 92, 246, 0.6)',
-          'rgba(168, 85, 247, 0.6)',
-          'rgba(217, 70, 239, 0.6)',
-          'rgba(236, 72, 153, 0.6)',
+          "rgba(99, 102, 241, 0.6)",
+          "rgba(139, 92, 246, 0.6)",
+          "rgba(168, 85, 247, 0.6)",
+          "rgba(217, 70, 239, 0.6)",
+          "rgba(236, 72, 153, 0.6)",
         ],
         borderColor: [
-          'rgb(99, 102, 241)',
-          'rgb(139, 92, 246)',
-          'rgb(168, 85, 247)',
-          'rgb(217, 70, 239)',
-          'rgb(236, 72, 153)',
+          "rgb(99, 102, 241)",
+          "rgb(139, 92, 246)",
+          "rgb(168, 85, 247)",
+          "rgb(217, 70, 239)",
+          "rgb(236, 72, 153)",
         ],
         borderWidth: 1,
       },
@@ -145,23 +145,23 @@ export function FeedbackBarChart({ title, data }: BarChartProps) {
 
 export function FeedbackDoughnutChart({ title, data }: DoughnutChartProps) {
   const chartData = {
-    labels: data.map(item => item.label),
+    labels: data.map((item) => item.label),
     datasets: [
       {
-        data: data.map(item => item.value),
+        data: data.map((item) => item.value),
         backgroundColor: [
-          'rgba(99, 102, 241, 0.6)',
-          'rgba(139, 92, 246, 0.6)',
-          'rgba(168, 85, 247, 0.6)',
-          'rgba(217, 70, 239, 0.6)',
-          'rgba(236, 72, 153, 0.6)',
+          "rgba(99, 102, 241, 0.6)",
+          "rgba(139, 92, 246, 0.6)",
+          "rgba(168, 85, 247, 0.6)",
+          "rgba(217, 70, 239, 0.6)",
+          "rgba(236, 72, 153, 0.6)",
         ],
         borderColor: [
-          'rgb(99, 102, 241)',
-          'rgb(139, 92, 246)',
-          'rgb(168, 85, 247)',
-          'rgb(217, 70, 239)',
-          'rgb(236, 72, 153)',
+          "rgb(99, 102, 241)",
+          "rgb(139, 92, 246)",
+          "rgb(168, 85, 247)",
+          "rgb(217, 70, 239)",
+          "rgb(236, 72, 153)",
         ],
         borderWidth: 1,
       },
@@ -172,7 +172,7 @@ export function FeedbackDoughnutChart({ title, data }: DoughnutChartProps) {
     responsive: true,
     plugins: {
       legend: {
-        position: 'right' as const,
+        position: "right" as const,
       },
       title: {
         display: true,
@@ -200,7 +200,7 @@ export function KeywordCloud({ keywords }: { keywords: { text: string; count: nu
             style={{
               backgroundColor: `rgba(99, 102, 241, ${Math.min(keyword.count / 10, 0.9)})`,
               fontSize: `${Math.max(0.8 + keyword.count / 10, 1)}rem`,
-              color: keyword.count > 5 ? 'white' : 'black',
+              color: keyword.count > 5 ? "white" : "black",
             }}
           >
             {keyword.text}
@@ -209,4 +209,4 @@ export function KeywordCloud({ keywords }: { keywords: { text: string; count: nu
       </div>
     </div>
   );
-} 
+}

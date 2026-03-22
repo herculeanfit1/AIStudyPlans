@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { FeedbackWithUser } from '@/lib/admin-supabase';
+import React from "react";
+import type { FeedbackWithUser } from "@/lib/admin-supabase";
 
 interface FeedbackTableProps {
   feedback: FeedbackWithUser[];
@@ -39,9 +39,7 @@ export default function FeedbackTable({
         {[...Array(5)].map((_, i) => (
           <i
             key={i}
-            className={`fas fa-star text-sm ${
-              i < rating ? 'text-yellow-400' : 'text-gray-300'
-            }`}
+            className={`fas fa-star text-sm ${i < rating ? "text-yellow-400" : "text-gray-300"}`}
             aria-hidden="true"
           ></i>
         ))}
@@ -53,17 +51,19 @@ export default function FeedbackTable({
   // Function to render feedback type badge
   const renderFeedbackType = (type: string) => {
     const typeColors = {
-      feature_request: 'bg-blue-100 text-blue-700',
-      general: 'bg-gray-100 text-gray-700',
-      improvement: 'bg-green-100 text-green-700',
-      bug: 'bg-red-100 text-red-700',
+      feature_request: "bg-blue-100 text-blue-700",
+      general: "bg-gray-100 text-gray-700",
+      improvement: "bg-green-100 text-green-700",
+      bug: "bg-red-100 text-red-700",
     };
 
-    const color = typeColors[type as keyof typeof typeColors] || 'bg-gray-100 text-gray-700';
-    const displayName = type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const color = typeColors[type as keyof typeof typeColors] || "bg-gray-100 text-gray-700";
+    const displayName = type.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}
+      >
         {displayName}
       </span>
     );
@@ -149,9 +149,11 @@ export default function FeedbackTable({
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {item.user?.name || 'Unknown'}
+                          {item.user?.name || "Unknown"}
                         </div>
-                        <div className="text-sm text-gray-500">{item.user?.email || 'No email'}</div>
+                        <div className="text-sm text-gray-500">
+                          {item.user?.email || "No email"}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -168,7 +170,7 @@ export default function FeedbackTable({
                     {formatDate(item.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.email_id || 'N/A'}
+                    {item.email_id || "N/A"}
                   </td>
                 </tr>
               ))}
@@ -185,8 +187,8 @@ export default function FeedbackTable({
             disabled={page === 1}
             className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
               page === 1
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-white text-gray-700 hover:bg-gray-50"
             }`}
           >
             Previous
@@ -196,8 +198,8 @@ export default function FeedbackTable({
             disabled={page === totalPages}
             className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
               page === totalPages
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-white text-gray-700 hover:bg-gray-50"
             }`}
           >
             Next
@@ -206,20 +208,21 @@ export default function FeedbackTable({
         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-gray-700">
-              Showing <span className="font-medium">{showingFrom}</span> to{' '}
-              <span className="font-medium">{showingTo}</span> of{' '}
+              Showing <span className="font-medium">{showingFrom}</span> to{" "}
+              <span className="font-medium">{showingTo}</span> of{" "}
               <span className="font-medium">{totalCount}</span> results
             </p>
           </div>
           <div>
-            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <nav
+              className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+              aria-label="Pagination"
+            >
               <button
                 onClick={() => onPageChange(page - 1)}
                 disabled={page === 1}
                 className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                  page === 1
-                    ? 'text-gray-300 cursor-not-allowed'
-                    : 'text-gray-500 hover:bg-gray-50'
+                  page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"
                 }`}
               >
                 <span className="sr-only">Previous</span>
@@ -240,8 +243,8 @@ export default function FeedbackTable({
                       onClick={() => onPageChange(pageNum)}
                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                         page === pageNum
-                          ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                          ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
                       }`}
                     >
                       {pageNum}
@@ -268,8 +271,8 @@ export default function FeedbackTable({
                 disabled={page === totalPages}
                 className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
                   page === totalPages
-                    ? 'text-gray-300 cursor-not-allowed'
-                    : 'text-gray-500 hover:bg-gray-50'
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-500 hover:bg-gray-50"
                 }`}
               >
                 <span className="sr-only">Next</span>
@@ -281,4 +284,4 @@ export default function FeedbackTable({
       </div>
     </div>
   );
-} 
+}

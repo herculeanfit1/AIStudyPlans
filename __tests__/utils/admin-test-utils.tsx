@@ -1,10 +1,11 @@
-import React, { ReactElement } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
-import { SessionProvider } from 'next-auth/react';
+import { type RenderOptions, render } from "@testing-library/react";
+import { SessionProvider } from "next-auth/react";
+import type React from "react";
+import type { ReactElement } from "react";
 
 // Mock types for session data
 export type MockSessionConfig = {
-  status: 'authenticated' | 'loading' | 'unauthenticated';
+  status: "authenticated" | "loading" | "unauthenticated";
   user?: {
     name?: string;
     email?: string;
@@ -15,22 +16,22 @@ export type MockSessionConfig = {
 
 // Default session config for admin tests
 export const defaultAdminSession: MockSessionConfig = {
-  status: 'authenticated',
+  status: "authenticated",
   user: {
-    name: 'Test Admin',
-    email: 'admin@example.com',
+    name: "Test Admin",
+    email: "admin@example.com",
     isAdmin: true,
   },
 };
 
 // Default unauthenticated session
 export const unauthenticatedSession: MockSessionConfig = {
-  status: 'unauthenticated',
+  status: "unauthenticated",
 };
 
 // Default loading session
 export const loadingSession: MockSessionConfig = {
-  status: 'loading',
+  status: "loading",
 };
 
 interface AdminProviderProps {
@@ -51,7 +52,7 @@ export const AdminProvider = ({
   };
 
   return (
-    <SessionProvider session={sessionConfig.status === 'authenticated' ? session : null}>
+    <SessionProvider session={sessionConfig.status === "authenticated" ? session : null}>
       {children}
     </SessionProvider>
   );
@@ -63,7 +64,7 @@ export const AdminProvider = ({
 export const renderWithAdminContext = (
   ui: ReactElement,
   sessionConfig: MockSessionConfig = defaultAdminSession,
-  options?: Omit<RenderOptions, 'wrapper'>
+  options?: Omit<RenderOptions, "wrapper">,
 ) => {
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <AdminProvider sessionConfig={sessionConfig}>{children}</AdminProvider>
@@ -91,20 +92,20 @@ export const mockLocalStorage = () => {
       }),
     };
   })();
-  
-  Object.defineProperty(window, 'localStorage', {
+
+  Object.defineProperty(window, "localStorage", {
     value: localStorageMock,
     writable: true,
   });
-  
+
   return localStorageMock;
 };
 
 /**
  * Mock document.cookie
  */
-export const mockCookies = (initialCookies = '') => {
-  Object.defineProperty(document, 'cookie', {
+export const mockCookies = (initialCookies = "") => {
+  Object.defineProperty(document, "cookie", {
     writable: true,
     value: initialCookies,
   });
@@ -113,18 +114,15 @@ export const mockCookies = (initialCookies = '') => {
 /**
  * Setup mocks for admin tests with localStorage and cookies
  */
-export const setupAdminMocks = (
-  initialLocalStorage = {},
-  initialCookies = ''
-) => {
+export const setupAdminMocks = (initialLocalStorage = {}, initialCookies = "") => {
   const localStorage = mockLocalStorage();
-  
+
   // Set initial localStorage values
   Object.entries(initialLocalStorage).forEach(([key, value]) => {
     localStorage.setItem(key, value as string);
   });
-  
+
   mockCookies(initialCookies);
-  
+
   return localStorage;
-}; 
+};

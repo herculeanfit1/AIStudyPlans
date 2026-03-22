@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import type React from "react";
+import { useState } from "react";
 
 interface FeedbackFiltersProps {
   onFilterChange: (filters: {
@@ -16,27 +17,25 @@ interface FeedbackFiltersProps {
 
 export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackFiltersProps) {
   const [filters, setFilters] = useState({
-    type: '',
+    type: "",
     minRating: undefined as number | undefined,
     maxRating: undefined as number | undefined,
-    startDate: '',
-    endDate: '',
-    searchTerm: '',
+    startDate: "",
+    endDate: "",
+    searchTerm: "",
   });
 
   // Handle input changes
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     let processedValue: string | number | undefined = value;
-    
+
     // Convert rating values to numbers if they're not empty
-    if ((name === 'minRating' || name === 'maxRating') && value !== '') {
+    if ((name === "minRating" || name === "maxRating") && value !== "") {
       processedValue = parseInt(value, 10);
     }
-    
+
     setFilters({
       ...filters,
       [name]: processedValue,
@@ -52,12 +51,12 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
   // Clear all filters
   const clearFilters = () => {
     const resetFilters = {
-      type: '',
+      type: "",
       minRating: undefined,
       maxRating: undefined,
-      startDate: '',
-      endDate: '',
-      searchTerm: '',
+      startDate: "",
+      endDate: "",
+      searchTerm: "",
     };
     setFilters(resetFilters);
     onFilterChange(resetFilters);
@@ -68,7 +67,7 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
       <div className="px-6 py-4 border-b">
         <h3 className="text-lg font-medium text-gray-900">Filters</h3>
       </div>
-      
+
       <form onSubmit={applyFilters} className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {/* Search */}
@@ -86,7 +85,7 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
               className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
             />
           </div>
-          
+
           {/* Feedback Type */}
           <div>
             <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
@@ -106,7 +105,7 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
               <option value="bug">Bug</option>
             </select>
           </div>
-          
+
           {/* Rating Range */}
           <div className="flex space-x-2">
             <div className="w-1/2">
@@ -116,7 +115,7 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
               <select
                 id="minRating"
                 name="minRating"
-                value={filters.minRating !== undefined ? filters.minRating.toString() : ''}
+                value={filters.minRating !== undefined ? filters.minRating.toString() : ""}
                 onChange={handleInputChange}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
               >
@@ -135,7 +134,7 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
               <select
                 id="maxRating"
                 name="maxRating"
-                value={filters.maxRating !== undefined ? filters.maxRating.toString() : ''}
+                value={filters.maxRating !== undefined ? filters.maxRating.toString() : ""}
                 onChange={handleInputChange}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
               >
@@ -148,7 +147,7 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
               </select>
             </div>
           </div>
-          
+
           {/* Date Range */}
           <div>
             <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
@@ -163,7 +162,7 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
               className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
             />
           </div>
-          
+
           <div>
             <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
               To Date
@@ -178,7 +177,7 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
             />
           </div>
         </div>
-        
+
         <div className="flex justify-end space-x-3">
           <button
             type="button"
@@ -195,9 +194,25 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
           >
             {isLoading ? (
               <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Applying...
               </>
@@ -209,4 +224,4 @@ export default function FeedbackFilters({ onFilterChange, isLoading }: FeedbackF
       </form>
     </div>
   );
-} 
+}

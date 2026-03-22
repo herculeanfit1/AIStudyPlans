@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import HowItWorks from './components/HowItWorks';
-import Pricing from './components/Pricing';
-import FAQ from './components/FAQ';
-import WaitlistForm from './components/WaitlistForm';
-import Footer from './components/Footer';
-import { ThemeToggle } from './components/ThemeToggle';
-import ParticlesBackground from './components/ParticlesBackground';
+import React from "react";
+import FAQ from "./components/FAQ";
+import Features from "./components/Features";
+import Footer from "./components/Footer";
+import Header from "./components/Header";
+import Hero from "./components/Hero";
+import HowItWorks from "./components/HowItWorks";
+import ParticlesBackground from "./components/ParticlesBackground";
+import Pricing from "./components/Pricing";
+import { ThemeToggle } from "./components/ThemeToggle";
+import WaitlistForm from "./components/WaitlistForm";
 
 export default function Home() {
   return (
@@ -25,9 +25,9 @@ export default function Home() {
         <Pricing />
         <FAQ />
         <WaitlistForm />
-        
+
         {/* Keep this at the very end of the main content, before the closing main tag */}
-        {process.env.NODE_ENV === 'development' && (
+        {process.env.NODE_ENV === "development" && (
           <div className="mt-24 text-center opacity-30 hover:opacity-100 transition-opacity">
             <div className="text-xs text-gray-400">
               <a href="/admin-simple" className="text-gray-400 hover:text-gray-600 underline">
@@ -40,4 +40,4 @@ export default function Home() {
       <Footer />
     </div>
   );
-} 
+}

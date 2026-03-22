@@ -1,18 +1,18 @@
-'use client'
+"use client";
 
-import React, { useEffect } from 'react'
+import React, { useEffect } from "react";
 
 export default function AdminErrorPage({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error('Admin page error:', error)
-  }, [error])
+    console.error("Admin page error:", error);
+  }, [error]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -23,7 +23,7 @@ export default function AdminErrorPage({
             <p className="mb-2">There was an error while loading the admin page.</p>
             <p className="text-sm text-gray-500">Error: {error.message}</p>
           </div>
-          
+
           <div className="bg-gray-50 p-4 rounded-md text-left mb-6">
             <p className="text-sm font-medium text-gray-700 mb-2">Possible causes:</p>
             <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
@@ -33,7 +33,7 @@ export default function AdminErrorPage({
               <li>Application configuration error</li>
             </ul>
           </div>
-          
+
           <div className="space-y-3">
             <button
               onClick={() => reset()}
@@ -41,7 +41,7 @@ export default function AdminErrorPage({
             >
               Try Again
             </button>
-            
+
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- auth redirect needs full navigation */}
             <a
               href="/api/auth/signin"
@@ -53,5 +53,5 @@ export default function AdminErrorPage({
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

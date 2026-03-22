@@ -1,6 +1,6 @@
-import React from 'react';
-import { format } from 'date-fns';
-import { MonitoringStats } from '../../types/monitoring';
+import { format } from "date-fns";
+import React from "react";
+import type { MonitoringStats } from "../../types/monitoring";
 
 interface OverviewSectionProps {
   stats: MonitoringStats;
@@ -8,7 +8,11 @@ interface OverviewSectionProps {
   getStatusColor: (status: string) => string;
 }
 
-export default function OverviewSection({ stats, formatUptime, getStatusColor }: OverviewSectionProps) {
+export default function OverviewSection({
+  stats,
+  formatUptime,
+  getStatusColor,
+}: OverviewSectionProps) {
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -21,13 +25,13 @@ export default function OverviewSection({ stats, formatUptime, getStatusColor }:
                 <div className="flex items-center">
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(
-                      stats.apiStatus
+                      stats.apiStatus,
                     )}`}
                   >
                     {stats.apiStatus}
                   </span>
                   <span className="ml-2 text-sm text-gray-500">
-                    Last checked: {format(new Date(stats.lastChecked), 'HH:mm:ss')}
+                    Last checked: {format(new Date(stats.lastChecked), "HH:mm:ss")}
                   </span>
                 </div>
               </dd>
@@ -45,9 +49,7 @@ export default function OverviewSection({ stats, formatUptime, getStatusColor }:
                   <div className="text-2xl font-semibold text-gray-900">
                     {formatUptime(stats.uptime)}
                   </div>
-                  <div className="text-sm text-gray-500">
-                    Since last restart
-                  </div>
+                  <div className="text-sm text-gray-500">Since last restart</div>
                 </div>
               </dd>
             </dl>
@@ -89,24 +91,22 @@ export default function OverviewSection({ stats, formatUptime, getStatusColor }:
                   <div className="text-2xl font-semibold text-gray-900">
                     {stats.averageResponseTime} ms
                   </div>
-                  <div className="text-sm text-gray-500">
-                    API endpoints
-                  </div>
+                  <div className="text-sm text-gray-500">API endpoints</div>
                 </div>
                 <div
                   className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     stats.averageResponseTime < 200
-                      ? 'bg-green-100 text-green-800'
+                      ? "bg-green-100 text-green-800"
                       : stats.averageResponseTime < 500
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
                   }`}
                 >
                   {stats.averageResponseTime < 200
-                    ? 'Fast'
+                    ? "Fast"
                     : stats.averageResponseTime < 500
-                    ? 'Moderate'
-                    : 'Slow'}
+                      ? "Moderate"
+                      : "Slow"}
                 </div>
               </dd>
             </dl>
@@ -130,14 +130,12 @@ export default function OverviewSection({ stats, formatUptime, getStatusColor }:
                 <div className="sm:col-span-1">
                   <dt className="text-sm font-medium text-gray-500">Version</dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {stats.healthData.version || 'Not available'}
+                    {stats.healthData.version || "Not available"}
                   </dd>
                 </div>
                 <div className="sm:col-span-1">
                   <dt className="text-sm font-medium text-gray-500">Hostname</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {stats.healthData.hostname}
-                  </dd>
+                  <dd className="mt-1 text-sm text-gray-900">{stats.healthData.hostname}</dd>
                 </div>
                 <div className="sm:col-span-1">
                   <dt className="text-sm font-medium text-gray-500">Platform</dt>
@@ -147,9 +145,7 @@ export default function OverviewSection({ stats, formatUptime, getStatusColor }:
                 </div>
                 <div className="sm:col-span-1">
                   <dt className="text-sm font-medium text-gray-500">CPU Cores</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {stats.healthData.system.cpuCount}
-                  </dd>
+                  <dd className="mt-1 text-sm text-gray-900">{stats.healthData.system.cpuCount}</dd>
                 </div>
                 <div className="sm:col-span-1">
                   <dt className="text-sm font-medium text-gray-500">Memory Usage</dt>
@@ -164,4 +160,4 @@ export default function OverviewSection({ stats, formatUptime, getStatusColor }:
       )}
     </div>
   );
-} 
+}

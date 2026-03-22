@@ -7,7 +7,7 @@ export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // This effect only needs to run once on component mount to 
+  // This effect only needs to run once on component mount to
   // prevent hydration mismatch with server-rendered content
   useEffect(() => {
     setMounted(true);

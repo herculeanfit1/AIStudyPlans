@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import { ThemeToggle } from "../../app/components/ThemeToggle";
 import Hero from "../../app/components/Hero";
 import ParticlesBackground from "../../app/components/ParticlesBackground";
+import { ThemeToggle } from "../../app/components/ThemeToggle";
 
 // Mock the next-themes hook
 vi.mock("next-themes", () => ({

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Simple color utility to avoid chalk ES module issues
 const colors = {
@@ -10,60 +10,62 @@ const colors = {
   yellow: (text) => `\x1b[33m${text}\x1b[0m`,
   red: (text) => `\x1b[31m${text}\x1b[0m`,
   gray: (text) => `\x1b[90m${text}\x1b[0m`,
-  cyan: (text) => `\x1b[36m${text}\x1b[0m`
+  cyan: (text) => `\x1b[36m${text}\x1b[0m`,
 };
 
 class DependencyReportGenerator {
   constructor() {
     this.projectRoot = process.cwd();
-    this.reportPath = path.join(this.projectRoot, 'dependency-report.md');
+    this.reportPath = path.join(this.projectRoot, "dependency-report.md");
   }
 
   async generateReport() {
-    console.log(colors.blue('📊 Generating Comprehensive Dependency Report...'));
-    
+    console.log(colors.blue("📊 Generating Comprehensive Dependency Report..."));
+
     try {
       const reportData = await this.collectReportData();
       const markdownReport = this.generateMarkdownReport(reportData);
-      
+
       fs.writeFileSync(this.reportPath, markdownReport);
       console.log(colors.green(`✅ Report generated: ${this.reportPath}`));
-      
+
       return reportData;
     } catch (error) {
-      console.error(colors.red('❌ Report generation failed:'), error.message);
+      console.error(colors.red("❌ Report generation failed:"), error.message);
       return null;
     }
   }
 
   async collectReportData() {
-    const packageJson = JSON.parse(fs.readFileSync(path.join(this.projectRoot, 'package.json'), 'utf8'));
-    
+    const packageJson = JSON.parse(
+      fs.readFileSync(path.join(this.projectRoot, "package.json"), "utf8"),
+    );
+
     // Load status data if available
     let statusData = null;
-    const statusFile = path.join(this.projectRoot, '.dependency-status.json');
+    const statusFile = path.join(this.projectRoot, ".dependency-status.json");
     if (fs.existsSync(statusFile)) {
-      statusData = JSON.parse(fs.readFileSync(statusFile, 'utf8'));
+      statusData = JSON.parse(fs.readFileSync(statusFile, "utf8"));
     }
-    
+
     // Load audit data if available
     let auditData = null;
-    const auditFile = path.join(this.projectRoot, '.security-audit.json');
+    const auditFile = path.join(this.projectRoot, ".security-audit.json");
     if (fs.existsSync(auditFile)) {
-      auditData = JSON.parse(fs.readFileSync(auditFile, 'utf8'));
+      auditData = JSON.parse(fs.readFileSync(auditFile, "utf8"));
     }
-    
+
     return {
       projectName: packageJson.name,
       version: packageJson.version,
-      nodeVersion: packageJson.engines?.node || 'Not specified',
-      npmVersion: packageJson.engines?.npm || 'Not specified',
+      nodeVersion: packageJson.engines?.node || "Not specified",
+      npmVersion: packageJson.engines?.npm || "Not specified",
       dependencies: packageJson.dependencies || {},
       devDependencies: packageJson.devDependencies || {},
       scripts: packageJson.scripts || {},
       statusData,
       auditData,
-      generatedAt: new Date().toISOString()
+      generatedAt: new Date().toISOString(),
     };
   }
 
@@ -81,9 +83,9 @@ class DependencyReportGenerator {
 - **Node.js Version:** ${data.nodeVersion}
 - **NPM Version:** ${data.npmVersion}
 
-${data.statusData ? this.generateStatusSection(data.statusData) : ''}
+${data.statusData ? this.generateStatusSection(data.statusData) : ""}
 
-${data.auditData ? this.generateSecuritySection(data.auditData) : ''}
+${data.auditData ? this.generateSecuritySection(data.auditData) : ""}
 
 ## 📦 Production Dependencies
 
@@ -140,10 +142,10 @@ ${this.generateScriptsTable(data.scripts)}
 - **Last Status Check:** ${new Date(statusData.timestamp).toLocaleString()}
 - **Outdated Packages:** ${statusData.outdatedCount || 0}
 - **Security Vulnerabilities:** ${statusData.vulnerabilityCount || 0}
-- **Lock File Valid:** ${statusData.lockFileValid ? '✅ Yes' : '❌ No'}
+- **Lock File Valid:** ${statusData.lockFileValid ? "✅ Yes" : "❌ No"}
 
 ### Recommendations
-${statusData.recommendations?.map(rec => `- ${rec}`).join('\n') || 'No recommendations available'}
+${statusData.recommendations?.map((rec) => `- ${rec}`).join("\n") || "No recommendations available"}
 `;
   }
 
@@ -151,18 +153,18 @@ ${statusData.recommendations?.map(rec => `- ${rec}`).join('\n') || 'No recommend
     return `
 ## 🔒 Security Status
 
-- **Risk Level:** ${auditData.riskLevel?.toUpperCase() || 'Unknown'}
+- **Risk Level:** ${auditData.riskLevel?.toUpperCase() || "Unknown"}
 - **Last Security Audit:** ${new Date(auditData.timestamp).toLocaleString()}
 - **Custom Security Checks:** ${auditData.customChecks?.length || 0} issues found
 
 ### Security Recommendations
-${auditData.recommendations?.map(rec => `- ${rec}`).join('\n') || 'No security recommendations available'}
+${auditData.recommendations?.map((rec) => `- ${rec}`).join("\n") || "No security recommendations available"}
 `;
   }
 
   generateDependencyTable(dependencies) {
     if (Object.keys(dependencies).length === 0) {
-      return '*No dependencies*';
+      return "*No dependencies*";
     }
 
     const rows = Object.entries(dependencies).map(([name, version]) => {
@@ -171,21 +173,21 @@ ${auditData.recommendations?.map(rec => `- ${rec}`).join('\n') || 'No security r
 
     return `| Package | Version |
 |---------|---------|
-${rows.join('\n')}`;
+${rows.join("\n")}`;
   }
 
   generateScriptsTable(scripts) {
     const lockScripts = Object.entries(scripts)
-      .filter(([name]) => name.startsWith('lock:') || name.includes('maintenance'))
+      .filter(([name]) => name.startsWith("lock:") || name.includes("maintenance"))
       .map(([name, command]) => `| ${name} | ${command} |`);
 
     if (lockScripts.length === 0) {
-      return '*No dependency management scripts found*';
+      return "*No dependency management scripts found*";
     }
 
     return `| Script | Command |
 |--------|---------|
-${lockScripts.join('\n')}`;
+${lockScripts.join("\n")}`;
   }
 }
 
@@ -195,4 +197,4 @@ if (require.main === module) {
   generator.generateReport();
 }
 
-module.exports = DependencyReportGenerator; 
+module.exports = DependencyReportGenerator;

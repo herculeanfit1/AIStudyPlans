@@ -1,30 +1,32 @@
 #!/usr/bin/env node
 /**
  * SchedulEd Email CLI Utility
- * 
+ *
  * A command-line tool for testing email functionality
- * 
+ *
  * Usage:
  * node email-cli.js waitlist john.doe@example.com
  * node email-cli.js reset john.doe@example.com abc123
  */
 
 // Load environment variables
-require('dotenv').config({ path: '.env.local' });
-const { Resend } = require('resend');
+require("dotenv").config({ path: ".env.local" });
+const { Resend } = require("resend");
 
 // Initialize Resend with API key
 const resendApiKey = process.env.RESEND_API_KEY;
 if (!resendApiKey) {
-  console.error('Error: RESEND_API_KEY is not defined in your .env.local file');
-  console.error('Please set up your environment variables first. See email-setup.md for instructions.');
+  console.error("Error: RESEND_API_KEY is not defined in your .env.local file");
+  console.error(
+    "Please set up your environment variables first. See email-setup.md for instructions.",
+  );
   process.exit(1);
 }
 
 const resend = new Resend(resendApiKey);
-const fromEmail = process.env.EMAIL_FROM || 'Lindsey <lindsey@aistudyplans.com>';
-const replyToEmail = process.env.EMAIL_REPLY_TO || 'support@aistudyplans.com';
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const fromEmail = process.env.EMAIL_FROM || "Lindsey <lindsey@aistudyplans.com>";
+const replyToEmail = process.env.EMAIL_REPLY_TO || "support@aistudyplans.com";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -40,14 +42,15 @@ if (!command || !email) {
 async function main() {
   try {
     switch (command.toLowerCase()) {
-      case 'waitlist':
+      case "waitlist":
         await sendWaitlistEmail(email);
         break;
-      case 'reset':
-        const token = args[2] || 'test-token-123456789';
+      case "reset": {
+        const token = args[2] || "test-token-123456789";
         await sendPasswordResetEmail(email, token);
         break;
-      case 'test':
+      }
+      case "test":
         await sendTestEmail(email);
         break;
       default:
@@ -56,34 +59,34 @@ async function main() {
         process.exit(1);
     }
   } catch (error) {
-    console.error('Error sending email:', error.message || error);
+    console.error("Error sending email:", error.message || error);
     process.exit(1);
   }
 }
 
 // Show help message
 function showHelp() {
-  console.log('SchedulEd Email CLI Utility');
-  console.log('------------------------------');
-  console.log('Usage:');
-  console.log('  node email-cli.js <command> <email> [options]');
-  console.log('\nCommands:');
-  console.log('  waitlist <email>           Send a waitlist confirmation email');
-  console.log('  reset <email> [token]      Send a password reset email');
-  console.log('  test <email>               Send a test email');
-  console.log('\nExamples:');
-  console.log('  node email-cli.js waitlist john.doe@example.com');
-  console.log('  node email-cli.js reset john.doe@example.com abc123');
-  console.log('  node email-cli.js test john.doe@example.com');
+  console.log("SchedulEd Email CLI Utility");
+  console.log("------------------------------");
+  console.log("Usage:");
+  console.log("  node email-cli.js <command> <email> [options]");
+  console.log("\nCommands:");
+  console.log("  waitlist <email>           Send a waitlist confirmation email");
+  console.log("  reset <email> [token]      Send a password reset email");
+  console.log("  test <email>               Send a test email");
+  console.log("\nExamples:");
+  console.log("  node email-cli.js waitlist john.doe@example.com");
+  console.log("  node email-cli.js reset john.doe@example.com abc123");
+  console.log("  node email-cli.js test john.doe@example.com");
 }
 
 // Send waitlist confirmation email
 async function sendWaitlistEmail(to) {
   console.log(`Sending waitlist confirmation email to ${to}...`);
-  
+
   // Get email templates (simplified version of what's in lib/email-templates.ts)
   const year = new Date().getFullYear();
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -160,7 +163,7 @@ The SchedulEd Team
   const { data, error } = await resend.emails.send({
     from: fromEmail,
     to,
-    subject: 'Welcome to the SchedulEd Waitlist!',
+    subject: "Welcome to the SchedulEd Waitlist!",
     html,
     text,
     reply_to: replyToEmail,
@@ -170,19 +173,19 @@ The SchedulEd Team
     throw new Error(`Failed to send waitlist email: ${error.message}`);
   }
 
-  console.log('✅ Waitlist confirmation email sent successfully!');
-  console.log('Email ID:', data.id);
+  console.log("✅ Waitlist confirmation email sent successfully!");
+  console.log("Email ID:", data.id);
   return data;
 }
 
 // Send password reset email
 async function sendPasswordResetEmail(to, token) {
   console.log(`Sending password reset email to ${to}...`);
-  
+
   // Generate reset URL
   const resetUrl = `${appUrl}/reset-password?token=${token}`;
   const year = new Date().getFullYear();
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -302,7 +305,7 @@ The SchedulEd Team
   const { data, error } = await resend.emails.send({
     from: fromEmail,
     to,
-    subject: 'Reset Your SchedulEd Password',
+    subject: "Reset Your SchedulEd Password",
     html,
     text,
     reply_to: replyToEmail,
@@ -312,20 +315,20 @@ The SchedulEd Team
     throw new Error(`Failed to send password reset email: ${error.message}`);
   }
 
-  console.log('✅ Password reset email sent successfully!');
-  console.log('Email ID:', data.id);
-  console.log('Reset URL:', resetUrl);
+  console.log("✅ Password reset email sent successfully!");
+  console.log("Email ID:", data.id);
+  console.log("Reset URL:", resetUrl);
   return data;
 }
 
 // Send a simple test email
 async function sendTestEmail(to) {
   console.log(`Sending test email to ${to}...`);
-  
+
   const { data, error } = await resend.emails.send({
     from: fromEmail,
     to,
-    subject: 'SchedulEd Email Test',
+    subject: "SchedulEd Email Test",
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <img src="${appUrl}/SchedulEd_new_logo.png" alt="SchedulEd Logo" style="max-width: 150px; height: auto; margin-bottom: 20px;" />
@@ -349,10 +352,10 @@ Sent at: ${new Date().toLocaleString()}`,
     throw new Error(`Failed to send test email: ${error.message}`);
   }
 
-  console.log('✅ Test email sent successfully!');
-  console.log('Email ID:', data.id);
+  console.log("✅ Test email sent successfully!");
+  console.log("Email ID:", data.id);
   return data;
 }
 
 // Run the main function
-main(); 
+main();

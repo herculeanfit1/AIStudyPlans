@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { cookies } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Constants
-const CSRF_COOKIE_NAME = 'X-CSRF-Token';
-const CSRF_HEADER_NAME = 'X-CSRF-Token';
+const CSRF_COOKIE_NAME = "X-CSRF-Token";
+const CSRF_HEADER_NAME = "X-CSRF-Token";
 const CSRF_TOKEN_LENGTH = 32;
 const CSRF_COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours in seconds
 
@@ -14,9 +14,9 @@ const CSRF_COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours in seconds
 export function generateCsrfToken(): string {
   // For static exports, use a simpler approach without crypto
   const array = new Uint8Array(CSRF_TOKEN_LENGTH);
-  
+
   // In browser environments use Web Crypto API
-  if (typeof window !== 'undefined' && window.crypto) {
+  if (typeof window !== "undefined" && window.crypto) {
     window.crypto.getRandomValues(array);
   } else {
     // Fallback for server/static environments
@@ -24,11 +24,11 @@ export function generateCsrfToken(): string {
       array[i] = Math.floor(Math.random() * 256);
     }
   }
-  
+
   // Convert to hexadecimal string
   return Array.from(array)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /**
@@ -43,10 +43,10 @@ export async function setCsrfToken(): Promise<string> {
     name: CSRF_COOKIE_NAME,
     value: token,
     httpOnly: true, // Not accessible via JavaScript
-    secure: process.env.NODE_ENV === 'production', // Only sent over HTTPS in production
-    sameSite: 'strict', // Only sent for same-site requests
+    secure: process.env.NODE_ENV === "production", // Only sent over HTTPS in production
+    sameSite: "strict", // Only sent for same-site requests
     maxAge: CSRF_COOKIE_MAX_AGE,
-    path: '/',
+    path: "/",
   });
 
   return token;
@@ -69,21 +69,21 @@ export async function getCsrfToken(): Promise<string | null> {
 export async function validateCsrfToken(request: NextRequest): Promise<boolean> {
   // Get the token from cookie
   const cookieToken = (await cookies()).get(CSRF_COOKIE_NAME)?.value;
-  
+
   if (!cookieToken) {
     return false;
   }
-  
+
   // Get the token from header (or form body as fallback)
   const headerToken = request.headers.get(CSRF_HEADER_NAME);
-  
+
   // If no token was provided in the header, check form data
   if (!headerToken) {
     // We'll need to parse the request body, but this can only be done once
     // This should be handled in the actual API route
     return false;
   }
-  
+
   // Simple string comparison (constant-time comparison not available without crypto)
   return cookieToken === headerToken;
 }
@@ -96,16 +96,13 @@ export async function validateCsrfToken(request: NextRequest): Promise<boolean> 
 export async function csrfProtection(request: NextRequest): Promise<NextResponse | null> {
   // Skip CSRF validation for GET and HEAD requests (they should be idempotent)
   const method = request.method.toUpperCase();
-  if (method === 'GET' || method === 'HEAD') {
+  if (method === "GET" || method === "HEAD") {
     return null;
   }
 
   // For other methods (POST, PUT, DELETE, etc.), validate CSRF token
   if (!(await validateCsrfToken(request))) {
-    return NextResponse.json(
-      { error: 'Invalid CSRF token' },
-      { status: 403 }
-    );
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   // Continue processing the request
@@ -124,6 +121,6 @@ export async function useCsrfToken() {
 
   return {
     token,
-    headerName: CSRF_HEADER_NAME
+    headerName: CSRF_HEADER_NAME,
   };
-} 
+}

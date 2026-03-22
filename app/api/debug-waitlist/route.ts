@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Use edge runtime like the main waitlist API
 export const runtime = "edge";
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json().catch(() => ({}));
-    
+
     // Return a simplified response with environment info
     return new NextResponse(
       JSON.stringify({
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
         message: "Debug endpoint working",
         request_received: {
           name: body.name || "not provided",
-          email: body.email || "not provided"
+          email: body.email || "not provided",
         },
         environment: {
           node_env: process.env.NODE_ENV,
@@ -26,17 +26,17 @@ export async function POST(request: NextRequest) {
           supabase_key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "present" : "missing",
           resend_key: process.env.RESEND_API_KEY ? "present" : "missing",
           email_from: process.env.EMAIL_FROM || "not set",
-        }
+        },
       }),
-      { 
+      {
         status: 200,
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
-        }
-      }
+          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        },
+      },
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
@@ -46,17 +46,17 @@ export async function POST(request: NextRequest) {
       JSON.stringify({
         success: false,
         error: message,
-        error_type: errorType
+        error_type: errorType,
       }),
-      { 
+      {
         status: 500,
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
-        }
-      }
+          "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        },
+      },
     );
   }
 }
@@ -71,7 +71,7 @@ export async function OPTIONS() {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-      "Access-Control-Max-Age": "86400"
-    }
+      "Access-Control-Max-Age": "86400",
+    },
   });
-} 
+}

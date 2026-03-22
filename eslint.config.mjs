@@ -1,7 +1,7 @@
 import js from "@eslint/js";
-import tseslint from "typescript-eslint";
 import nextPlugin from "@next/eslint-plugin-next";
 import globals from "globals";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   // Base recommended configs
@@ -130,5 +130,5 @@ export default tseslint.config(
       "**/*.bak",
       "**/*.d.ts",
     ],
-  }
+  },
 );

@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { storeContactSubmission } from '@/lib/contact';
-import { supportContactSchema, validateInput } from '@/lib/validation';
-import { rateLimit } from '@/lib/rate-limit';
+import { type NextRequest, NextResponse } from "next/server";
+import { storeContactSubmission } from "@/lib/contact";
+import { rateLimit } from "@/lib/rate-limit";
+import { supportContactSchema, validateInput } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
   const rateLimitResult = rateLimit(request, {
     limit: 5,
     windowMs: 60 * 60 * 1000,
-    message: 'Too many contact submissions. Please try again later.',
+    message: "Too many contact submissions. Please try again later.",
     standardHeaders: true,
   });
 
@@ -20,10 +20,10 @@ export async function POST(request: NextRequest) {
 
     const validation = validateInput(supportContactSchema, body);
     if (!validation.success) {
-      const errorMessage = Object.values(validation.error || {}).join('. ');
+      const errorMessage = Object.values(validation.error || {}).join(". ");
       return NextResponse.json(
-        { success: false, message: errorMessage || 'Invalid input data', errors: validation.error },
-        { status: 422 }
+        { success: false, message: errorMessage || "Invalid input data", errors: validation.error },
+        { status: 422 },
       );
     }
 
@@ -35,23 +35,23 @@ export async function POST(request: NextRequest) {
       subject,
       message,
       issueType,
-      type: 'support',
+      type: "support",
     });
 
     if (result.success) {
-      return NextResponse.json({ success: true, message: 'Support request submitted successfully.' });
+      return NextResponse.json({
+        success: true,
+        message: "Support request submitted successfully.",
+      });
     }
 
     return NextResponse.json(
-      { success: false, message: result.error || 'Failed to submit contact form' },
-      { status: 500 }
+      { success: false, message: result.error || "Failed to submit contact form" },
+      { status: 500 },
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An error occurred';
-    console.error('Error handling support contact form:', message);
-    return NextResponse.json(
-      { success: false, message },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : "An error occurred";
+    console.error("Error handling support contact form:", message);
+    return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }

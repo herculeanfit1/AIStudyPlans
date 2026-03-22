@@ -1,87 +1,90 @@
-import React, { useState, useEffect } from 'react';
-import { MonitoringStats, CIWorkflow, CISummary } from '../../types/monitoring';
-import OverviewSection from '../../components/monitoring/OverviewSection';
-import CICDSection from '../../components/monitoring/CICDSection';
-import EmailSection from '../../components/monitoring/EmailSection';
+import React, { useEffect, useState } from "react";
+import CICDSection from "../../components/monitoring/CICDSection";
+import EmailSection from "../../components/monitoring/EmailSection";
+import OverviewSection from "../../components/monitoring/OverviewSection";
+import type { CISummary, CIWorkflow, MonitoringStats } from "../../types/monitoring";
 
 export default function MonitoringDashboard() {
   const [stats, setStats] = useState<MonitoringStats>({
-    apiStatus: 'unknown',
-    lastChecked: '',
+    apiStatus: "unknown",
+    lastChecked: "",
     uptime: 0,
     emailDeliveryRate: 0,
     emailsLastWeek: 0,
     averageResponseTime: 0,
-    cicdStatus: 'unknown',
-    lastDeployment: '',
+    cicdStatus: "unknown",
+    lastDeployment: "",
     healthData: null,
     ciWorkflows: [],
-    ciSummary: null
+    ciSummary: null,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'overview' | 'ci-cd' | 'email'>('overview');
+  const [activeSection, setActiveSection] = useState<"overview" | "ci-cd" | "email">("overview");
 
   // Fetch monitoring data
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
-      
+
       try {
         // Get health check data
-        const healthResponse = await fetch('/api/health');
+        const healthResponse = await fetch("/api/health");
         let healthData = null;
-        
+
         if (healthResponse.ok) {
           healthData = await healthResponse.json();
         }
-        
+
         // Get CI/CD status
-        const ciResponse = await fetch('/api/admin/ci-status');
-        let ciData: { workflows: CIWorkflow[]; summary: CISummary | null } = { workflows: [], summary: null };
-        
+        const ciResponse = await fetch("/api/admin/ci-status");
+        let ciData: { workflows: CIWorkflow[]; summary: CISummary | null } = {
+          workflows: [],
+          summary: null,
+        };
+
         if (ciResponse.ok) {
           ciData = await ciResponse.json();
         }
-        
+
         // For demo purposes, we'll use mock data for email metrics
         // In production, you would fetch this from your email service provider API
-        
+
         setStats({
-          apiStatus: healthData?.status || 'offline',
+          apiStatus: healthData?.status || "offline",
           lastChecked: new Date().toISOString(),
           uptime: healthData?.uptime || 0,
           emailDeliveryRate: 98.5, // Mock data
           emailsLastWeek: 45, // Mock data
           averageResponseTime: 285, // Mock data in ms
-          cicdStatus: (ciData.summary?.status as MonitoringStats['cicdStatus']) || 'unknown',
+          cicdStatus: (ciData.summary?.status as MonitoringStats["cicdStatus"]) || "unknown",
           lastDeployment: ciData.summary?.lastDeployment || new Date().toISOString(),
           healthData: healthData,
           ciWorkflows: ciData.workflows || [],
-          ciSummary: ciData.summary
+          ciSummary: ciData.summary,
         });
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
-        console.error('Error fetching monitoring data:', err);
-        setError(message || 'Failed to fetch monitoring data');
-        
+        console.error("Error fetching monitoring data:", err);
+        setError(message || "Failed to fetch monitoring data");
+
         // Set default offline status
-        setStats(prev => ({
+        setStats((prev) => ({
           ...prev,
-          apiStatus: 'offline',
+          apiStatus: "offline",
           lastChecked: new Date().toISOString(),
         }));
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
-    
+
     // Set up polling every 60 seconds
     const intervalId = setInterval(fetchData, 60000);
-    
+
     return () => clearInterval(intervalId);
   }, []);
 
@@ -90,31 +93,31 @@ export default function MonitoringDashboard() {
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
+
     const parts = [];
     if (days > 0) parts.push(`${days}d`);
     if (hours > 0) parts.push(`${hours}h`);
     if (minutes > 0) parts.push(`${minutes}m`);
-    
-    return parts.join(' ') || '0m';
+
+    return parts.join(" ") || "0m";
   };
 
   // Get status color classes
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case 'healthy':
-      case 'passing':
-      case 'success':
-        return 'bg-green-100 text-green-800';
-      case 'degraded':
-      case 'warning':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'offline':
-      case 'failing':
-      case 'failed':
-        return 'bg-red-100 text-red-800';
+      case "healthy":
+      case "passing":
+      case "success":
+        return "bg-green-100 text-green-800";
+      case "degraded":
+      case "warning":
+        return "bg-yellow-100 text-yellow-800";
+      case "offline":
+      case "failing":
+      case "failed":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -129,37 +132,37 @@ export default function MonitoringDashboard() {
       </div>
     );
   }
-  
+
   // Navigation tabs for different monitoring sections
   const MonitoringNavigation = () => (
     <div className="mb-6 border-b">
       <div className="flex space-x-6">
         <button
-          onClick={() => setActiveSection('overview')}
+          onClick={() => setActiveSection("overview")}
           className={`pb-3 px-1 ${
-            activeSection === 'overview'
-              ? 'border-b-2 border-indigo-500 text-indigo-600 font-medium'
-              : 'text-gray-500 hover:text-gray-700'
+            activeSection === "overview"
+              ? "border-b-2 border-indigo-500 text-indigo-600 font-medium"
+              : "text-gray-500 hover:text-gray-700"
           }`}
         >
           Overview
         </button>
         <button
-          onClick={() => setActiveSection('ci-cd')}
+          onClick={() => setActiveSection("ci-cd")}
           className={`pb-3 px-1 ${
-            activeSection === 'ci-cd'
-              ? 'border-b-2 border-indigo-500 text-indigo-600 font-medium'
-              : 'text-gray-500 hover:text-gray-700'
+            activeSection === "ci-cd"
+              ? "border-b-2 border-indigo-500 text-indigo-600 font-medium"
+              : "text-gray-500 hover:text-gray-700"
           }`}
         >
           CI/CD Pipeline
         </button>
         <button
-          onClick={() => setActiveSection('email')}
+          onClick={() => setActiveSection("email")}
           className={`pb-3 px-1 ${
-            activeSection === 'email'
-              ? 'border-b-2 border-indigo-500 text-indigo-600 font-medium'
-              : 'text-gray-500 hover:text-gray-700'
+            activeSection === "email"
+              ? "border-b-2 border-indigo-500 text-indigo-600 font-medium"
+              : "text-gray-500 hover:text-gray-700"
           }`}
         >
           Email Service
@@ -220,9 +223,15 @@ export default function MonitoringDashboard() {
 
       <MonitoringNavigation />
 
-      {activeSection === 'overview' && <OverviewSection stats={stats} formatUptime={formatUptime} getStatusColor={getStatusColor} />}
-      {activeSection === 'ci-cd' && <CICDSection stats={stats} getStatusColor={getStatusColor} />}
-      {activeSection === 'email' && <EmailSection stats={stats} />}
+      {activeSection === "overview" && (
+        <OverviewSection
+          stats={stats}
+          formatUptime={formatUptime}
+          getStatusColor={getStatusColor}
+        />
+      )}
+      {activeSection === "ci-cd" && <CICDSection stats={stats} getStatusColor={getStatusColor} />}
+      {activeSection === "email" && <EmailSection stats={stats} />}
     </div>
   );
-} 
+}

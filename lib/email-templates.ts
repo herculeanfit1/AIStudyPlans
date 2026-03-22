@@ -11,7 +11,7 @@ interface EmailTemplateProps {
  */
 export function getWaitlistConfirmationTemplate({ appUrl }: EmailTemplateProps) {
   const year = new Date().getFullYear();
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -121,10 +121,13 @@ The SchedulEd Team
 /**
  * Generate a password reset email template
  */
-export function getPasswordResetTemplate({ appUrl, resetToken }: EmailTemplateProps & { resetToken: string }) {
+export function getPasswordResetTemplate({
+  appUrl,
+  resetToken,
+}: EmailTemplateProps & { resetToken: string }) {
   const year = new Date().getFullYear();
   const resetUrl = `${appUrl}/reset-password?token=${resetToken}`;
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -244,22 +247,22 @@ The SchedulEd Team
     html,
     text,
   };
-} 
+}
 
 /**
  * Generate the admin notification email template for waitlist signups
  */
-export function getWaitlistAdminNotificationTemplate({ 
-  appUrl, 
-  userName, 
-  userEmail 
-}: EmailTemplateProps & { 
-  userName: string; 
-  userEmail: string 
+export function getWaitlistAdminNotificationTemplate({
+  appUrl,
+  userName,
+  userEmail,
+}: EmailTemplateProps & {
+  userName: string;
+  userEmail: string;
 }) {
   const year = new Date().getFullYear();
   const currentTime = new Date().toLocaleString();
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -362,4 +365,4 @@ You can reach out to this user to gather more information by replying to this em
     html,
     text,
   };
-} 
+}

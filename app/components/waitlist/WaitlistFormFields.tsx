@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { type ChangeEvent } from "react";
 
 interface FormData {
   name: string;
@@ -20,11 +20,11 @@ interface WaitlistFormFieldsProps {
  * Form fields component for the waitlist form
  * Handles input rendering and validation display
  */
-export default function WaitlistFormFields({ 
-  formData, 
-  validationErrors, 
-  isSubmitting, 
-  onChange 
+export default function WaitlistFormFields({
+  formData,
+  validationErrors,
+  isSubmitting,
+  onChange,
 }: WaitlistFormFieldsProps) {
   return (
     <>
@@ -43,10 +43,7 @@ export default function WaitlistFormFields({
           className={`
             w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
             disabled:bg-gray-100 disabled:cursor-not-allowed
-            ${validationErrors.name 
-              ? 'border-red-500 focus:ring-red-500' 
-              : 'border-gray-300'
-            }
+            ${validationErrors.name ? "border-red-500 focus:ring-red-500" : "border-gray-300"}
           `}
           placeholder="Enter your full name"
           required
@@ -74,10 +71,7 @@ export default function WaitlistFormFields({
           className={`
             w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500
             disabled:bg-gray-100 disabled:cursor-not-allowed
-            ${validationErrors.email 
-              ? 'border-red-500 focus:ring-red-500' 
-              : 'border-gray-300'
-            }
+            ${validationErrors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300"}
           `}
           placeholder="Enter your email address"
           required
@@ -91,4 +85,4 @@ export default function WaitlistFormFields({
       </div>
     </>
   );
-} 
+}

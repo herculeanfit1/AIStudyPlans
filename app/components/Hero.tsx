@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Hero() {
   const [isVisible, setIsVisible] = useState(false);
@@ -27,13 +27,12 @@ export default function Hero() {
             className={`transition-all duration-1000 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight mb-6">
-              Your AI Study{" "}
-              <span className="text-indigo-600 relative">Partner</span> for
-              Academic Success
+              Your AI Study <span className="text-indigo-600 relative">Partner</span> for Academic
+              Success
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-lg">
-              Generate personalized study plans tailored to your learning style,
-              time availability, and knowledge level.
+              Generate personalized study plans tailored to your learning style, time availability,
+              and knowledge level.
             </p>
 
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
@@ -54,9 +53,7 @@ export default function Hero() {
                 AI Generated
               </div>
 
-              <h3 className="text-xl font-bold text-gray-800 mb-1">
-                Data Science Study Plan
-              </h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-1">Data Science Study Plan</h3>
               <p className="text-sm text-gray-500 mb-6">
                 Personalized for visual learners with 12 hours/week
               </p>
@@ -64,9 +61,7 @@ export default function Hero() {
               <div className="space-y-6">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium text-gray-800">
-                      Week 1: Python Fundamentals
-                    </h4>
+                    <h4 className="font-medium text-gray-800">Week 1: Python Fundamentals</h4>
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                       8 hours
                     </span>
@@ -80,9 +75,7 @@ export default function Hero() {
 
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium text-gray-800">
-                      Week 2: Data Analysis
-                    </h4>
+                    <h4 className="font-medium text-gray-800">Week 2: Data Analysis</h4>
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                       10 hours
                     </span>
@@ -98,9 +91,7 @@ export default function Hero() {
               <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span className="text-sm text-gray-500">
-                    Progress: 25% complete
-                  </span>
+                  <span className="text-sm text-gray-500">Progress: 25% complete</span>
                 </div>
                 <Link
                   href="https://app.aistudyplans.com"

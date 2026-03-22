@@ -1,9 +1,9 @@
 // Custom type declarations for third-party libraries
 
 // Extend Playwright types
-import '@playwright/test';
+import "@playwright/test";
 
-declare module '@playwright/test' {
+declare module "@playwright/test" {
   namespace PlaywrightTest {
     interface PageScreenshotOptions {
       /**
@@ -12,4 +12,4 @@ declare module '@playwright/test' {
       maxDiffPixelRatio?: number;
     }
   }
-} 
+}

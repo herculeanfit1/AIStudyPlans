@@ -1,15 +1,12 @@
-import { PlaywrightTestConfig, devices } from '@playwright/test';
+import { devices, type PlaywrightTestConfig } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
-  testDir: './e2e',
+  testDir: "./e2e",
   timeout: 30 * 1000,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [
-    ['html', { open: 'never' }],
-    ['list']
-  ],
+  reporter: [["html", { open: "never" }], ["list"]],
   expect: {
     toHaveScreenshot: {
       // Allow for some pixel differences across environments
@@ -19,19 +16,19 @@ const config: PlaywrightTestConfig = {
   use: {
     actionTimeout: 15000,
     // Use environment variable BASE_URL for Docker compatibility
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
-    trace: 'on-first-retry',
-    video: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    baseURL: process.env.BASE_URL || "http://localhost:3000",
+    trace: "on-first-retry",
+    video: "on-first-retry",
+    screenshot: "only-on-failure",
   },
   // Run tests in files in parallel
   fullyParallel: !process.env.CI,
   // In Docker, only use Chromium for stability
   projects: [
     {
-      name: 'chromium',
+      name: "chromium",
       use: {
-        ...devices['Desktop Chrome'],
+        ...devices["Desktop Chrome"],
         // Use the system installed browser in Docker
         launchOptions: {
           executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
@@ -40,14 +37,15 @@ const config: PlaywrightTestConfig = {
     },
   ],
   // Use webServer to start dev server before tests when not running in Docker
-  webServer: process.env.CI || process.env.DOCKER 
-    ? undefined 
-    : {
-        command: 'npm run dev',
-        port: 3000,
-        timeout: 120 * 1000,
-        reuseExistingServer: !process.env.CI,
-      },
+  webServer:
+    process.env.CI || process.env.DOCKER
+      ? undefined
+      : {
+          command: "npm run dev",
+          port: 3000,
+          timeout: 120 * 1000,
+          reuseExistingServer: !process.env.CI,
+        },
 };
 
-export default config; 
+export default config;

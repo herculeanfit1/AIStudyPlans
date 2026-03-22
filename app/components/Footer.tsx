@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -12,52 +12,97 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold text-white mb-4">SchedulEd</h3>
             <p className="mb-4">
-              AI-powered study plan generator creating personalized learning paths tailored to individual learning styles.
+              AI-powered study plan generator creating personalized learning paths tailored to
+              individual learning styles.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition" aria-label="Twitter">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition"
+                aria-label="Twitter"
+              >
                 <i className="fab fa-twitter" aria-hidden="true"></i>
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition" aria-label="LinkedIn">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition"
+                aria-label="LinkedIn"
+              >
                 <i className="fab fa-linkedin" aria-hidden="true"></i>
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition" aria-label="Instagram">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition"
+                aria-label="Instagram"
+              >
                 <i className="fab fa-instagram" aria-hidden="true"></i>
               </a>
             </div>
           </div>
-          
+
           <div>
             <h4 className="text-lg font-medium text-white mb-4">Features</h4>
             <ul className="space-y-2">
-              <li><a href="#features" className="text-gray-400 hover:text-white transition">Personalized Plans</a></li>
-              <li><a href="#features" className="text-gray-400 hover:text-white transition">Smart Scheduling</a></li>
-              <li><a href="#features" className="text-gray-400 hover:text-white transition">Progress Tracking</a></li>
-              <li><a href="#features" className="text-gray-400 hover:text-white transition">Resource Recommendations</a></li>
+              <li>
+                <a href="#features" className="text-gray-400 hover:text-white transition">
+                  Personalized Plans
+                </a>
+              </li>
+              <li>
+                <a href="#features" className="text-gray-400 hover:text-white transition">
+                  Smart Scheduling
+                </a>
+              </li>
+              <li>
+                <a href="#features" className="text-gray-400 hover:text-white transition">
+                  Progress Tracking
+                </a>
+              </li>
+              <li>
+                <a href="#features" className="text-gray-400 hover:text-white transition">
+                  Resource Recommendations
+                </a>
+              </li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="text-lg font-medium text-white mb-4">Company</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition">About Us</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Contact</a></li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-white transition">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-white transition">
+                  Contact
+                </a>
+              </li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="text-lg font-medium text-white mb-4">Legal</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Terms of Service</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-white transition">
+                  Terms of Service
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-white transition">
+                  Privacy Policy
+                </a>
+              </li>
             </ul>
           </div>
         </div>
-        
+
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
           <p>&copy; {currentYear} SchedulEd. All rights reserved.</p>
         </div>
       </div>
     </footer>
   );
-} 
+}

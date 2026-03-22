@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import MonitoringDashboard from '../settings/monitoring';
+import React from "react";
+import MonitoringDashboard from "../settings/monitoring";
 
 export default function TestMonitoring() {
   return (
@@ -12,8 +12,8 @@ export default function TestMonitoring() {
           This is a test page to view the monitoring dashboard without authentication
         </p>
       </div>
-      
+
       <MonitoringDashboard />
     </div>
   );
-} 
+}

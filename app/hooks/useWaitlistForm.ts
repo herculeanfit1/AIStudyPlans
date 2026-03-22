@@ -1,5 +1,5 @@
-import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import { waitlistSchema, validateInput } from '@/lib/validation';
+import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
+import { validateInput, waitlistSchema } from "@/lib/validation";
 
 declare global {
   interface Window {
@@ -76,7 +76,7 @@ export function useWaitlistForm() {
     const validation = validateInput(waitlistSchema, {
       name: formData.name,
       email: formData.email,
-      source: "website-form"
+      source: "website-form",
     });
 
     if (!validation.success) {
@@ -129,29 +129,30 @@ export function useWaitlistForm() {
         name: formData.name,
         email: formData.email,
       });
-      
+
       // Use the correct API endpoint without trailing slash issues
-      const apiUrl = process.env.NODE_ENV === 'production' 
-        ? `${process.env.NEXT_PUBLIC_APP_URL}/api/waitlist`
-        : "/api/waitlist";
-      
+      const apiUrl =
+        process.env.NODE_ENV === "production"
+          ? `${process.env.NEXT_PUBLIC_APP_URL}/api/waitlist`
+          : "/api/waitlist";
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          source: "website-form"
+          source: "website-form",
         }),
       });
-      
+
       if (!response.ok) {
         const responseText = await response.text();
         let errorMessage = responseText;
-        
+
         try {
           const errorData = JSON.parse(responseText);
           if (errorData.error) {
@@ -165,14 +166,14 @@ export function useWaitlistForm() {
             errorMessage = `${responseText.substring(0, 100)}...`;
           }
         }
-        
+
         throw new Error(errorMessage);
       }
-      
+
       // Handle successful response
       try {
         const responseText = await response.text();
-        if (responseText.trim() === '') {
+        if (responseText.trim() === "") {
           // Empty response is considered success
         } else {
           JSON.parse(responseText); // Just validate it's valid JSON
@@ -180,9 +181,9 @@ export function useWaitlistForm() {
       } catch (_jsonError) {
         console.warn("Could not parse success response as JSON, but continuing as success");
       }
-      
+
       setIsSubmitted(true);
-      
+
       // Track successful conversion for analytics
       if (typeof window !== "undefined" && window.gtag) {
         window.gtag("event", "waitlist_signup", {
@@ -196,7 +197,9 @@ export function useWaitlistForm() {
 
       // Handle various error types
       if (message?.includes("Backend call failure")) {
-        setError("Sorry, our server is experiencing issues. We've saved your submission locally and will try to recover it.");
+        setError(
+          "Sorry, our server is experiencing issues. We've saved your submission locally and will try to recover it.",
+        );
       } else if (message?.includes("fetch")) {
         setError("Network error. Please check your connection and try again.");
       } else if (message?.length > 100) {
@@ -218,12 +221,12 @@ export function useWaitlistForm() {
     isDev,
     isConfigured,
     validationErrors,
-    
+
     // Handlers
     handleChange,
     handleSubmit,
-    
+
     // Utilities
     validateForm,
   };
-} 
+}

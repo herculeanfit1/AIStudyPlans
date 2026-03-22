@@ -6,24 +6,24 @@
  * by making HTTP requests to key endpoints
  */
 
-require('dotenv').config();
-const https = require('https');
+require("dotenv").config();
+const https = require("https");
 
 // ANSI color codes
 const colors = {
-  reset: '\x1b[0m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  red: '\x1b[31m',
-  blue: '\x1b[34m',
-  cyan: '\x1b[36m'
+  reset: "\x1b[0m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  red: "\x1b[31m",
+  blue: "\x1b[34m",
+  cyan: "\x1b[36m",
 };
 
 console.log(`${colors.cyan}=== Deployment Verification ===${colors.reset}`);
 console.log();
 
 // Helper function to make HTTP requests
-function makeRequest(url, method = 'GET', data = null) {
+function makeRequest(url, method = "GET", data = null) {
   return new Promise((resolve, reject) => {
     const parsedUrl = new URL(url);
     const options = {
@@ -32,23 +32,23 @@ function makeRequest(url, method = 'GET', data = null) {
       path: parsedUrl.pathname + parsedUrl.search,
       method: method,
       headers: {
-        'User-Agent': 'AIStudyPlans-Deployment-Verifier/1.0',
-      }
+        "User-Agent": "AIStudyPlans-Deployment-Verifier/1.0",
+      },
     };
 
     if (data) {
-      options.headers['Content-Type'] = 'application/json';
-      options.headers['Content-Length'] = Buffer.byteLength(JSON.stringify(data));
+      options.headers["Content-Type"] = "application/json";
+      options.headers["Content-Length"] = Buffer.byteLength(JSON.stringify(data));
     }
 
     const req = https.request(options, (res) => {
-      let responseData = '';
+      let responseData = "";
 
-      res.on('data', (chunk) => {
+      res.on("data", (chunk) => {
         responseData += chunk;
       });
 
-      res.on('end', () => {
+      res.on("end", () => {
         let parsedData;
         try {
           parsedData = responseData ? JSON.parse(responseData) : {};
@@ -60,12 +60,12 @@ function makeRequest(url, method = 'GET', data = null) {
           statusCode: res.statusCode,
           headers: res.headers,
           data: parsedData,
-          raw: responseData
+          raw: responseData,
         });
       });
     });
 
-    req.on('error', (error) => {
+    req.on("error", (error) => {
       reject(error);
     });
 
@@ -80,9 +80,9 @@ function makeRequest(url, method = 'GET', data = null) {
 // Function to run tests
 async function runTests() {
   // Get the site URL from environment or use production URL
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aistudyplans.com';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://aistudyplans.com";
   console.log(`${colors.blue}Testing deployed site: ${siteUrl}${colors.reset}`);
-  
+
   let passCount = 0;
   let failCount = 0;
   const startTime = Date.now();
@@ -94,10 +94,14 @@ async function runTests() {
     try {
       const mainPageResponse = await makeRequest(siteUrl);
       if (mainPageResponse.statusCode >= 200 && mainPageResponse.statusCode < 300) {
-        console.log(`${colors.green}✓ Main page loaded successfully (${mainPageResponse.statusCode})${colors.reset}`);
+        console.log(
+          `${colors.green}✓ Main page loaded successfully (${mainPageResponse.statusCode})${colors.reset}`,
+        );
         passCount++;
       } else {
-        console.log(`${colors.red}✗ Main page failed with status code ${mainPageResponse.statusCode}${colors.reset}`);
+        console.log(
+          `${colors.red}✗ Main page failed with status code ${mainPageResponse.statusCode}${colors.reset}`,
+        );
         failCount++;
       }
     } catch (error) {
@@ -111,44 +115,48 @@ async function runTests() {
     try {
       const emailConfigResponse = await makeRequest(`${siteUrl}/api/email-config`);
       console.log(`Status code: ${emailConfigResponse.statusCode}`);
-      
+
       if (emailConfigResponse.statusCode >= 200 && emailConfigResponse.statusCode < 300) {
         console.log(`${colors.green}✓ Email config API responded successfully${colors.reset}`);
         console.log(`Response data: ${JSON.stringify(emailConfigResponse.data, null, 2)}`);
         passCount++;
       } else {
-        console.log(`${colors.red}✗ Email config API failed with status code ${emailConfigResponse.statusCode}${colors.reset}`);
+        console.log(
+          `${colors.red}✗ Email config API failed with status code ${emailConfigResponse.statusCode}${colors.reset}`,
+        );
         failCount++;
       }
     } catch (error) {
-      console.log(`${colors.red}✗ Error accessing email config API: ${error.message}${colors.reset}`);
+      console.log(
+        `${colors.red}✗ Error accessing email config API: ${error.message}${colors.reset}`,
+      );
       failCount++;
     }
 
     // Test 3: Try email validation with an invalid input
     console.log(`\n${colors.blue}Test 3: Validation with invalid input${colors.reset}`);
-    const invalidData = { 
-      name: 'Test User', 
-      email: 'invalid-email' 
+    const invalidData = {
+      name: "Test User",
+      email: "invalid-email",
     };
     console.log(`POST ${siteUrl}/api/waitlist`);
     console.log(`Data: ${JSON.stringify(invalidData)}`);
-    
+
     try {
-      const validationResponse = await makeRequest(
-        `${siteUrl}/api/waitlist`, 
-        'POST', 
-        invalidData
-      );
-      
+      const validationResponse = await makeRequest(`${siteUrl}/api/waitlist`, "POST", invalidData);
+
       console.log(`Status code: ${validationResponse.statusCode}`);
-      
+
       if (validationResponse.statusCode === 400) {
         console.log(`${colors.green}✓ Validation correctly rejected invalid email${colors.reset}`);
-        console.log(`Error message: ${validationResponse.data.error || 'No specific error message'}`);
+        console.log(
+          `Error message: ${validationResponse.data.error || "No specific error message"}`,
+        );
         passCount++;
       } else {
-        console.log(`${colors.red}✗ Validation test failed - expected 400 status code, got ${validationResponse.statusCode}${colors.reset}`);
+        console.log(
+          `${colors.red}✗ Validation test failed - expected 400 status code, got ${validationResponse.statusCode}${colors.reset}`,
+        );
         failCount++;
       }
     } catch (error) {
@@ -168,13 +176,16 @@ async function runTests() {
 
     // Exit with appropriate code
     if (failCount > 0) {
-      console.log(`\n${colors.red}Deployment verification failed. Please check the errors above.${colors.reset}`);
+      console.log(
+        `\n${colors.red}Deployment verification failed. Please check the errors above.${colors.reset}`,
+      );
       process.exit(1);
     } else {
-      console.log(`\n${colors.green}All tests passed! Deployment is working correctly.${colors.reset}`);
+      console.log(
+        `\n${colors.green}All tests passed! Deployment is working correctly.${colors.reset}`,
+      );
       process.exit(0);
     }
-    
   } catch (error) {
     console.log(`\n${colors.red}Fatal error during tests: ${error.message}${colors.reset}`);
     process.exit(1);
@@ -182,4 +193,4 @@ async function runTests() {
 }
 
 // Run the tests
-runTests(); 
+runTests();

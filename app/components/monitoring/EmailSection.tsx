@@ -1,5 +1,5 @@
-import React from 'react';
-import { MonitoringStats } from '../../types/monitoring';
+import React from "react";
+import type { MonitoringStats } from "../../types/monitoring";
 
 interface EmailSectionProps {
   stats: MonitoringStats;
@@ -8,13 +8,13 @@ interface EmailSectionProps {
 export default function EmailSection({ stats }: EmailSectionProps) {
   // Mock email data for the chart (in a real app, this would come from the API)
   const mockEmailData = [
-    { date: 'Mon', sent: 5, delivered: 5, opened: 3 },
-    { date: 'Tue', sent: 8, delivered: 7, opened: 5 },
-    { date: 'Wed', sent: 12, delivered: 12, opened: 8 },
-    { date: 'Thu', sent: 6, delivered: 6, opened: 4 },
-    { date: 'Fri', sent: 10, delivered: 9, opened: 7 },
-    { date: 'Sat', sent: 3, delivered: 3, opened: 1 },
-    { date: 'Sun', sent: 1, delivered: 1, opened: 0 },
+    { date: "Mon", sent: 5, delivered: 5, opened: 3 },
+    { date: "Tue", sent: 8, delivered: 7, opened: 5 },
+    { date: "Wed", sent: 12, delivered: 12, opened: 8 },
+    { date: "Thu", sent: 6, delivered: 6, opened: 4 },
+    { date: "Fri", sent: 10, delivered: 9, opened: 7 },
+    { date: "Sat", sent: 3, delivered: 3, opened: 1 },
+    { date: "Sun", sent: 1, delivered: 1, opened: 0 },
   ];
 
   // Calculate max value for the chart
@@ -64,27 +64,27 @@ export default function EmailSection({ stats }: EmailSectionProps) {
                       className="w-full bg-blue-700 rounded-t"
                       style={{
                         height: `${(day.opened / maxValue) * 100}%`,
-                        maxWidth: '24px',
+                        maxWidth: "24px",
                       }}
                     ></div>
-                    
+
                     {/* Delivered bar */}
                     <div
                       className="w-full bg-blue-500 rounded-none"
                       style={{
                         height: `${((day.delivered - day.opened) / maxValue) * 100}%`,
-                        marginTop: '-4px',
-                        maxWidth: '24px',
+                        marginTop: "-4px",
+                        maxWidth: "24px",
                       }}
                     ></div>
-                    
+
                     {/* Sent bar */}
                     <div
                       className="w-full bg-blue-300 rounded-none"
                       style={{
                         height: `${((day.sent - day.delivered) / maxValue) * 100}%`,
-                        marginTop: '-4px',
-                        maxWidth: '24px',
+                        marginTop: "-4px",
+                        maxWidth: "24px",
                       }}
                     ></div>
                   </div>
@@ -92,7 +92,7 @@ export default function EmailSection({ stats }: EmailSectionProps) {
                 </div>
               ))}
             </div>
-            
+
             {/* Legend */}
             <div className="mt-4 flex items-center justify-center space-x-6">
               <div className="flex items-center">
@@ -142,4 +142,4 @@ export default function EmailSection({ stats }: EmailSectionProps) {
       </div>
     </div>
   );
-} 
+}

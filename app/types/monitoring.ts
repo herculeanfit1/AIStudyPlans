@@ -35,15 +35,15 @@ export type CISummary = {
 };
 
 export type MonitoringStats = {
-  apiStatus: 'healthy' | 'degraded' | 'offline' | 'unknown';
+  apiStatus: "healthy" | "degraded" | "offline" | "unknown";
   lastChecked: string;
   uptime: number;
   emailDeliveryRate: number;
   emailsLastWeek: number;
   averageResponseTime: number;
-  cicdStatus: 'passing' | 'failing' | 'unknown';
+  cicdStatus: "passing" | "failing" | "unknown";
   lastDeployment: string;
   healthData: HealthData | null;
   ciWorkflows: CIWorkflow[];
   ciSummary: CISummary | null;
-}; 
+};

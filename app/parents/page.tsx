@@ -1,25 +1,31 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { FaShield, FaLock, FaClipboardCheck, FaEnvelope } from 'react-icons/fa6';
+import Link from "next/link";
+import React from "react";
+import { FaClipboardCheck, FaEnvelope, FaLock, FaShield } from "react-icons/fa6";
 
 export default function ParentsPage() {
   return (
     <div className="container max-w-5xl mx-auto px-4 py-12">
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">For Parents & Guardians</h1>
-        <p className="text-gray-600 mb-6">Information about how we protect children's privacy and safety</p>
+        <p className="text-gray-600 mb-6">
+          Information about how we protect children's privacy and safety
+        </p>
 
         <div className="mb-10">
           <p className="text-lg mb-4">
-            At AI Study Plans, we're committed to providing a safe, secure, and educational experience for students of all ages. This page provides information specifically for parents and guardians about how we protect minors who use our platform.
+            At AI Study Plans, we're committed to providing a safe, secure, and educational
+            experience for students of all ages. This page provides information specifically for
+            parents and guardians about how we protect minors who use our platform.
           </p>
-          
+
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md my-6">
             <h3 className="font-semibold text-blue-800 mb-2">Safety is our priority</h3>
             <p>
-              We've designed our platform with comprehensive safety measures for users under 18, in compliance with the Children's Online Privacy Protection Act (COPPA) and other applicable regulations.
+              We've designed our platform with comprehensive safety measures for users under 18, in
+              compliance with the Children's Online Privacy Protection Act (COPPA) and other
+              applicable regulations.
             </p>
           </div>
         </div>
@@ -40,7 +46,7 @@ export default function ParentsPage() {
               <li>No targeting of advertisements to minors</li>
             </ul>
           </div>
-          
+
           <div className="border rounded-lg p-6 shadow-sm">
             <div className="flex items-center mb-4">
               <FaLock className="text-blue-600 text-2xl mr-3" />
@@ -61,40 +67,53 @@ export default function ParentsPage() {
         <div className="mb-10">
           <h2 className="text-2xl font-semibold mb-4">Recommended Parental Involvement</h2>
           <p className="mb-4">
-            While we've implemented numerous safety features, we recommend that parents remain actively involved in their child's use of AI Study Plans:
+            While we've implemented numerous safety features, we recommend that parents remain
+            actively involved in their child's use of AI Study Plans:
           </p>
-          
+
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex items-center mb-3">
                 <FaClipboardCheck className="text-green-600 text-xl mr-2" />
                 <h3 className="font-semibold">Set Up Together</h3>
               </div>
-              <p>Create your child's account together and explain the platform's purpose and limitations. Review privacy settings and preferences as a team.</p>
+              <p>
+                Create your child's account together and explain the platform's purpose and
+                limitations. Review privacy settings and preferences as a team.
+              </p>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex items-center mb-3">
                 <FaClipboardCheck className="text-green-600 text-xl mr-2" />
                 <h3 className="font-semibold">Periodic Review</h3>
               </div>
-              <p>Regularly review your child's study plans and progress. This helps you stay informed about their learning goals and provides an opportunity for discussion.</p>
+              <p>
+                Regularly review your child's study plans and progress. This helps you stay informed
+                about their learning goals and provides an opportunity for discussion.
+              </p>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex items-center mb-3">
                 <FaClipboardCheck className="text-green-600 text-xl mr-2" />
                 <h3 className="font-semibold">Open Communication</h3>
               </div>
-              <p>Maintain open communication about online safety. Encourage your child to tell you if they encounter any concerning content or interactions.</p>
+              <p>
+                Maintain open communication about online safety. Encourage your child to tell you if
+                they encounter any concerning content or interactions.
+              </p>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex items-center mb-3">
                 <FaClipboardCheck className="text-green-600 text-xl mr-2" />
                 <h3 className="font-semibold">Educational Context</h3>
               </div>
-              <p>Provide context for AI-generated content. Discuss the study plans with your child and help them understand how to effectively use them.</p>
+              <p>
+                Provide context for AI-generated content. Discuss the study plans with your child
+                and help them understand how to effectively use them.
+              </p>
             </div>
           </div>
         </div>
@@ -105,10 +124,16 @@ export default function ParentsPage() {
             For complete details about how we handle privacy for users under 18, please review our:
           </p>
           <div className="flex flex-wrap gap-3">
-            <Link href="/privacy#minors" className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+            <Link
+              href="/privacy#minors"
+              className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            >
               Children's Privacy Policy
             </Link>
-            <Link href="/terms" className="inline-block px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition">
+            <Link
+              href="/terms"
+              className="inline-block px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
+            >
               Terms of Service
             </Link>
           </div>
@@ -116,13 +141,18 @@ export default function ParentsPage() {
 
         <div className="border-t pt-8 mt-8">
           <h2 className="text-2xl font-semibold mb-4">Contact Our Privacy Team</h2>
-          <p className="mb-4">If you have questions or concerns about your child's privacy or how our platform works, please don't hesitate to contact us:</p>
-          
+          <p className="mb-4">
+            If you have questions or concerns about your child's privacy or how our platform works,
+            please don't hesitate to contact us:
+          </p>
+
           <div className="flex items-center text-blue-600">
             <FaEnvelope className="mr-2" />
-            <a href="mailto:privacy@aistudyplans.com" className="hover:underline">privacy@aistudyplans.com</a>
+            <a href="mailto:privacy@aistudyplans.com" className="hover:underline">
+              privacy@aistudyplans.com
+            </a>
           </div>
-          
+
           <p className="mt-6 text-sm text-gray-500">
             We typically respond to all privacy inquiries within 48 hours.
           </p>
@@ -130,4 +160,4 @@ export default function ParentsPage() {
       </div>
     </div>
   );
-} 
+}

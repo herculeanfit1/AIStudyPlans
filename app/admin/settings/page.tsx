@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import MonitoringDashboard from "./monitoring";
+import { signOut, useSession } from "next-auth/react";
+import React, { useEffect, useState } from "react";
 import EmailStatusChecker from "@/components/admin/EmailStatusChecker";
+import MonitoringDashboard from "./monitoring";
 
 export default function AdminSettings() {
   const { data: session, status } = useSession();
@@ -54,9 +54,7 @@ export default function AdminSettings() {
   // Handle clearing all feedback data
   const handleClearData = async () => {
     if (
-      !confirm(
-        "Are you sure you want to clear all feedback data? This action cannot be undone.",
-      )
+      !confirm("Are you sure you want to clear all feedback data? This action cannot be undone.")
     ) {
       return;
     }
@@ -91,15 +89,9 @@ export default function AdminSettings() {
   const addTestFeedback = async () => {
     try {
       setIsSubmittingTest(true);
-      const feedbackTypes = [
-        "feature_request",
-        "general",
-        "improvement",
-        "bug",
-      ];
-      const randomType =
-        feedbackTypes[Math.floor(Math.random() * feedbackTypes.length)];
-      
+      const feedbackTypes = ["feature_request", "general", "improvement", "bug"];
+      const randomType = feedbackTypes[Math.floor(Math.random() * feedbackTypes.length)];
+
       // Create a random test feedback
       const response = await fetch("/api/contact/support", {
         method: "POST",
@@ -125,9 +117,7 @@ export default function AdminSettings() {
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      alert(
-        `Error: ${message || "An error occurred while adding test feedback"}`,
-      );
+      alert(`Error: ${message || "An error occurred while adding test feedback"}`);
       console.error("Error adding test feedback:", err);
     } finally {
       setIsSubmittingTest(false);
@@ -217,8 +207,8 @@ export default function AdminSettings() {
 
           <div className="p-4 bg-gray-50 rounded-md mb-4">
             <p className="text-gray-600 text-sm">
-              User management functionality is currently under development. Use
-              this section to manage user accounts, roles, and permissions.
+              User management functionality is currently under development. Use this section to
+              manage user accounts, roles, and permissions.
             </p>
           </div>
 
@@ -238,8 +228,8 @@ export default function AdminSettings() {
 
           <div className="p-4 bg-gray-50 rounded-md mb-4">
             <p className="text-gray-600 text-sm">
-              System configuration settings for the application. This section
-              will allow you to customize features and behavior.
+              System configuration settings for the application. This section will allow you to
+              customize features and behavior.
             </p>
           </div>
 
@@ -266,9 +256,7 @@ export default function AdminSettings() {
             </button>
 
             <div className="p-4 bg-yellow-50 rounded-md">
-              <h3 className="text-sm font-medium text-yellow-800 mb-1">
-                Environment Information
-              </h3>
+              <h3 className="text-sm font-medium text-yellow-800 mb-1">Environment Information</h3>
               <ul className="text-xs text-yellow-700 list-disc pl-4 space-y-1">
                 <li>Environment: {process.env.NODE_ENV || "development"}</li>
                 <li>App Version: 1.0.0</li>
@@ -305,10 +293,7 @@ export default function AdminSettings() {
                   <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs mr-2">
                     Microsoft 365
                   </span>
-                  Signed in as{" "}
-                  <span className="font-medium">
-                    {session?.user?.name || "Admin"}
-                  </span>
+                  Signed in as <span className="font-medium">{session?.user?.name || "Admin"}</span>
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
                   Email: {session?.user?.email || "admin@example.com"}
@@ -338,19 +323,19 @@ export default function AdminSettings() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">
-          Admin Settings
-        </h1>
-        <p className="text-gray-600">
-          Manage system settings and administrative actions
-        </p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Admin Settings</h1>
+        <p className="text-gray-600">Manage system settings and administrative actions</p>
       </div>
 
       <TabNavigation />
 
-      {activeTab === "settings" ? <SettingsContent /> : 
-       activeTab === "monitoring" ? <MonitoringDashboard /> : 
-       <EmailStatusChecker />}
+      {activeTab === "settings" ? (
+        <SettingsContent />
+      ) : activeTab === "monitoring" ? (
+        <MonitoringDashboard />
+      ) : (
+        <EmailStatusChecker />
+      )}
     </div>
   );
 }

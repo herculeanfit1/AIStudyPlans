@@ -1,4 +1,4 @@
-import { WaitlistUser } from '../supabase';
+import type { WaitlistUser } from "../supabase";
 
 export type FeedbackEmailProps = {
   appUrl: string;
@@ -13,7 +13,7 @@ export type FeedbackEmailProps = {
 export function getFeedbackEmailTemplate1({ appUrl, user, feedbackFormUrl }: FeedbackEmailProps) {
   const year = new Date().getFullYear();
   const feedbackLink = `${feedbackFormUrl}?userId=${user.id}&emailId=feedback1`;
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -122,4 +122,4 @@ The SchedulEd Team
     text,
     subject: "What features would you like to see in SchedulEd?",
   };
-} 
+}

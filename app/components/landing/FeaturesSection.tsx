@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface Feature {
   icon: string;
@@ -30,33 +30,39 @@ export default function FeaturesSection() {
     {
       icon: "fas fa-brain",
       title: "Personalized Learning Paths",
-      description: "Study plans tailored to your learning style (visual, auditory, kinesthetic), time availability, and knowledge level."
+      description:
+        "Study plans tailored to your learning style (visual, auditory, kinesthetic), time availability, and knowledge level.",
     },
     {
-      icon: "fas fa-calendar-alt", 
+      icon: "fas fa-calendar-alt",
       title: "Smart Scheduling",
-      description: "Optimize your study time with intelligently scheduled sessions that match your availability and peak productivity hours."
+      description:
+        "Optimize your study time with intelligently scheduled sessions that match your availability and peak productivity hours.",
     },
     {
       icon: "fas fa-book-open",
-      title: "Curated Resources", 
-      description: "Access high-quality educational materials specifically chosen to match your learning style and subject matter."
+      title: "Curated Resources",
+      description:
+        "Access high-quality educational materials specifically chosen to match your learning style and subject matter.",
     },
     {
       icon: "fas fa-chart-line",
       title: "Progress Tracking",
-      description: "Monitor your learning journey with detailed progress reports and analytics to keep you motivated."
+      description:
+        "Monitor your learning journey with detailed progress reports and analytics to keep you motivated.",
     },
     {
       icon: "fas fa-bell",
       title: "Smart Reminders",
-      description: "Never miss a study session with timely reminders and calendar integration for upcoming study sessions."
+      description:
+        "Never miss a study session with timely reminders and calendar integration for upcoming study sessions.",
     },
     {
       icon: "fas fa-users",
       title: "Privacy Focused",
-      description: "Your study data stays private and secure. We believe learning should be personal and protected."
-    }
+      description:
+        "Your study data stays private and secure. We believe learning should be personal and protected.",
+    },
   ];
 
   return (
@@ -76,4 +82,4 @@ export default function FeaturesSection() {
       </div>
     </section>
   );
-} 
+}
