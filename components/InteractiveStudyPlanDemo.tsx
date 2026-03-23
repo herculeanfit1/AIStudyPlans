@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, FormEvent, ChangeEvent } from "react";
 import { motion } from "motion/react";
+import { type ChangeEvent, type FormEvent, useState } from "react";
 
 interface StudyPlanItem {
   title: string;
@@ -21,7 +21,8 @@ interface StudyPlan {
 const studyPlans: Record<string, StudyPlan> = {
   "machine learning": {
     subject: "Machine Learning",
-    description: "A comprehensive study plan to master the fundamentals of machine learning and AI algorithms.",
+    description:
+      "A comprehensive study plan to master the fundamentals of machine learning and AI algorithms.",
     totalDuration: "8 weeks",
     items: [
       {
@@ -30,9 +31,9 @@ const studyPlans: Record<string, StudyPlan> = {
         resources: [
           "Linear Algebra - Khan Academy",
           "Calculus - 3Blue1Brown",
-          "Statistics & Probability - MIT OpenCourseWare"
+          "Statistics & Probability - MIT OpenCourseWare",
         ],
-        completionTime: "20 hours"
+        completionTime: "20 hours",
       },
       {
         title: "Python Programming",
@@ -40,9 +41,9 @@ const studyPlans: Record<string, StudyPlan> = {
         resources: [
           "Python for Data Science - DataCamp",
           "NumPy & Pandas Fundamentals - Real Python",
-          "Jupyter Notebooks - Official Documentation"
+          "Jupyter Notebooks - Official Documentation",
         ],
-        completionTime: "10 hours"
+        completionTime: "10 hours",
       },
       {
         title: "ML Algorithms",
@@ -50,9 +51,9 @@ const studyPlans: Record<string, StudyPlan> = {
         resources: [
           "Supervised Learning - Coursera ML Course",
           "Unsupervised Learning - Stanford CS229",
-          "Neural Networks - Deep Learning Book Ch. 6-9"
+          "Neural Networks - Deep Learning Book Ch. 6-9",
         ],
-        completionTime: "30 hours"
+        completionTime: "30 hours",
       },
       {
         title: "Practical Projects",
@@ -60,13 +61,13 @@ const studyPlans: Record<string, StudyPlan> = {
         resources: [
           "Image Classification with TensorFlow",
           "Natural Language Processing with PyTorch",
-          "ML Model Deployment with Flask"
+          "ML Model Deployment with Flask",
         ],
-        completionTime: "20 hours"
-      }
-    ]
+        completionTime: "20 hours",
+      },
+    ],
   },
-  "javascript": {
+  javascript: {
     subject: "JavaScript",
     description: "Master modern JavaScript from fundamentals to advanced concepts and frameworks.",
     totalDuration: "6 weeks",
@@ -77,45 +78,34 @@ const studyPlans: Record<string, StudyPlan> = {
         resources: [
           "JavaScript Basics - MDN Web Docs",
           "JavaScript Data Types & Structures",
-          "Functions & Scope in JavaScript"
+          "Functions & Scope in JavaScript",
         ],
-        completionTime: "10 hours"
+        completionTime: "10 hours",
       },
       {
         title: "DOM Manipulation",
         duration: "1 week",
-        resources: [
-          "Selecting & Modifying Elements",
-          "Event Handling",
-          "Creating Dynamic Content"
-        ],
-        completionTime: "8 hours"
+        resources: ["Selecting & Modifying Elements", "Event Handling", "Creating Dynamic Content"],
+        completionTime: "8 hours",
       },
       {
         title: "Asynchronous JavaScript",
         duration: "2 weeks",
-        resources: [
-          "Promises & Async/Await",
-          "Fetch API & AJAX",
-          "Working with APIs"
-        ],
-        completionTime: "15 hours"
+        resources: ["Promises & Async/Await", "Fetch API & AJAX", "Working with APIs"],
+        completionTime: "15 hours",
       },
       {
         title: "Modern JavaScript",
         duration: "2 weeks",
-        resources: [
-          "ES6+ Features",
-          "Modules & Package Management",
-          "React/Vue Introduction"
-        ],
-        completionTime: "20 hours"
-      }
-    ]
+        resources: ["ES6+ Features", "Modules & Package Management", "React/Vue Introduction"],
+        completionTime: "20 hours",
+      },
+    ],
   },
   "data science": {
     subject: "Data Science",
-    description: "Learn to analyze data, create visualizations, and extract insights with statistical methods.",
+    description:
+      "Learn to analyze data, create visualizations, and extract insights with statistical methods.",
     totalDuration: "10 weeks",
     items: [
       {
@@ -124,9 +114,9 @@ const studyPlans: Record<string, StudyPlan> = {
         resources: [
           "Introduction to Data Analysis",
           "Python for Data Analysis",
-          "Exploratory Data Analysis"
+          "Exploratory Data Analysis",
         ],
-        completionTime: "20 hours"
+        completionTime: "20 hours",
       },
       {
         title: "Data Visualization",
@@ -134,19 +124,15 @@ const studyPlans: Record<string, StudyPlan> = {
         resources: [
           "Matplotlib & Seaborn",
           "Data Visualization Principles",
-          "Interactive Visualizations with Plotly"
+          "Interactive Visualizations with Plotly",
         ],
-        completionTime: "15 hours"
+        completionTime: "15 hours",
       },
       {
         title: "Statistical Methods",
         duration: "3 weeks",
-        resources: [
-          "Descriptive Statistics",
-          "Hypothesis Testing",
-          "Regression Analysis"
-        ],
-        completionTime: "25 hours"
+        resources: ["Descriptive Statistics", "Hypothesis Testing", "Regression Analysis"],
+        completionTime: "25 hours",
       },
       {
         title: "Machine Learning",
@@ -154,12 +140,12 @@ const studyPlans: Record<string, StudyPlan> = {
         resources: [
           "Supervised Learning",
           "Unsupervised Learning",
-          "Model Evaluation & Improvement"
+          "Model Evaluation & Improvement",
         ],
-        completionTime: "30 hours"
-      }
-    ]
-  }
+        completionTime: "30 hours",
+      },
+    ],
+  },
 };
 
 // Default study plan when nothing is selected
@@ -167,7 +153,7 @@ const defaultPlan: StudyPlan = {
   subject: "Select a subject",
   description: "Please enter a subject to see a personalized study plan.",
   totalDuration: "-",
-  items: []
+  items: [],
 };
 
 export default function InteractiveStudyPlanDemo() {
@@ -182,15 +168,15 @@ export default function InteractiveStudyPlanDemo() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!subject.trim()) return;
-    
+
     setLoading(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       const normalizedSubject = subject.toLowerCase().trim();
-      
+
       // Check if we have a pre-made plan
       if (studyPlans[normalizedSubject]) {
         setPlan(studyPlans[normalizedSubject]);
@@ -207,9 +193,9 @@ export default function InteractiveStudyPlanDemo() {
               resources: [
                 `Introduction to ${subject}`,
                 `${subject} Basic Concepts`,
-                `${subject} Core Principles`
+                `${subject} Core Principles`,
               ],
-              completionTime: "15 hours"
+              completionTime: "15 hours",
             },
             {
               title: "Intermediate Concepts",
@@ -217,9 +203,9 @@ export default function InteractiveStudyPlanDemo() {
               resources: [
                 `Advanced ${subject} Theory`,
                 `${subject} Practical Applications`,
-                `${subject} Problem Solving`
+                `${subject} Problem Solving`,
               ],
-              completionTime: "25 hours"
+              completionTime: "25 hours",
             },
             {
               title: "Advanced Topics",
@@ -227,14 +213,14 @@ export default function InteractiveStudyPlanDemo() {
               resources: [
                 `${subject} Specialization`,
                 `${subject} in Practice`,
-                `${subject} Real-world Projects`
+                `${subject} Real-world Projects`,
               ],
-              completionTime: "30 hours"
-            }
-          ]
+              completionTime: "30 hours",
+            },
+          ],
         });
       }
-      
+
       setShowPlan(true);
       setLoading(false);
     }, 1500); // Simulate 1.5 seconds of "AI generating" time
@@ -258,8 +244,8 @@ export default function InteractiveStudyPlanDemo() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label 
-                  htmlFor="subject" 
+                <label
+                  htmlFor="subject"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 >
                   Subject or Topic
@@ -332,18 +318,18 @@ export default function InteractiveStudyPlanDemo() {
             {!showPlan ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center mb-4">
-                  <svg 
-                    className="w-8 h-8 text-indigo-600 dark:text-indigo-400" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24" 
+                  <svg
+                    className="w-8 h-8 text-indigo-600 dark:text-indigo-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                     />
                   </svg>
                 </div>
@@ -368,10 +354,8 @@ export default function InteractiveStudyPlanDemo() {
                     {plan.totalDuration}
                   </span>
                 </div>
-                
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  {plan.description}
-                </p>
+
+                <p className="text-gray-600 dark:text-gray-300 mb-6">{plan.description}</p>
 
                 <div className="space-y-4 overflow-auto max-h-[320px] pr-2">
                   {plan.items.map((item, index) => (
@@ -383,9 +367,7 @@ export default function InteractiveStudyPlanDemo() {
                       className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
                     >
                       <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-medium text-gray-800 dark:text-white">
-                          {item.title}
-                        </h4>
+                        <h4 className="font-medium text-gray-800 dark:text-white">{item.title}</h4>
                         <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">
                           {item.duration}
                         </span>
@@ -406,7 +388,7 @@ export default function InteractiveStudyPlanDemo() {
                   <button
                     className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition"
                     onClick={() => {
-                      document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
+                      document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" });
                     }}
                   >
                     Get Full Access
@@ -419,4 +401,4 @@ export default function InteractiveStudyPlanDemo() {
       </div>
     </section>
   );
-} 
+}

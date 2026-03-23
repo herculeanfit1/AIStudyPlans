@@ -45,7 +45,11 @@ yarn-error.log*
 .env.production.local
 .env.bak
 .env.backup
+.envrc
 backup-app-insights/
+
+# secrets / tool config
+.mcp.json
 
 # vercel
 .vercel

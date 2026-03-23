@@ -66,4 +66,4 @@ export interface FeedbackStats {
     count: number;
   }[];
   recentFeedback: number;
-} 
+}

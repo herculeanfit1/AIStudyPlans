@@ -66,11 +66,11 @@ fi
 
 # Check dependency integrity
 echo -e "\n${BLUE}Checking dependency integrity...${NC}"
-if node scripts/validate-dependencies.js > /dev/null; then
+if node scripts/validate-dependencies.cjs > /dev/null; then
   echo -e "${GREEN}✓ Dependencies are valid${NC}"
 else
   echo -e "${RED}✗ Dependency validation failed${NC}"
-  node scripts/validate-dependencies.js
+  node scripts/validate-dependencies.cjs
   if [[ "$ENVIRONMENT" == "production" ]]; then
     echo -e "${RED}Error: Cannot deploy to production with invalid dependencies.${NC}"
     exit 1

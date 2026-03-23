@@ -6,6 +6,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > that apply across all TK web properties. This file documents SchedulEd-specific
 > details only. STANDARDS.md takes precedence on any conflicting guidance.
 
+## Identity
+
+**SchedulEd** (repo: AIStudyPlans) is the AI-powered study plan generator web application in the Herculean ecosystem. It is a consumer-facing Next.js 15 landing page and waitlist funnel, not an infrastructure agent — it serves end-users (students, parents, educators) rather than monitoring or managing other systems.
+
+**Owner:** TK @ Bridging Trust AI
+**Stack:** Next.js 15, React 19, TypeScript, Tailwind CSS v3, Supabase, Resend, Auth.js v5
+**Deploy:** Azure Static Web Apps
+
+## Scope
+
+| Domain | Description |
+|--------|-------------|
+| Landing page | Hero, features, pricing, FAQ, waitlist form |
+| Waitlist funnel | Supabase storage + Resend confirmation emails |
+| Contact forms | Sales and support contact endpoints |
+| Authentication | Auth.js v5 with Microsoft Entra ID |
+| Admin dashboard | Email stats, CI status, feedback, monitoring |
+| Feedback system | Campaign-based feedback collection |
+
+## Standards
+
+This repo follows **Herculean Ecosystem Standards v1.1** (enforced by `.github/workflows/standards-check.yml`):
+
+- **Linter**: Biome (`biome.json`) for formatting + linting; ESLint (`eslint.config.mjs`) for TypeScript/Next.js-specific rules
+- **Pre-commit**: `.pre-commit-config.yaml` with biome-check and no-dot-env hooks
+- **Secrets**: 1Password via `.env.1p.template` with `op://` references; never commit `.env` files
+- **Module system**: ESM (`"type": "module"` in `package.json`)
+- **Node version**: Pinned in `.nvmrc`, enforced via `engines.node`
+- **Dependencies**: Exact versions, shrinkwrap committed
+
 ## Project Overview
 
 SchedulEd (AIStudyPlans) is a Next.js 15 landing page for an AI-powered study plan generator. It's deployed on Azure Static Web Apps and uses Supabase as the backend database, Resend for email delivery, and Auth.js v5 (next-auth) for authentication.

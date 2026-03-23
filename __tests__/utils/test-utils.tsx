@@ -1,14 +1,12 @@
-import React, { ReactElement } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
+import { type RenderOptions, render } from "@testing-library/react";
+import React, { type ReactElement } from "react";
 
 // Define a custom render function to include providers, context, etc.
-const customRender = (
-  ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { ...options });
+const customRender = (ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) =>
+  render(ui, { ...options });
 
 // Re-export everything
-export * from '@testing-library/react';
+export * from "@testing-library/react";
 
 // Override render method
 export { customRender as render };
@@ -30,7 +28,7 @@ export function createDelay(ms: number): Promise<void> {
 /**
  * Mock date for consistent testing
  */
-export const MOCK_DATE = '2023-01-15T12:00:00Z';
+export const MOCK_DATE = "2023-01-15T12:00:00Z";
 
 /**
  * Resets all mocks before each test
@@ -45,15 +43,15 @@ export function setupMockReset() {
  * Mock feedback data for testing
  */
 export const mockFeedbackData = {
-  id: 'feedback-123',
+  id: "feedback-123",
   created_at: MOCK_DATE,
-  feedback_type: 'feature_request',
-  feedback_text: 'This is a test feedback',
+  feedback_type: "feature_request",
+  feedback_text: "This is a test feedback",
   rating: 4,
-  user_id: 'user-123',
-  platform: 'web',
-  source_page: '/features',
-  feature_id: 'dashboard',
+  user_id: "user-123",
+  platform: "web",
+  source_page: "/features",
+  feature_id: "dashboard",
 };
 
 /**
@@ -62,12 +60,12 @@ export const mockFeedbackData = {
 export const mockFeedbackWithUser = {
   ...mockFeedbackData,
   user: {
-    name: 'Test User',
-    email: 'test@example.com',
+    name: "Test User",
+    email: "test@example.com",
     created_at: MOCK_DATE,
   },
-  email_id: 'email-123',
-  waitlist_user_id: 'waitlist-123',
+  email_id: "email-123",
+  waitlist_user_id: "waitlist-123",
 };
 
 /**
@@ -75,13 +73,13 @@ export const mockFeedbackWithUser = {
  */
 export const mockWaitlistUser = {
   id: 123,
-  name: 'Test User',
-  email: 'test@example.com',
+  name: "Test User",
+  email: "test@example.com",
   created_at: MOCK_DATE,
   feedback_campaign_started: true,
   last_email_sent_at: MOCK_DATE,
   email_sequence_position: 1,
-  source: 'website',
+  source: "website",
 };
 
 /**
@@ -97,13 +95,13 @@ export const mockFeedbackStats = {
     bug: 1,
   },
   feedbackByRating: {
-    '3': 2,
-    '4': 5,
-    '5': 3,
+    "3": 2,
+    "4": 5,
+    "5": 3,
   },
   feedbackByDay: [
-    { date: '2023-01-14', count: 3 },
-    { date: '2023-01-15', count: 7 },
+    { date: "2023-01-14", count: 3 },
+    { date: "2023-01-15", count: 7 },
   ],
   recentFeedback: 10,
-}; 
+};

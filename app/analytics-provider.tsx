@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { ReactNode, Suspense } from 'react';
-import { usePageTracking } from '@/lib/hooks/useTracking';
+import { type ReactNode, Suspense } from "react";
+import { usePageTracking } from "@/lib/hooks/useTracking";
 
 function AnalyticsTracker({ children }: { children: ReactNode }) {
   // usePageTracking calls useSearchParams, which requires a Suspense boundary
@@ -15,4 +15,4 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
       <AnalyticsTracker>{children}</AnalyticsTracker>
     </Suspense>
   );
-} 
+}

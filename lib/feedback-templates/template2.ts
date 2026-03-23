@@ -1,4 +1,4 @@
-import { FeedbackEmailProps } from './template1';
+import type { FeedbackEmailProps } from "./template1";
 
 /**
  * Generate the second feedback email in the sequence
@@ -7,7 +7,7 @@ import { FeedbackEmailProps } from './template1';
 export function getFeedbackEmailTemplate2({ appUrl, user, feedbackFormUrl }: FeedbackEmailProps) {
   const year = new Date().getFullYear();
   const feedbackLink = `${feedbackFormUrl}?userId=${user.id}&emailId=feedback2`;
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -114,4 +114,4 @@ The SchedulEd Team
     text,
     subject: "What challenges do you face when creating study plans?",
   };
-} 
+}

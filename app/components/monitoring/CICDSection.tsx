@@ -1,6 +1,6 @@
-import React from 'react';
-import { format } from 'date-fns';
-import { MonitoringStats } from '../../types/monitoring';
+import { format } from "date-fns";
+import React from "react";
+import type { MonitoringStats } from "../../types/monitoring";
 
 interface CICDSectionProps {
   stats: MonitoringStats;
@@ -21,17 +21,16 @@ export default function CICDSection({ stats, getStatusColor }: CICDSectionProps)
                 <div className="flex items-center">
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(
-                      stats.cicdStatus
+                      stats.cicdStatus,
                     )}`}
                   >
                     {stats.cicdStatus}
                   </span>
                   <span className="ml-2 text-sm text-gray-500">
-                    Last deployment: {
-                      stats.lastDeployment 
-                        ? format(new Date(stats.lastDeployment), 'MMM d, h:mm a') 
-                        : 'N/A'
-                    }
+                    Last deployment:{" "}
+                    {stats.lastDeployment
+                      ? format(new Date(stats.lastDeployment), "MMM d, h:mm a")
+                      : "N/A"}
                   </span>
                 </div>
               </dd>
@@ -58,10 +57,10 @@ export default function CICDSection({ stats, getStatusColor }: CICDSectionProps)
                     <div
                       className={`h-2.5 rounded-full ${
                         stats.ciSummary.successRate > 90
-                          ? 'bg-green-600'
+                          ? "bg-green-600"
                           : stats.ciSummary.successRate > 75
-                          ? 'bg-yellow-500'
-                          : 'bg-red-600'
+                            ? "bg-yellow-500"
+                            : "bg-red-600"
                       }`}
                       style={{ width: `${stats.ciSummary.successRate}%` }}
                     ></div>
@@ -122,7 +121,7 @@ export default function CICDSection({ stats, getStatusColor }: CICDSectionProps)
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(
-                          workflow.status
+                          workflow.status,
                         )}`}
                       >
                         {workflow.status}
@@ -132,7 +131,7 @@ export default function CICDSection({ stats, getStatusColor }: CICDSectionProps)
                       {workflow.branch}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {format(new Date(workflow.lastRun), 'MMM d, h:mm a')}
+                      {format(new Date(workflow.lastRun), "MMM d, h:mm a")}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {workflow.duration}
@@ -146,4 +145,4 @@ export default function CICDSection({ stats, getStatusColor }: CICDSectionProps)
       )}
     </div>
   );
-} 
+}

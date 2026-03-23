@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface LinkGroup {
   title: string;
@@ -19,17 +19,17 @@ export default function FooterSection() {
         { text: "Personalized Study Plans", href: "#" },
         { text: "Resource Recommendations", href: "#" },
         { text: "Progress Tracking", href: "#" },
-        { text: "Learning Style Adaptation", href: "#" }
-      ]
+        { text: "Learning Style Adaptation", href: "#" },
+      ],
     },
     {
-      title: "Company", 
+      title: "Company",
       links: [
         { text: "About Us", href: "#" },
         { text: "Careers", href: "#" },
         { text: "Blog", href: "#" },
-        { text: "Contact", href: "#" }
-      ]
+        { text: "Contact", href: "#" },
+      ],
     },
     {
       title: "Legal",
@@ -37,15 +37,15 @@ export default function FooterSection() {
         { text: "Terms of Service", href: "#" },
         { text: "Privacy Policy", href: "#" },
         { text: "Youth Privacy Policy", href: "#" },
-        { text: "Cookie Policy", href: "#" }
-      ]
-    }
+        { text: "Cookie Policy", href: "#" },
+      ],
+    },
   ];
 
   const socialLinks = [
     { icon: "fab fa-twitter", href: "#" },
     { icon: "fab fa-instagram", href: "#" },
-    { icon: "fab fa-linkedin", href: "#" }
+    { icon: "fab fa-linkedin", href: "#" },
   ];
 
   return (
@@ -56,8 +56,8 @@ export default function FooterSection() {
           <div>
             <h3 className="text-xl font-bold text-white mb-4">SchedulEd</h3>
             <p className="mb-4">
-              AI-powered study plan generator creating personalized learning
-              paths tailored to individual learning styles.
+              AI-powered study plan generator creating personalized learning paths tailored to
+              individual learning styles.
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social, index) => (
@@ -79,10 +79,7 @@ export default function FooterSection() {
               <ul className="space-y-2">
                 {group.links.map((link) => (
                   <li key={link.text}>
-                    <a
-                      href={link.href}
-                      className="text-gray-400 hover:text-white transition"
-                    >
+                    <a href={link.href} className="text-gray-400 hover:text-white transition">
                       {link.text}
                     </a>
                   </li>
@@ -98,4 +95,4 @@ export default function FooterSection() {
       </div>
     </footer>
   );
-} 
+}

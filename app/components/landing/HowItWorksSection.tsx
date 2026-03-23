@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface Step {
   number: number;
@@ -36,21 +36,23 @@ export default function HowItWorksSection() {
     {
       number: 1,
       title: "Tell Us About Yourself",
-      description: "Share your learning style, available time, subjects you're studying, and your goals.",
-      icon: "fas fa-user"
+      description:
+        "Share your learning style, available time, subjects you're studying, and your goals.",
+      icon: "fas fa-user",
     },
     {
-      number: 2, 
+      number: 2,
       title: "Get Your Personalized Plan",
-      description: "Our AI creates a customized study plan optimized for your unique learning profile.",
-      icon: "fas fa-magic"
+      description:
+        "Our AI creates a customized study plan optimized for your unique learning profile.",
+      icon: "fas fa-magic",
     },
     {
       number: 3,
-      title: "Study Smarter, Not Harder", 
+      title: "Study Smarter, Not Harder",
       description: "Follow your plan, track progress, and let our AI adapt as you learn and grow.",
-      icon: "fas fa-rocket"
-    }
+      icon: "fas fa-rocket",
+    },
   ];
 
   return (
@@ -73,4 +75,4 @@ export default function HowItWorksSection() {
       </div>
     </section>
   );
-} 
+}

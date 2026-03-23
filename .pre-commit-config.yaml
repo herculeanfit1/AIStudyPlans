@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/biomejs/pre-commit
+    rev: "v2.4.6"
+    hooks:
+      - id: biome-check
+        additional_dependencies: ["@biomejs/biome@2.4.6"]
+
+  - repo: local
+    hooks:
+      - id: no-dot-env
+        name: Block .env commits
+        entry: >
+          bash -c 'for f in "$@"; do case "$f" in .env|.env.local|.env.bak|.env.backup) echo "BLOCKED: $f"; exit 1;; esac; done' --
+        language: system
+        files: '\.env'

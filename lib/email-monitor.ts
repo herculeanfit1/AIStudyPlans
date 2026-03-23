@@ -14,11 +14,11 @@ interface EmailUsageStats {
 
 // Email limits configuration
 const EMAIL_LIMITS = {
-  DAILY_LIMIT: parseInt(process.env.EMAIL_DAILY_LIMIT || '100', 10),
-  MONTHLY_LIMIT: parseInt(process.env.EMAIL_MONTHLY_LIMIT || '1000', 10),
-  HOURLY_LIMIT: parseInt(process.env.EMAIL_HOURLY_LIMIT || '10', 10),
-  MAX_CONSECUTIVE_FAILURES: parseInt(process.env.EMAIL_MAX_FAILURES || '5', 10),
-  CIRCUIT_BREAKER_TIMEOUT: parseInt(process.env.EMAIL_CIRCUIT_BREAKER_TIMEOUT || '300000', 10), // 5 minutes
+  DAILY_LIMIT: parseInt(process.env.EMAIL_DAILY_LIMIT || "100", 10),
+  MONTHLY_LIMIT: parseInt(process.env.EMAIL_MONTHLY_LIMIT || "1000", 10),
+  HOURLY_LIMIT: parseInt(process.env.EMAIL_HOURLY_LIMIT || "10", 10),
+  MAX_CONSECUTIVE_FAILURES: parseInt(process.env.EMAIL_MAX_FAILURES || "5", 10),
+  CIRCUIT_BREAKER_TIMEOUT: parseInt(process.env.EMAIL_CIRCUIT_BREAKER_TIMEOUT || "300000", 10), // 5 minutes
 };
 
 // In-memory storage for email usage (in production, use Redis or database)
@@ -36,15 +36,17 @@ let emailUsage: EmailUsageStats = {
 function resetDailyCounterIfNeeded(): void {
   const now = new Date();
   const lastReset = emailUsage.lastDailyReset;
-  
+
   // Check if it's a new day
-  if (now.getDate() !== lastReset.getDate() || 
-      now.getMonth() !== lastReset.getMonth() || 
-      now.getFullYear() !== lastReset.getFullYear()) {
+  if (
+    now.getDate() !== lastReset.getDate() ||
+    now.getMonth() !== lastReset.getMonth() ||
+    now.getFullYear() !== lastReset.getFullYear()
+  ) {
     emailUsage.daily = 0;
     emailUsage.lastDailyReset = now;
     // eslint-disable-next-line no-console
-    console.log('📊 Daily email counter reset');
+    console.log("📊 Daily email counter reset");
   }
 }
 
@@ -54,14 +56,13 @@ function resetDailyCounterIfNeeded(): void {
 function resetMonthlyCounterIfNeeded(): void {
   const now = new Date();
   const lastReset = emailUsage.lastMonthlyReset;
-  
+
   // Check if it's a new month
-  if (now.getMonth() !== lastReset.getMonth() || 
-      now.getFullYear() !== lastReset.getFullYear()) {
+  if (now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear()) {
     emailUsage.monthly = 0;
     emailUsage.lastMonthlyReset = now;
     // eslint-disable-next-line no-console
-    console.log('📊 Monthly email counter reset');
+    console.log("📊 Monthly email counter reset");
   }
 }
 
@@ -71,45 +72,47 @@ function resetMonthlyCounterIfNeeded(): void {
 export function checkEmailQuota(): { allowed: boolean; reason?: string; retryAfter?: number } {
   resetDailyCounterIfNeeded();
   resetMonthlyCounterIfNeeded();
-  
+
   // Check circuit breaker (consecutive failures)
   if (emailUsage.consecutiveFailures >= EMAIL_LIMITS.MAX_CONSECUTIVE_FAILURES) {
-    const timeSinceLastFailure = emailUsage.lastFailureTime 
+    const timeSinceLastFailure = emailUsage.lastFailureTime
       ? Date.now() - emailUsage.lastFailureTime.getTime()
       : 0;
-    
+
     if (timeSinceLastFailure < EMAIL_LIMITS.CIRCUIT_BREAKER_TIMEOUT) {
-      const retryAfter = Math.ceil((EMAIL_LIMITS.CIRCUIT_BREAKER_TIMEOUT - timeSinceLastFailure) / 1000);
+      const retryAfter = Math.ceil(
+        (EMAIL_LIMITS.CIRCUIT_BREAKER_TIMEOUT - timeSinceLastFailure) / 1000,
+      );
       return {
         allowed: false,
         reason: `Circuit breaker active due to ${emailUsage.consecutiveFailures} consecutive failures`,
-        retryAfter
+        retryAfter,
       };
     } else {
       // Reset circuit breaker after timeout
       emailUsage.consecutiveFailures = 0;
       emailUsage.lastFailureTime = undefined;
       // eslint-disable-next-line no-console
-      console.log('🔄 Email circuit breaker reset after timeout');
+      console.log("🔄 Email circuit breaker reset after timeout");
     }
   }
-  
+
   // Check daily limit
   if (emailUsage.daily >= EMAIL_LIMITS.DAILY_LIMIT) {
     return {
       allowed: false,
-      reason: `Daily email limit reached (${EMAIL_LIMITS.DAILY_LIMIT})`
+      reason: `Daily email limit reached (${EMAIL_LIMITS.DAILY_LIMIT})`,
     };
   }
-  
+
   // Check monthly limit
   if (emailUsage.monthly >= EMAIL_LIMITS.MONTHLY_LIMIT) {
     return {
       allowed: false,
-      reason: `Monthly email limit reached (${EMAIL_LIMITS.MONTHLY_LIMIT})`
+      reason: `Monthly email limit reached (${EMAIL_LIMITS.MONTHLY_LIMIT})`,
     };
   }
-  
+
   return { allowed: true };
 }
 
@@ -119,20 +122,24 @@ export function checkEmailQuota(): { allowed: boolean; reason?: string; retryAft
 export function recordEmailSent(): void {
   resetDailyCounterIfNeeded();
   resetMonthlyCounterIfNeeded();
-  
+
   emailUsage.daily++;
   emailUsage.monthly++;
-  
+
   // Reset consecutive failures on successful send
   if (emailUsage.consecutiveFailures > 0) {
     // eslint-disable-next-line no-console
-    console.log(`🔄 Resetting consecutive failures counter (was ${emailUsage.consecutiveFailures})`);
+    console.log(
+      `🔄 Resetting consecutive failures counter (was ${emailUsage.consecutiveFailures})`,
+    );
     emailUsage.consecutiveFailures = 0;
     emailUsage.lastFailureTime = undefined;
   }
-  
+
   // eslint-disable-next-line no-console
-  console.log(`📧 Email sent. Daily: ${emailUsage.daily}/${EMAIL_LIMITS.DAILY_LIMIT}, Monthly: ${emailUsage.monthly}/${EMAIL_LIMITS.MONTHLY_LIMIT}`);
+  console.log(
+    `📧 Email sent. Daily: ${emailUsage.daily}/${EMAIL_LIMITS.DAILY_LIMIT}, Monthly: ${emailUsage.monthly}/${EMAIL_LIMITS.MONTHLY_LIMIT}`,
+  );
 }
 
 /**
@@ -141,11 +148,13 @@ export function recordEmailSent(): void {
 export function recordEmailFailure(): void {
   emailUsage.consecutiveFailures++;
   emailUsage.lastFailureTime = new Date();
-  
-  console.warn(`❌ Email failure recorded. Consecutive failures: ${emailUsage.consecutiveFailures}/${EMAIL_LIMITS.MAX_CONSECUTIVE_FAILURES}`);
-  
+
+  console.warn(
+    `❌ Email failure recorded. Consecutive failures: ${emailUsage.consecutiveFailures}/${EMAIL_LIMITS.MAX_CONSECUTIVE_FAILURES}`,
+  );
+
   if (emailUsage.consecutiveFailures >= EMAIL_LIMITS.MAX_CONSECUTIVE_FAILURES) {
-    console.error('🚨 Email circuit breaker activated due to consecutive failures');
+    console.error("🚨 Email circuit breaker activated due to consecutive failures");
   }
 }
 
@@ -155,10 +164,10 @@ export function recordEmailFailure(): void {
 export function getEmailUsageStats(): EmailUsageStats & { limits: typeof EMAIL_LIMITS } {
   resetDailyCounterIfNeeded();
   resetMonthlyCounterIfNeeded();
-  
+
   return {
     ...emailUsage,
-    limits: EMAIL_LIMITS
+    limits: EMAIL_LIMITS,
   };
 }
 
@@ -168,24 +177,28 @@ export function getEmailUsageStats(): EmailUsageStats & { limits: typeof EMAIL_L
 export function getEmailUsageWarnings(): string[] {
   const warnings: string[] = [];
   const stats = getEmailUsageStats();
-  
+
   // Daily warnings
   const dailyUsagePercent = (stats.daily / EMAIL_LIMITS.DAILY_LIMIT) * 100;
   if (dailyUsagePercent >= 80) {
-    warnings.push(`Daily email usage at ${dailyUsagePercent.toFixed(1)}% (${stats.daily}/${EMAIL_LIMITS.DAILY_LIMIT})`);
+    warnings.push(
+      `Daily email usage at ${dailyUsagePercent.toFixed(1)}% (${stats.daily}/${EMAIL_LIMITS.DAILY_LIMIT})`,
+    );
   }
-  
+
   // Monthly warnings
   const monthlyUsagePercent = (stats.monthly / EMAIL_LIMITS.MONTHLY_LIMIT) * 100;
   if (monthlyUsagePercent >= 80) {
-    warnings.push(`Monthly email usage at ${monthlyUsagePercent.toFixed(1)}% (${stats.monthly}/${EMAIL_LIMITS.MONTHLY_LIMIT})`);
+    warnings.push(
+      `Monthly email usage at ${monthlyUsagePercent.toFixed(1)}% (${stats.monthly}/${EMAIL_LIMITS.MONTHLY_LIMIT})`,
+    );
   }
-  
+
   // Consecutive failures warning
   if (stats.consecutiveFailures >= 3) {
     warnings.push(`${stats.consecutiveFailures} consecutive email failures detected`);
   }
-  
+
   return warnings;
 }
 
@@ -201,5 +214,5 @@ export function resetEmailUsage(): void {
     consecutiveFailures: 0,
   };
   // eslint-disable-next-line no-console
-  console.log('🔄 Email usage counters manually reset');
-} 
+  console.log("🔄 Email usage counters manually reset");
+}

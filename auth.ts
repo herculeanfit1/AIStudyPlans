@@ -1,6 +1,6 @@
+import type { NextAuthConfig } from "next-auth";
 import NextAuth from "next-auth";
 import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
-import type { NextAuthConfig } from "next-auth";
 
 declare module "next-auth" {
   interface Session {

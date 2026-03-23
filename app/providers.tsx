@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { ThemeProvider } from 'next-themes';
-import { ReactNode } from 'react';
-import AuthProvider from '@/components/auth/Provider';
+import { ThemeProvider } from "next-themes";
+import type { ReactNode } from "react";
+import AuthProvider from "@/components/auth/Provider";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -16,4 +16,4 @@ export function Providers({ children }: ProvidersProps) {
       </ThemeProvider>
     </AuthProvider>
   );
-} 
+}

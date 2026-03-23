@@ -1,18 +1,20 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import type { ImageProps } from "next/image";
 import Header from "../app/components/Header";
-import { ImageProps } from "next/image";
 
 // Mock the next/image component
 vi.mock("next/image", () => ({
   __esModule: true,
   default: (props: ImageProps) => {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img
-      src={props.src as string}
-      alt={props.alt as string}
-      width={props.width}
-      height={props.height}
-    />;
+    return (
+      <img
+        src={props.src as string}
+        alt={props.alt as string}
+        width={props.width}
+        height={props.height}
+      />
+    );
   },
 }));
 

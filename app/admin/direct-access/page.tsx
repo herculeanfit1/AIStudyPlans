@@ -1,48 +1,48 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function DirectAdminAccess() {
   const router = useRouter();
-  const [status, setStatus] = useState('Setting development cookie...');
+  const [status, setStatus] = useState("Setting development cookie...");
   const [error, setError] = useState<string | null>(null);
-  
+
   // Set cookie and redirect on mount
   useEffect(() => {
-    if (process.env.NODE_ENV === 'production') {
-      setError('This page is only available in development mode');
+    if (process.env.NODE_ENV === "production") {
+      setError("This page is only available in development mode");
       return;
     }
-    
+
     try {
       // Set admin cookie directly in the browser
-      document.cookie = 'isAdmin=true; path=/; max-age=86400';
-      
+      document.cookie = "isAdmin=true; path=/; max-age=86400";
+
       // Short delay before redirecting
       setTimeout(() => {
-        setStatus('Redirecting to admin panel...');
-        router.push('/admin');
+        setStatus("Redirecting to admin panel...");
+        router.push("/admin");
       }, 1000);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error('Error setting cookie:', err);
-      setError(message || 'Failed to set admin cookie');
+      console.error("Error setting cookie:", err);
+      setError(message || "Failed to set admin cookie");
     }
   }, [router]);
-  
+
   const handleManualRedirect = () => {
-    router.push('/admin');
+    router.push("/admin");
   };
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
         <div className="text-center">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Direct Admin Access</h2>
           <p className="text-gray-600 mb-4">Development mode only</p>
-          
+
           {error ? (
             <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
               <p>{error}</p>
@@ -55,7 +55,7 @@ export default function DirectAdminAccess() {
               </div>
             </div>
           )}
-          
+
           <div className="mt-6">
             <button
               onClick={handleManualRedirect}
@@ -64,20 +64,28 @@ export default function DirectAdminAccess() {
               Go to Admin Panel Now
             </button>
           </div>
-          
+
           <div className="mt-6 text-sm">
             <Link href="/" className="font-medium text-indigo-600 hover:text-indigo-500">
               Return to Homepage
             </Link>
           </div>
-          
+
           <div className="mt-4 p-4 bg-gray-50 border border-gray-200 text-gray-700 rounded-md text-xs text-left">
             <details>
               <summary className="font-medium cursor-pointer">Debug Info</summary>
               <div className="mt-2 space-y-2">
-                <p><strong>Cookies:</strong> {typeof document !== 'undefined' ? document.cookie : '(server rendered)'}</p>
-                <p><strong>Environment:</strong> {process.env.NODE_ENV}</p>
-                <p><strong>URL:</strong> {typeof window !== 'undefined' ? window.location.href : '(server rendered)'}</p>
+                <p>
+                  <strong>Cookies:</strong>{" "}
+                  {typeof document !== "undefined" ? document.cookie : "(server rendered)"}
+                </p>
+                <p>
+                  <strong>Environment:</strong> {process.env.NODE_ENV}
+                </p>
+                <p>
+                  <strong>URL:</strong>{" "}
+                  {typeof window !== "undefined" ? window.location.href : "(server rendered)"}
+                </p>
               </div>
             </details>
           </div>
@@ -85,4 +93,4 @@ export default function DirectAdminAccess() {
       </div>
     </div>
   );
-} 
+}

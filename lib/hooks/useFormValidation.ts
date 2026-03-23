@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { z } from 'zod';
+import { useState } from "react";
+import { z } from "zod";
 
 /**
  * Custom hook for form validation using Zod schemas
@@ -24,7 +24,7 @@ export function useFormValidation<T extends z.ZodRawShape>(schema: z.ZodObject<T
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
         error.errors.forEach((err) => {
-          const path = err.path.join('.');
+          const path = err.path.join(".");
           fieldErrors[path] = err.message;
         });
         setErrors(fieldErrors);
@@ -57,7 +57,7 @@ export function useFormValidation<T extends z.ZodRawShape>(schema: z.ZodObject<T
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
         error.errors.forEach((err) => {
-          const path = err.path.join('.');
+          const path = err.path.join(".");
           fieldErrors[path] = err.message;
         });
         setErrors((prevErrors) => ({ ...prevErrors, ...fieldErrors }));
@@ -78,6 +78,6 @@ export function useFormValidation<T extends z.ZodRawShape>(schema: z.ZodObject<T
     validate,
     validateField,
     clearErrors,
-    hasErrors: Object.keys(errors).length > 0
+    hasErrors: Object.keys(errors).length > 0,
   };
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 /**
  * Hero section component for the landing page
@@ -10,13 +10,11 @@ export default function HeroSection() {
       <div className="grid md:grid-cols-2 gap-12 items-center">
         <div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight mb-6">
-            Your AI Study <span className="text-indigo-600">Partner</span>{" "}
-            for Academic Success
+            Your AI Study <span className="text-indigo-600">Partner</span> for Academic Success
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            SchedulEd creates personalized study plans tailored to your
-            learning style, time availability, and knowledge level. Get
-            ready to transform your learning experience.
+            SchedulEd creates personalized study plans tailored to your learning style, time
+            availability, and knowledge level. Get ready to transform your learning experience.
           </p>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
             <a
@@ -40,9 +38,7 @@ export default function HeroSection() {
                 <h3 className="text-xl font-bold text-slate-700 mb-2">
                   Your Personalized Study Plan
                 </h3>
-                <p className="text-slate-600 mb-4">
-                  Tailored to your learning style
-                </p>
+                <p className="text-slate-600 mb-4">Tailored to your learning style</p>
                 <div className="w-48 h-1 bg-indigo-600 mx-auto mb-4"></div>
                 <p className="text-slate-500 text-sm">Coming soon...</p>
               </div>
@@ -63,4 +59,4 @@ export default function HeroSection() {
       </div>
     </section>
   );
-} 
+}

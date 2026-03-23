@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { sendEmail } from '@/lib/email';
+import { type NextRequest, NextResponse } from "next/server";
+import { sendEmail } from "@/lib/email";
 
 /**
  * Debug endpoint for testing email delivery
@@ -8,30 +8,31 @@ import { sendEmail } from '@/lib/email';
  */
 export async function POST(request: NextRequest) {
   // Only allow in development or with DEBUG_EMAIL flag
-  const isDebugEnabled = process.env.NODE_ENV === 'development' || process.env.DEBUG_EMAIL === 'true';
-  
+  const isDebugEnabled =
+    process.env.NODE_ENV === "development" || process.env.DEBUG_EMAIL === "true";
+
   // Block usage if not in debug mode
   if (!isDebugEnabled) {
     return NextResponse.json(
-      { error: 'This endpoint is only available in development mode or with DEBUG_EMAIL enabled' },
-      { status: 403 }
+      { error: "This endpoint is only available in development mode or with DEBUG_EMAIL enabled" },
+      { status: 403 },
     );
   }
-  
+
   try {
     // Get request body
     const body = await request.json();
-    const { to = 'delivered@resend.dev' } = body;
-    
+    const { to = "delivered@resend.dev" } = body;
+
     // Log environment information for debugging
     /* eslint-disable no-console */
-    console.log('📧 Debug Email API called with environment:');
-    console.log('NODE_ENV:', process.env.NODE_ENV);
-    console.log('RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
-    console.log('EMAIL_FROM:', process.env.EMAIL_FROM);
-    console.log('EMAIL_REPLY_TO:', process.env.EMAIL_REPLY_TO);
+    console.log("📧 Debug Email API called with environment:");
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+    console.log("RESEND_API_KEY present:", !!process.env.RESEND_API_KEY);
+    console.log("EMAIL_FROM:", process.env.EMAIL_FROM);
+    console.log("EMAIL_REPLY_TO:", process.env.EMAIL_REPLY_TO);
     /* eslint-enable no-console */
-    
+
     // Simple HTML and text content for testing
     const html = `
       <div style="font-family: Arial, sans-serif; padding: 20px;">
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
         <p>Time: ${new Date().toISOString()}</p>
       </div>
     `;
-    
+
     const text = `
       Test Email from AIStudyPlans
       
@@ -49,44 +50,46 @@ export async function POST(request: NextRequest) {
       Environment: ${process.env.NODE_ENV}
       Time: ${new Date().toISOString()}
     `;
-    
+
     // Send the test email
     // eslint-disable-next-line no-console
     console.log(`📧 Sending test email to ${to}...`);
-    
+
     const result = await sendEmail({
       to,
       subject: `Test Email from AIStudyPlans (${process.env.NODE_ENV})`,
       html,
-      text
+      text,
     });
-    
+
     // eslint-disable-next-line no-console
-    console.log('✅ Email sent successfully:', result);
-    
+    console.log("✅ Email sent successfully:", result);
+
     // Return success response
     return NextResponse.json({
       success: true,
       messageId: result.messageId,
       to,
-      environment: process.env.NODE_ENV
+      environment: process.env.NODE_ENV,
     });
-    
   } catch (error: unknown) {
-    console.error('❌ Error sending debug email:', error);
+    console.error("❌ Error sending debug email:", error);
 
     const message = error instanceof Error ? error.message : String(error);
     const stack = error instanceof Error ? error.stack : undefined;
-    const name = error instanceof Error ? error.name : 'Unknown';
+    const name = error instanceof Error ? error.name : "Unknown";
 
     // Return detailed error information for debugging
-    return NextResponse.json({
-      success: false,
-      error: message,
-      stack: process.env.NODE_ENV === 'development' ? stack : undefined,
-      details: {
-        name,
-      }
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: message,
+        stack: process.env.NODE_ENV === "development" ? stack : undefined,
+        details: {
+          name,
+        },
+      },
+      { status: 500 },
+    );
   }
-} 
+}

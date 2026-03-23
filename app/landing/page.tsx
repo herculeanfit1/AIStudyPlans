@@ -2,14 +2,14 @@
 
 import { useEffect } from "react";
 import Header from "@/app/components/Header";
-import { initSmoothScroll } from "@/lib/smoothScroll";
-import InteractiveStudyPlanDemo from "@/components/InteractiveStudyPlanDemo";
-import HeroSection from "@/app/components/landing/HeroSection";
-import SocialProofSection from "@/app/components/landing/SocialProofSection";
 import FeaturesSection from "@/app/components/landing/FeaturesSection";
-import HowItWorksSection from "@/app/components/landing/HowItWorksSection";
-import WaitlistSection from "@/app/components/landing/WaitlistSection";
 import FooterSection from "@/app/components/landing/FooterSection";
+import HeroSection from "@/app/components/landing/HeroSection";
+import HowItWorksSection from "@/app/components/landing/HowItWorksSection";
+import SocialProofSection from "@/app/components/landing/SocialProofSection";
+import WaitlistSection from "@/app/components/landing/WaitlistSection";
+import InteractiveStudyPlanDemo from "@/components/InteractiveStudyPlanDemo";
+import { initSmoothScroll } from "@/lib/smoothScroll";
 
 /**
  * Main landing page component

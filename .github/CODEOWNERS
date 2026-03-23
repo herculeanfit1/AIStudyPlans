@@ -24,9 +24,9 @@ staticwebapp.config.json @herculeanfit1
 # Dependency management
 package.json @herculeanfit1
 npm-shrinkwrap.json @herculeanfit1
-scripts/validate-dependencies.js @herculeanfit1
-scripts/fix-dependencies.js @herculeanfit1
-scripts/post-install.js @herculeanfit1
+scripts/validate-dependencies.cjs @herculeanfit1
+scripts/fix-dependencies.cjs @herculeanfit1
+scripts/post-install.cjs @herculeanfit1
 
 # Standards documents
 STANDARDS.md @herculeanfit1

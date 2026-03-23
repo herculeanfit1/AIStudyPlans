@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getFeedbackStats } from "@/lib/admin-supabase";
-import { FeedbackStats } from "@/lib/types";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import React, { useCallback, useEffect, useState } from "react";
+import { getFeedbackStats } from "@/lib/admin-supabase";
+import type { FeedbackStats } from "@/lib/types";
 
 // Default stats for error cases
 const defaultStats: FeedbackStats = {
@@ -55,8 +55,7 @@ export default function AdminDashboard() {
       // Check for development admin authentication
       try {
         const isLocalAdmin =
-          localStorage.getItem("isAdmin") === "true" ||
-          document.cookie.includes("isAdmin=true");
+          localStorage.getItem("isAdmin") === "true" || document.cookie.includes("isAdmin=true");
 
         if (isLocalAdmin) {
           setIsAuthenticated(true);
@@ -118,13 +117,8 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Total Feedback
-                </p>
-                <p
-                  className="text-2xl font-bold text-gray-800 mt-1"
-                  data-testid="total-feedback"
-                >
+                <p className="text-sm font-medium text-gray-500">Total Feedback</p>
+                <p className="text-2xl font-bold text-gray-800 mt-1" data-testid="total-feedback">
                   {stats?.totalFeedback || 0}
                 </p>
               </div>
@@ -137,16 +131,9 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Average Rating
-                </p>
-                <p
-                  className="text-2xl font-bold text-gray-800 mt-1"
-                  data-testid="average-rating"
-                >
-                  {stats?.averageRating
-                    ? stats.averageRating.toFixed(1)
-                    : "N/A"}
+                <p className="text-sm font-medium text-gray-500">Average Rating</p>
+                <p className="text-2xl font-bold text-gray-800 mt-1" data-testid="average-rating">
+                  {stats?.averageRating ? stats.averageRating.toFixed(1) : "N/A"}
                 </p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-500 text-xl">
@@ -158,13 +145,8 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Recent Feedback
-                </p>
-                <p
-                  className="text-2xl font-bold text-gray-800 mt-1"
-                  data-testid="recent-feedback"
-                >
+                <p className="text-sm font-medium text-gray-500">Recent Feedback</p>
+                <p className="text-2xl font-bold text-gray-800 mt-1" data-testid="recent-feedback">
                   {stats?.recentFeedback || 0}
                 </p>
               </div>
@@ -177,19 +159,14 @@ export default function AdminDashboard() {
 
         {/* Feedback Summary */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">
-            Feedback Summary
-          </h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-4">Feedback Summary</h2>
 
           {!stats || stats.totalFeedback === 0 ? (
             <div className="p-4 bg-gray-50 rounded-md text-center">
               <p className="text-gray-600">No feedback data available.</p>
               <p className="text-sm text-gray-500 mt-1">
                 Go to{" "}
-                <Link
-                  href="/admin/settings"
-                  className="text-indigo-600 hover:text-indigo-800"
-                >
+                <Link href="/admin/settings" className="text-indigo-600 hover:text-indigo-800">
                   Settings
                 </Link>{" "}
                 to add test feedback or check the application.
@@ -202,10 +179,7 @@ export default function AdminDashboard() {
               </p>
               <p className="text-sm text-gray-500 mt-1">
                 Visit the{" "}
-                <Link
-                  href="/admin/feedback"
-                  className="text-indigo-600 hover:text-indigo-800"
-                >
+                <Link href="/admin/feedback" className="text-indigo-600 hover:text-indigo-800">
                   Feedback Dashboard
                 </Link>{" "}
                 to view and analyze all feedback.
@@ -216,9 +190,7 @@ export default function AdminDashboard() {
 
         {/* Admin Shortcuts */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">
-            Admin Shortcuts
-          </h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-4">Admin Shortcuts</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
               href="/admin/settings"
@@ -227,10 +199,7 @@ export default function AdminDashboard() {
               <div className="text-xl mb-2">⚙️</div>
               <p className="font-medium">Admin Settings</p>
             </Link>
-            <Link
-              href="/"
-              className="p-4 bg-gray-50 rounded-md hover:bg-gray-100 text-center"
-            >
+            <Link href="/" className="p-4 bg-gray-50 rounded-md hover:bg-gray-100 text-center">
               <div className="text-xl mb-2">🏠</div>
               <p className="font-medium">Visit Website</p>
             </Link>
@@ -243,12 +212,8 @@ export default function AdminDashboard() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">
-          Admin Dashboard
-        </h1>
-        <p className="text-gray-600">
-          Overview of application statistics and activities
-        </p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+        <p className="text-gray-600">Overview of application statistics and activities</p>
       </div>
 
       {/* Dashboard content with loading/error states */}

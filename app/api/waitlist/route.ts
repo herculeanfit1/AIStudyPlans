@@ -1,11 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import {
-  sendWaitlistConfirmationEmail,
-  sendWaitlistAdminNotification,
-} from "@/lib/email";
-import { addToWaitlist, startFeedbackCampaign } from "@/lib/supabase";
-import { waitlistSchema, validateInput } from "@/lib/validation";
+import { type NextRequest, NextResponse } from "next/server";
+import { sendWaitlistAdminNotification, sendWaitlistConfirmationEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
+import { addToWaitlist, startFeedbackCampaign } from "@/lib/supabase";
+import { validateInput, waitlistSchema } from "@/lib/validation";
 
 // Use nodejs runtime for Azure Static Web Apps
 export const runtime = "nodejs";
@@ -50,18 +47,15 @@ export async function POST(request: NextRequest) {
     try {
       body = await request.json();
     } catch {
-      return jsonResponse(
-        { success: false, message: "Invalid JSON in request body" },
-        400
-      );
+      return jsonResponse({ success: false, message: "Invalid JSON in request body" }, 400);
     }
 
     const validation = validateInput(waitlistSchema, body);
     if (!validation.success || !validation.data) {
-      const errorMessage = Object.values(validation.error || {}).join('. ');
+      const errorMessage = Object.values(validation.error || {}).join(". ");
       return jsonResponse(
         { success: false, message: errorMessage || "Invalid input data", errors: validation.error },
-        422
+        422,
       );
     }
 
@@ -77,21 +71,21 @@ export async function POST(request: NextRequest) {
     // Validate email service is configured
     if (!process.env.RESEND_API_KEY) {
       console.error("RESEND_API_KEY environment variable is not set");
-      return jsonResponse(
-        { success: false, message: "Email service not configured" },
-        503
-      );
+      return jsonResponse({ success: false, message: "Email service not configured" }, 503);
     }
 
     // Send confirmation email
     try {
       await sendWaitlistConfirmationEmail(email);
     } catch (confirmationError: unknown) {
-      const msg = confirmationError instanceof Error ? confirmationError.message : 'Unknown error';
+      const msg = confirmationError instanceof Error ? confirmationError.message : "Unknown error";
       console.error(`Error sending confirmation email: ${msg}`);
       return jsonResponse(
-        { success: false, message: "Failed to send confirmation email. Please contact support@aistudyplans.com." },
-        500
+        {
+          success: false,
+          message: "Failed to send confirmation email. Please contact support@aistudyplans.com.",
+        },
+        500,
       );
     }
 
@@ -99,7 +93,7 @@ export async function POST(request: NextRequest) {
     try {
       await sendWaitlistAdminNotification(name, email);
     } catch (adminEmailError: unknown) {
-      const msg = adminEmailError instanceof Error ? adminEmailError.message : 'Unknown error';
+      const msg = adminEmailError instanceof Error ? adminEmailError.message : "Unknown error";
       console.error(`Admin notification email failed: ${msg}`);
     }
 
@@ -113,11 +107,14 @@ export async function POST(request: NextRequest) {
       message: "Successfully joined the waitlist. Please check your email for confirmation.",
     });
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Unknown error';
+    const msg = error instanceof Error ? error.message : "Unknown error";
     console.error("Error processing waitlist signup:", msg);
     return jsonResponse(
-      { success: false, message: "Internal server error. Please contact support@aistudyplans.com." },
-      500
+      {
+        success: false,
+        message: "Internal server error. Please contact support@aistudyplans.com.",
+      },
+      500,
     );
   }
 }

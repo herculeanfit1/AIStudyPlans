@@ -39,7 +39,7 @@ jobs:
       
       # From dependency-validation.yml
       - name: Validate dependencies
-        run: node scripts/validate-dependencies.js
+        run: node scripts/validate-dependencies.cjs
       
       - name: Verify exact versions
         run: |

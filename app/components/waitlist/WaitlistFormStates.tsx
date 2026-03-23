@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from "motion/react";
+import React from "react";
 
 interface WaitlistFormStatesProps {
   isSubmitted: boolean;
@@ -12,11 +12,11 @@ interface WaitlistFormStatesProps {
  * Component to handle different states of the waitlist form
  * Shows success messages, errors, and development warnings
  */
-export default function WaitlistFormStates({ 
-  isSubmitted, 
-  error, 
-  isDev, 
-  isConfigured 
+export default function WaitlistFormStates({
+  isSubmitted,
+  error,
+  isDev,
+  isConfigured,
 }: WaitlistFormStatesProps) {
   // Success state
   if (isSubmitted) {
@@ -52,12 +52,8 @@ export default function WaitlistFormStates({
             <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>
           </div>
           <div>
-            <h4 className="text-red-800 font-medium mb-1">
-              Submission Error
-            </h4>
-            <p className="text-red-700 text-sm">
-              {error}
-            </p>
+            <h4 className="text-red-800 font-medium mb-1">Submission Error</h4>
+            <p className="text-red-700 text-sm">{error}</p>
           </div>
         </div>
       </motion.div>
@@ -77,9 +73,7 @@ export default function WaitlistFormStates({
             <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>
           </div>
           <div>
-            <h4 className="text-yellow-800 font-medium mb-1">
-              Development Mode
-            </h4>
+            <h4 className="text-yellow-800 font-medium mb-1">Development Mode</h4>
             <p className="text-yellow-700 text-sm">
               Email notifications are not configured. Form submissions will be saved locally.
             </p>
@@ -90,4 +84,4 @@ export default function WaitlistFormStates({
   }
 
   return null;
-} 
+}

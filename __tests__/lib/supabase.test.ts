@@ -1,18 +1,19 @@
+import { clearAllFeedbackData, getAllFeedback } from "@/lib/admin-supabase";
 import {
   addToWaitlist,
+  getUsersForNextFeedbackEmail,
   startFeedbackCampaign,
   storeFeedback,
-  getUsersForNextFeedbackEmail,
   updateEmailSequencePosition,
-  WaitlistUser
-} from '@/lib/supabase';
-import { getAllFeedback, clearAllFeedbackData } from '@/lib/admin-supabase';
-import { MOCK_DATE, mockWaitlistUser } from '../utils/test-utils';
+  WaitlistUser,
+} from "@/lib/supabase";
+import { MOCK_DATE, mockWaitlistUser } from "../utils/test-utils";
 
 // Mock the admin-supabase module
-vi.mock('@/lib/admin-supabase', async () => {
+vi.mock("@/lib/admin-supabase", async () => {
   // Use the actual implementation for some functions
-  const originalModule = await vi.importActual<typeof import('@/lib/admin-supabase')>('@/lib/admin-supabase');
+  const originalModule =
+    await vi.importActual<typeof import("@/lib/admin-supabase")>("@/lib/admin-supabase");
 
   return {
     ...originalModule,
@@ -25,7 +26,7 @@ vi.mock('@/lib/admin-supabase', async () => {
 const originalDateNow = Date.now;
 const originalDateToISOString = Date.prototype.toISOString;
 
-describe('Supabase Functions', () => {
+describe("Supabase Functions", () => {
   beforeAll(() => {
     // Mock Date.now() to return a fixed timestamp
     global.Date.now = vi.fn(() => new Date(MOCK_DATE).getTime());
@@ -48,11 +49,11 @@ describe('Supabase Functions', () => {
     vi.clearAllMocks();
   });
 
-  describe('addToWaitlist', () => {
-    it('should add a new user to the waitlist', async () => {
-      const name = 'New User';
-      const email = 'new@example.com';
-      const source = 'website';
+  describe("addToWaitlist", () => {
+    it("should add a new user to the waitlist", async () => {
+      const name = "New User";
+      const email = "new@example.com";
+      const source = "website";
 
       const result = await addToWaitlist(name, email, source);
 
@@ -64,18 +65,18 @@ describe('Supabase Functions', () => {
       expect(result.user?.feedback_campaign_started).toBe(false);
     });
 
-    it('should handle errors gracefully', async () => {
+    it("should handle errors gracefully", async () => {
       // Force an error by using an invalid email (implementation detail: in mock mode this shouldn't cause an error,
       // but we're testing the error handling path)
-      const name = 'Error User';
+      const name = "Error User";
       const email = null as any; // Invalid email to trigger an error
 
       try {
         const result = await addToWaitlist(name, email);
         // In mock mode, this might not actually fail, but we still want to verify the function returns a valid shape
-        expect(result).toHaveProperty('success');
+        expect(result).toHaveProperty("success");
         if (!result.success) {
-          expect(result).toHaveProperty('error');
+          expect(result).toHaveProperty("error");
         }
       } catch (error) {
         // If it does throw (possibly in real implementation), ensure it's caught properly
@@ -84,8 +85,8 @@ describe('Supabase Functions', () => {
     });
   });
 
-  describe('startFeedbackCampaign', () => {
-    it('should start a feedback campaign for a user', async () => {
+  describe("startFeedbackCampaign", () => {
+    it("should start a feedback campaign for a user", async () => {
       const userId = 123;
 
       const result = await startFeedbackCampaign(userId);
@@ -94,20 +95,20 @@ describe('Supabase Functions', () => {
     });
   });
 
-  describe('storeFeedback', () => {
-    it('should store user feedback', async () => {
+  describe("storeFeedback", () => {
+    it("should store user feedback", async () => {
       const waitlistUserId = 123;
-      const feedbackText = 'This is test feedback';
-      const feedbackType = 'feature_request' as const;
+      const feedbackText = "This is test feedback";
+      const feedbackType = "feature_request" as const;
       const rating = 4;
-      const emailId = 'email-123';
+      const emailId = "email-123";
 
       const result = await storeFeedback(
         waitlistUserId,
         feedbackText,
         feedbackType,
         rating,
-        emailId
+        emailId,
       );
 
       expect(result.success).toBe(true);
@@ -121,16 +122,12 @@ describe('Supabase Functions', () => {
       expect(data[0].user.name).toContain(String(waitlistUserId));
     });
 
-    it('should handle feedback without rating', async () => {
+    it("should handle feedback without rating", async () => {
       const waitlistUserId = 456;
-      const feedbackText = 'Feedback without rating';
-      const feedbackType = 'bug' as const;
+      const feedbackText = "Feedback without rating";
+      const feedbackType = "bug" as const;
 
-      const result = await storeFeedback(
-        waitlistUserId,
-        feedbackText,
-        feedbackType
-      );
+      const result = await storeFeedback(waitlistUserId, feedbackText, feedbackType);
 
       expect(result.success).toBe(true);
 
@@ -141,8 +138,8 @@ describe('Supabase Functions', () => {
     });
   });
 
-  describe('getUsersForNextFeedbackEmail', () => {
-    it('should get users due for next feedback email', async () => {
+  describe("getUsersForNextFeedbackEmail", () => {
+    it("should get users due for next feedback email", async () => {
       const result = await getUsersForNextFeedbackEmail();
 
       expect(result.users).toBeDefined();
@@ -159,8 +156,8 @@ describe('Supabase Functions', () => {
     });
   });
 
-  describe('updateEmailSequencePosition', () => {
-    it('should update the email sequence position for a user', async () => {
+  describe("updateEmailSequencePosition", () => {
+    it("should update the email sequence position for a user", async () => {
       const userId = 123;
       const newPosition = 2;
 
@@ -171,10 +168,10 @@ describe('Supabase Functions', () => {
   });
 
   // Integration tests between functions
-  describe('Feedback campaign flow', () => {
-    it('should complete an end-to-end feedback flow', async () => {
+  describe("Feedback campaign flow", () => {
+    it("should complete an end-to-end feedback flow", async () => {
       // Step 1: Add user to waitlist
-      const { user } = await addToWaitlist('Flow User', 'flow@example.com');
+      const { user } = await addToWaitlist("Flow User", "flow@example.com");
       expect(user).toBeDefined();
 
       if (!user) return; // TypeScript safety
@@ -188,12 +185,7 @@ describe('Supabase Functions', () => {
       expect(usersResult.users.length).toBeGreaterThan(0);
 
       // Step 4: Store feedback from user
-      const feedbackResult = await storeFeedback(
-        user.id,
-        'I love this app!',
-        'general',
-        5
-      );
+      const feedbackResult = await storeFeedback(user.id, "I love this app!", "general", 5);
       expect(feedbackResult.success).toBe(true);
 
       // Step 5: Update email sequence position
@@ -203,7 +195,7 @@ describe('Supabase Functions', () => {
       // Verify feedback was stored
       const { data } = await getAllFeedback();
       expect(data.length).toBe(1);
-      expect(data[0].feedback_text).toBe('I love this app!');
+      expect(data[0].feedback_text).toBe("I love this app!");
       expect(data[0].rating).toBe(5);
     });
   });
