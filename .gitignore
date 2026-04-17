@@ -77,4 +77,3 @@ logs/
 # Important: DO NOT ignore these files
 !.npmrc
 !npm-shrinkwrap.json
-!package-lock.json
