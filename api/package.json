@@ -1,9 +1,23 @@
 {
-  "name": "scheduled-api",
-  "version": "1.0.0",
-  "description": "SchedulEd API for Azure Static Web Apps",
-  "main": "index.js",
+  "name": "@aistudyplans/api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "func start",
+    "build": "node esbuild.config.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
   "dependencies": {
-    "resend": "^2.1.0"
+    "@azure/functions": "^4.6.0",
+    "@supabase/supabase-js": "^2.47.10",
+    "resend": "^6.11.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.21.5",
+    "typescript": "^5.6.3"
   }
-} 
+}
