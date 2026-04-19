@@ -20,7 +20,8 @@ app.http("waitlist", {
     }
 
     const rl = rateLimit(request, {
-      limit: 5, windowMs: 60 * 60 * 1000,
+      limit: 5,
+      windowMs: 60 * 60 * 1000,
       message: "Too many waitlist signup attempts. Please wait before trying again.",
       standardHeaders: true,
     });
@@ -33,7 +34,11 @@ app.http("waitlist", {
         const errorMessage = Object.values(validation.error || {}).join(". ");
         return {
           status: 422,
-          jsonBody: { success: false, message: errorMessage || "Invalid input data", errors: validation.error },
+          jsonBody: {
+            success: false,
+            message: errorMessage || "Invalid input data",
+            errors: validation.error,
+          },
           headers: CORS,
         };
       }
@@ -42,7 +47,11 @@ app.http("waitlist", {
       const dbResult = await addToWaitlist(name, email, source);
 
       if (!process.env.RESEND_API_KEY) {
-        return { status: 503, jsonBody: { success: false, message: "Email service not configured" }, headers: CORS };
+        return {
+          status: 503,
+          jsonBody: { success: false, message: "Email service not configured" },
+          headers: CORS,
+        };
       }
 
       try {
@@ -52,12 +61,19 @@ app.http("waitlist", {
         console.error(`Error sending confirmation email: ${msg}`);
         return {
           status: 500,
-          jsonBody: { success: false, message: "Failed to send confirmation email. Please contact support@aistudyplans.com." },
+          jsonBody: {
+            success: false,
+            message: "Failed to send confirmation email. Please contact support@aistudyplans.com.",
+          },
           headers: CORS,
         };
       }
 
-      try { await sendWaitlistAdminNotification(name, email); } catch { /* non-blocking */ }
+      try {
+        await sendWaitlistAdminNotification(name, email);
+      } catch {
+        /* non-blocking */
+      }
 
       if (dbResult.success && dbResult.user) {
         await startFeedbackCampaign(dbResult.user.id);
@@ -65,7 +81,10 @@ app.http("waitlist", {
 
       return {
         status: 200,
-        jsonBody: { success: true, message: "Successfully joined the waitlist. Please check your email for confirmation." },
+        jsonBody: {
+          success: true,
+          message: "Successfully joined the waitlist. Please check your email for confirmation.",
+        },
         headers: CORS,
       };
     } catch (error) {
@@ -73,7 +92,10 @@ app.http("waitlist", {
       console.error("Error processing waitlist signup:", msg);
       return {
         status: 500,
-        jsonBody: { success: false, message: "Internal server error. Please contact support@aistudyplans.com." },
+        jsonBody: {
+          success: false,
+          message: "Internal server error. Please contact support@aistudyplans.com.",
+        },
         headers: CORS,
       };
     }

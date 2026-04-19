@@ -15,14 +15,17 @@ interface RateLimitEntry {
 const ipStore = new Map<string, RateLimitEntry>();
 
 // Clean up expired entries
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of ipStore.entries()) {
-    if (entry.resetTime < now) {
-      ipStore.delete(ip);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [ip, entry] of ipStore.entries()) {
+      if (entry.resetTime < now) {
+        ipStore.delete(ip);
+      }
     }
-  }
-}, 1000 * 60 * 5);
+  },
+  1000 * 60 * 5,
+);
 
 export function getClientIp(request: HttpRequest): string {
   return (
@@ -32,10 +35,7 @@ export function getClientIp(request: HttpRequest): string {
   );
 }
 
-export function rateLimit(
-  request: HttpRequest,
-  config: RateLimitConfig,
-): HttpResponseInit | null {
+export function rateLimit(request: HttpRequest, config: RateLimitConfig): HttpResponseInit | null {
   const ip = getClientIp(request);
   const now = Date.now();
 
@@ -60,17 +60,14 @@ export function rateLimit(
       headers["Retry-After"] = remainingSec.toString();
       headers["X-RateLimit-Limit"] = config.limit.toString();
       headers["X-RateLimit-Remaining"] = "0";
-      headers["X-RateLimit-Reset"] = Math.ceil(
-        entry.resetTime / 1000,
-      ).toString();
+      headers["X-RateLimit-Reset"] = Math.ceil(entry.resetTime / 1000).toString();
     }
     return {
       status: 429,
       jsonBody: {
         success: false,
         message:
-          config.message ||
-          `Too many requests, please try again after ${remainingSec} seconds.`,
+          config.message || `Too many requests, please try again after ${remainingSec} seconds.`,
       },
       headers,
     };

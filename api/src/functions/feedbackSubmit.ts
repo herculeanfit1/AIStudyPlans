@@ -8,7 +8,8 @@ app.http("feedbackSubmit", {
   route: "feedback/submit",
   handler: async (request: HttpRequest): Promise<HttpResponseInit> => {
     const rl = rateLimit(request, {
-      limit: 3, windowMs: 60 * 60 * 1000,
+      limit: 3,
+      windowMs: 60 * 60 * 1000,
       message: "Too many feedback submissions. Please wait before trying again.",
       standardHeaders: true,
     });
@@ -33,7 +34,10 @@ app.http("feedbackSubmit", {
       if (result.success) {
         return { status: 200, jsonBody: { success: true } };
       }
-      return { status: 500, jsonBody: { success: false, message: result.error || "Failed to submit feedback" } };
+      return {
+        status: 500,
+        jsonBody: { success: false, message: result.error || "Failed to submit feedback" },
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error("Error submitting feedback:", error);

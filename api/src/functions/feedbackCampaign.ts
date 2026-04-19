@@ -12,7 +12,10 @@ app.http("feedbackCampaign", {
       const apiKey = process.env.FEEDBACK_CAMPAIGN_API_KEY;
 
       if (!apiKey) {
-        return { status: 503, jsonBody: { success: false, message: "Campaign API key not configured" } };
+        return {
+          status: 503,
+          jsonBody: { success: false, message: "Campaign API key not configured" },
+        };
       }
       if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
         return { status: 401, jsonBody: { success: false, message: "Unauthorized" } };
@@ -30,7 +33,11 @@ app.http("feedbackCampaign", {
           if (emailResult?.success) {
             const newPosition = (user.email_sequence_position || 1) + 1;
             await updateEmailSequencePosition(user.id, newPosition);
-            results.push({ userId: user.id, success: true, sequencePosition: user.email_sequence_position });
+            results.push({
+              userId: user.id,
+              success: true,
+              sequencePosition: user.email_sequence_position,
+            });
           }
         } catch (e) {
           const msg = e instanceof Error ? e.message : "Unknown error";
@@ -40,7 +47,11 @@ app.http("feedbackCampaign", {
 
       return {
         status: 200,
-        jsonBody: { success: true, message: `Processed ${users.length} users`, data: { processed: users.length, results } },
+        jsonBody: {
+          success: true,
+          message: `Processed ${users.length} users`,
+          data: { processed: users.length, results },
+        },
       };
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown error";
