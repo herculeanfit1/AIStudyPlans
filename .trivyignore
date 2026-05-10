@@ -9,7 +9,10 @@
 #   CVE-2024-12345  # 2026-05-04: false positive, fixed in vendored patch (PR #999)
 #   DS-0002         # 2026-05-06: stdio-only dev container, intentional root
 #
-# Empty by default; per-repo curation as findings emerge.
-#
 # Canonical template: HerculeanOlympus config/security-scan/.trivyignore.template
 # Standard:           HerculeanOlympus STANDARDS.md § 11 Security Scanning
+
+# DS-0002 affects Dockerfile.dev and Dockerfile.test only (production
+# Dockerfile already has USER nextjs). Dev/test containers run on
+# developer machines or in CI and are not production runtimes.
+DS-0002  # 2026-05-10: dev/test Dockerfiles intentionally root; prod Dockerfile uses USER nextjs
