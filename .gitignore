@@ -74,7 +74,9 @@ next-env.d.ts
 logs/
 *.log
 
+# diagnostics / ephemera (NONAGENT standard § 5)
+_diag/
+
 # Important: DO NOT ignore these files
 !.npmrc
 !npm-shrinkwrap.json
-!package-lock.json
