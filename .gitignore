@@ -24,6 +24,7 @@ out/
 build/
 dist/
 .cache/
+api/staging/
 
 # misc
 .DS_Store
