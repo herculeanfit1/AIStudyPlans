@@ -16,3 +16,10 @@
 # Dockerfile already has USER nextjs). Dev/test containers run on
 # developer machines or in CI and are not production runtimes.
 DS-0002  # 2026-05-10: dev/test Dockerfiles intentionally root; prod Dockerfile uses USER nextjs
+
+# CVE-2026-41907 (uuid OOB write in v3/v5/v6 with caller-provided output
+# buffers) is NOT reachable here: app code uses uuid v4 only (uuidv4(), no
+# external buffers), and the transitive copy comes via svix@1.90.0 which pins
+# uuid ^10 (latest svix still does), so no clean upstream bump exists. Trivy
+# rates it MEDIUM. Re-evaluate when svix relaxes its uuid range or a v10 patch ships.
+CVE-2026-41907  # 2026-06-21: not reachable (v4-only usage); svix transitively pins uuid ^10, no clean fix
