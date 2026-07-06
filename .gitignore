@@ -81,3 +81,6 @@ _diag/
 # Important: DO NOT ignore these files
 !.npmrc
 !npm-shrinkwrap.json
+
+# repo-hygiene 2026-07: never track editor backups / stray logs
+*.bak
