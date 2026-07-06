@@ -111,7 +111,7 @@ Components live in three locations:
 
 ### API Routes (Split Architecture)
 
-**Azure Functions backend** (`api/`, standalone at `func-btai-asp-prod`):
+**Azure Functions backend** (`api/`, standalone at `<function-app>`):
 - **`waitlist`** — Waitlist signup (Supabase + Resend via KV)
 - **`contact/sales` and `contact/support`** — Contact forms (Supabase)
 - **`feedback-campaign`** — Cron-triggered feedback emails (bearer token auth)
@@ -128,19 +128,19 @@ Components live in three locations:
 > standalone (not linked) — frontend calls it directly via CORS.
 
 ### Azure Functions Backend (`api/`)
-- **Runtime**: Azure Functions v4, Flex Consumption (`func-btai-asp-prod`)
+- **Runtime**: Azure Functions v4, Flex Consumption (`<function-app>`)
 - **Build**: `cd api && npm run build` (esbuild → `dist/index.js`, ESM, Node 22)
-- **Key Vault**: `aistudyplansvault` — secrets via `@Microsoft.KeyVault()` references
-- **KV secrets**: `resend-api-key`, `supabase-service-role-key`, `feedback-campaign-api-key`, `admin-api-key`
-- **SWA auth secrets**: `NEXTAUTH_SECRET` and `AZURE_AD_CLIENT_SECRET` also use KV references on SWA
+- **Key Vault**: `<key-vault-name>` — secrets via `@Microsoft.KeyVault()` references
+- **KV secrets**: backend secret names withheld from this public file — see the private runbook / 1Password vault
+- **SWA auth secrets**: additional auth secrets also use KV references on SWA (names withheld — see the private runbook)
 
 ### Infrastructure as Code (`infra/`)
 - `main.bicep` — Functions, Storage, App Insights, existing KV RBAC grants
-- Deploy: `az deployment group create --resource-group AIStudyPlans-RG1 --template-file infra/main.bicep --parameters infra/parameters.prod.json`
+- Deploy: `az deployment group create --resource-group <resource-group> --template-file infra/main.bicep --parameters infra/parameters.prod.json`
 
 ### Operational Scripts
 - `scripts/wire-functions-settings.sh [--seed-kv]` — Seed KV, wire KV references to Functions and SWA
-- `scripts/escrow-kv-to-1p.sh` — Back up KV to 1Password (`BTAI-CC-AIStudyPlans`)
+- `scripts/escrow-kv-to-1p.sh` — Back up KV to 1Password (vault name withheld — see the private runbook)
 
 ### Shared Libraries (`lib/`)
 - **`supabase.ts`** — Public Supabase client with graceful fallback to mock client when env vars are missing (enables local dev without Supabase)
@@ -166,11 +166,11 @@ Components live in three locations:
 Auth.js v5 (next-auth@5.0.0-beta.29) with Microsoft Entra ID (formerly Azure AD). Server-side auth uses the `auth()` function exported from `auth.ts` at project root. Client-side auth uses `useSession`/`SessionProvider` from `next-auth/react`. Admin access is controlled by `ADMIN_EMAILS` env var (comma-separated list). Admin pages live under `app/admin/`.
 
 ### Environment Variables
-See `.env.example` for required variables. Secrets are managed via Azure Key Vault (`aistudyplansvault`):
-- **Functions app** (KV refs): `RESEND_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `FEEDBACK_CAMPAIGN_API_KEY`, `ADMIN_API_KEY`
-- **SWA** (KV refs): `NEXTAUTH_SECRET`, `AZURE_AD_CLIENT_SECRET`
+See `.env.example` for required variables. Secrets are managed via Azure Key Vault (`<key-vault-name>`):
+- **Functions app** (KV refs): backend secrets — names withheld; see the private runbook / 1Password vault
+- **SWA** (KV refs): auth secrets — names withheld; see the private runbook / 1Password vault
 - **SWA** (plain): `AZURE_AD_CLIENT_ID`, `AZURE_AD_TENANT_ID`, `NEXTAUTH_URL`, `ADMIN_EMAILS`, `NEXT_PUBLIC_*`
-- **1Password**: `BTAI-CC-AIStudyPlans` vault (SA token: `aistudyplans-sa-token`), `BTAI-CC-SchedulEd` vault (SA token: `scheduled-sa-token`)
+- **1Password**: per-project vaults hold the service-account tokens used for deployment/KV escrow (vault and SA-token item names withheld — see the private runbook)
 
 **Important**: `.env.development` and `.env.production` are gitignored. Only `.env.example` is tracked.
 
@@ -193,7 +193,7 @@ CI in GitHub Actions is **deployment-only**. Run `npm run validate` locally befo
 ### Service Layer & Data Flow
 Two request paths:
 - **Auth routes**: Client → SWA → Next.js API route → `auth.ts` / `lib/csrf.ts`
-- **Data routes**: Client → CORS → `func-btai-asp-prod` → `api/src/lib/` → Supabase/Resend (secrets from Key Vault)
+- **Data routes**: Client → CORS → `<function-app>` → `api/src/lib/` → Supabase/Resend (secrets from Key Vault)
 
 API route pipeline (per STANDARDS.md): Zod validation → rate limiting → business logic → JSON response. Public forms use honeypot fields (`_gotcha`).
 
