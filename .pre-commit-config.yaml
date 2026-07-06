@@ -13,3 +13,14 @@ repos:
           bash -c 'for f in "$@"; do case "$f" in .env|.env.local|.env.bak|.env.backup) echo "BLOCKED: $f"; exit 1;; esac; done' --
         language: system
         files: '\.env'
+
+      # Block NEXT_PUBLIC_* credentials: anything with that prefix is inlined
+      # into the client JS bundle at build time, so it ships to every browser.
+      # A secret behind NEXT_PUBLIC_ is not a secret. See
+      # scripts/check-no-client-secrets.sh and
+      # docs/security/next-public-admin-credential.md.
+      - id: no-client-secrets
+        name: Block NEXT_PUBLIC_ client credentials
+        entry: scripts/check-no-client-secrets.sh
+        language: script
+        files: '(^|/)[^/]*\.env($|\.)|\.(sh|ts|tsx|mts|cts|js|jsx|mjs|cjs|txt|json|ya?ml)$'
