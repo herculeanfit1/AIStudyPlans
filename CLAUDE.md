@@ -1,224 +1,75 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-> **Cross-site standards**: See `STANDARDS.md` in this repo for shared conventions
-> that apply across all TK web properties. This file documents SchedulEd-specific
-> details only. STANDARDS.md takes precedence on any conflicting guidance.
-
-## Identity
-
-**SchedulEd** (repo: AIStudyPlans) is the AI-powered study plan generator web application in the Herculean ecosystem. It is a consumer-facing Next.js 15 landing page and waitlist funnel, not an infrastructure agent — it serves end-users (students, parents, educators) rather than monitoring or managing other systems.
-
-**Owner:** TK @ Bridging Trust AI
-**Stack:** Next.js 15, React 19, TypeScript, Tailwind CSS v3, Supabase, Resend, Auth.js v5
-**Deploy:** Azure Static Web Apps
-
-## Scope
-
-| Domain | Description |
-|--------|-------------|
-| Landing page | Hero, features, pricing, FAQ, waitlist form |
-| Waitlist funnel | Supabase storage + Resend confirmation emails |
-| Contact forms | Sales and support contact endpoints |
-| Authentication | Auth.js v5 with Microsoft Entra ID |
-| Admin dashboard | Email stats, CI status, feedback, monitoring |
-| Feedback system | Campaign-based feedback collection |
-
-## Standards
-
-This repo follows **Herculean Ecosystem Standards v1.1** (enforced by `.github/workflows/standards-check.yml`):
-
-- **Linter**: Biome (`biome.json`) for formatting + linting; ESLint (`eslint.config.mjs`) for TypeScript/Next.js-specific rules
-- **Pre-commit**: `.pre-commit-config.yaml` with biome-check and no-dot-env hooks
-- **Secrets**: 1Password via `.env.1p.template` with `op://` references; never commit `.env` files
-- **Module system**: ESM (`"type": "module"` in `package.json`)
-- **Node version**: Pinned in `.nvmrc`, enforced via `engines.node`
-- **Dependencies**: Exact versions, shrinkwrap committed
-
-## Project Overview
-
-SchedulEd (AIStudyPlans) is a Next.js 15 landing page for an AI-powered study plan generator. It's deployed on Azure Static Web Apps and uses Supabase as the backend database, Resend for email delivery, and Auth.js v5 (next-auth) for authentication.
+SchedulEd (repo: AIStudyPlans) — AI study-plan generator: consumer landing page + waitlist funnel. Next.js 15 / React 19 / TypeScript / Tailwind v3 / Supabase / Resend / Auth.js v5. SWA (Static Web App) frontend + standalone Azure Functions backend (`api/`); deployed on Azure Static Web Apps.
 
 ## Commands
 
-### Development
+CI is deployment-only (no PR lint/test gate) — `npm run validate` is the local pre-push gate.
+
 ```bash
-npm run dev          # Start dev server on localhost:3000
-npm run build        # Production build
-npm run start        # Serve production build
+npm run dev             # dev server on :3000
+npm run build           # production build (fails on any TS error OR lint warning)
+npm run validate        # PRE-PUSH GATE: lint → typecheck → unit tests → build (scripts/validate-before-push.sh)
+npm run validate:quick  # lint + typecheck + build, no tests
+npm run validate:deps   # enforce exact-version + shrinkwrap dependency standards
+npm run lint            # eslint app/ components/ lib/ --max-warnings 0  (any warning fails)
+npm run typecheck       # tsc --noEmit
+npm test                # vitest run  (single file: npm test -- __tests__/Header.test.tsx)
+npm run test:e2e        # playwright (auto-starts dev server)
+./run-docker.sh start   # dockerized dev on :3001
 ```
 
-### Testing
-```bash
-npm test                                # Run Vitest unit tests
-npm test -- __tests__/Header.test.tsx   # Run a single test file
-npm run test:watch                      # Vitest in watch mode
-npm run test:coverage                   # Vitest with v8 coverage (70% threshold)
-npm run test:e2e                        # Playwright E2E tests (auto-starts dev server)
-npm run test:e2e:ui                     # Playwright with interactive UI
-npm run test:all                        # lint + typecheck + unit + e2e
-```
+- Add deps with `--save-exact` (no `^`/`~`), then `npm shrinkwrap`.
+- Use `--legacy-peer-deps` on peer-dep conflicts (@types/node vs vite).
 
-### Validation (run before pushing)
-```bash
-npm run validate         # Full: lint + typecheck + tests + build
-npm run validate:quick   # Fast: lint + typecheck + build (no tests)
-```
+## Architecture facts
 
-### Linting & Type Checking
-```bash
-npm run lint         # ESLint 9 flat config (eslint.config.mjs)
-npm run lint:fix     # ESLint with auto-fix
-npm run typecheck    # tsc --noEmit
-```
+Non-derivable facts only — inventory (routes, components, lib files) is derivable by `ls`/grep.
 
-**Lint gotchas**: `@typescript-eslint/no-unused-vars` is `"error"` — any unused import or variable fails lint. `@typescript-eslint/no-explicit-any` is `"warn"` — `any` usage produces warnings. `no-console` is `"warn"` — use `// eslint-disable-next-line no-console` for intentional console.log. The `--max-warnings 0` flag means any warning fails CI.
+- **Split API + auth exception (the load-bearing deviation).** The Azure Functions backend (`api/`) is deliberately **standalone, NOT a SWA "linked backend."** A linked backend routes ALL `/api/*` to Functions, which would swallow `/api/auth/*` and break NextAuth. So auth-critical routes stay in the Next.js SWA (`app/api/`: `auth/[...nextauth]`, `csrf`, `admin/*`); data endpoints (`waitlist`, `contact/sales`, `contact/support`, `feedback/submit`, `feedback-campaign`, `health`) live in Functions and the frontend calls them **directly via CORS**.
+- **Admin allowlist is hardcoded in `auth.ts`** (`allowedEmails` array) — it gates both sign-in and the `isAdmin` claim. `ADMIN_EMAILS` exists in `.env.example` but is read by NO code; do not wire admin logic to it.
+- **Dual app directory.** `app/` is the live Next.js root and takes precedence; `src/app/` is a legacy/backup layout+page. Edit `app/`, not `src/app/`.
+- **`lib/supabase.ts` falls back to a mock client** when Supabase env vars are absent, so local dev runs without Supabase. `lib/admin-supabase.ts` is the higher-privilege service-role client (admin ops only).
+- **`lib/rate-limit.ts` is in-memory per-IP** and resets on restart — a known limitation (prod should move to Redis).
+- **`feedback-campaign`** is cron-triggered and bearer-token authed (`FEEDBACK_CAMPAIGN_API_KEY`), unlike the other Supabase-backed public endpoints.
 
-### Docker
-```bash
-./run-docker.sh start   # Start dev environment on localhost:3001
-./run-docker.sh stop    # Stop dev environment
-./run-docker.sh test    # Run unit tests in Docker
-./run-docker.sh e2e     # Run E2E tests in Docker
-```
+## Gotchas
 
-### Dependencies
-```bash
-npm install package-name --save-exact   # Always use exact versions (no ^ or ~)
-npm shrinkwrap                          # After adding deps, lock transitive deps
-npm run validate:deps                   # Verify dependency standards
-```
+- **Do NOT migrate Tailwind to v4.** This repo is pinned to v3. Read BTAISite `CLAUDE.md` "Critical: Tailwind CSS v4 Rules" first. All base resets in `globals.css` are wrapped in `@layer base` for v4 forward-compat — keep them there.
+- **Build enforces TS and ESLint** (`ignoreBuildErrors: false`, `ignoreDuringBuilds: false`): one type error OR lint warning fails the build. The "Next.js plugin was not detected in ESLint configuration" build warning is **cosmetic** (lint runs via `eslint` directly, not `next lint`) — WRONG: try to silence it; CORRECT: ignore it.
+- **ESLint uses the flat config `eslint.config.mjs` (ESLint 9), NOT `.eslintrc.json`.** `@typescript-eslint/no-unused-vars` is `error` (unused import/var fails); `no-explicit-any` and `no-console` are `warn`, but `--max-warnings 0` means any warning still fails. For an intentional log: `// eslint-disable-next-line no-console`.
+- **Node is pinned to 20.19.1** (`.nvmrc`); `engines.node >=20.19.1`. Run `nvm use` to match CI.
+- **Vitest 3.x + happy-dom + @testing-library/react@16** (React 19-compatible). Mock with `vi.mock()`/`vi.fn()`/`vi.mocked()`.
 
-## Architecture
+## Deployment
 
-### Dual App Directory Structure
-The project has **two** app entry points — this is important to understand:
+Azure Static Web Apps (frontend) + standalone Azure Functions (Flex Consumption, Node 22 ESM; backend build `cd api && npm run build`, esbuild → `dist/index.js`).
 
-- **`app/`** — Primary application directory. Contains all routes, API endpoints, and page-level components. This is where the main landing page (`app/page.tsx`) lives with Hero, Features, Pricing, FAQ, WaitlistForm, etc.
-- **`src/app/`** — Secondary/legacy entry point with a separate `layout.tsx` and `page.tsx`. Contains a backup layout and minimal page.
+- `.github/workflows/azure-static-web-apps.yml` builds + deploys on push to `main`; PR preview URLs on PRs. **No lint/test in CI** — run `npm run validate` locally first.
+- IaC: `infra/main.bicep` (Functions, Storage, App Insights, existing Key Vault RBAC). Settings/KV wiring via `scripts/wire-functions-settings.sh [--seed-kv]`.
+- Prod secrets are Azure Key Vault references on both the Functions app and SWA. Resource-group / vault / KV item names are **withheld from this public repo — see the private runbook / 1Password vault.**
 
-The `app/` directory is the active one used by Next.js (it takes precedence).
+## Environment variables
 
-### Component Organization
-Components live in three locations:
-- **`app/components/`** — Page-specific components used directly by routes (Header, Hero, Features, Footer, WaitlistForm, etc.)
-- **`app/components/landing/`** — Alternative landing page section components (HeroSection, FeaturesSection, etc.)
-- **`components/`** — Shared/reusable components (ErrorBoundary, auth Provider, admin components)
+`.env.example` is the tracked contract. `.env.development` / `.env.production` are gitignored; only `.env.example` is committed. Non-derivable notes:
 
-### Provider Hierarchy
-`app/layout.tsx` wraps the app with: `ErrorBoundary` → `Providers` (AuthProvider + ThemeProvider) → `AnalyticsProvider`
+- **Prod secrets are injected as Azure Key Vault references** (Functions app + SWA); item names withheld — see the private runbook / 1Password vault.
+- `SUPABASE_SERVICE_ROLE_KEY` is the elevated server-only admin credential — never expose it via a `NEXT_PUBLIC_*` var.
+- `ADMIN_EMAILS` is present in `.env.example` but **unused** (allowlist is hardcoded in `auth.ts`).
+- `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `ALLOWED_ORIGINS` are read **only** by the auxiliary `mcp-server/` (a local-Qwen3 Coder dev tool), not the landing page or Functions backend.
 
-### API Routes (Split Architecture)
+## Standards
 
-**Azure Functions backend** (`api/`, standalone at `<function-app>`):
-- **`waitlist`** — Waitlist signup (Supabase + Resend via KV)
-- **`contact/sales` and `contact/support`** — Contact forms (Supabase)
-- **`feedback-campaign`** — Cron-triggered feedback emails (bearer token auth)
-- **`feedback/submit`** — Store user feedback (Supabase)
-- **`health`** — Health check
+Follows the Herculean Ecosystem Standards (NONAGENT variant) — see the `STANDARDS.md` header for the current version. STANDARDS.md takes precedence on any conflict.
 
-**Next.js SWA** (`app/api/`, stays in SWA — cannot move to Functions without breaking NextAuth):
-- **`auth/[...nextauth]/`** — Auth.js v5 with Microsoft Entra ID provider
-- **`csrf/`** — CSRF token generation
-- **`admin/`** — Admin endpoints (email stats, CI status, dev auth)
+- **Linters**: Biome (`biome.json`) for format + lint via pre-commit; ESLint (`eslint.config.mjs`) for TS/Next rules via `npm run lint`.
+- **Pre-commit** (`.pre-commit-config.yaml`): `biome-check`, `no-dot-env`, `no-client-secrets`. The `no-dot-env` hook blocks staging `.env*` — unstage the file, don't bypass.
+- **Secrets**: 1Password via `.env.1p.template` (`op://` refs); never commit `.env` files.
+- **Module system**: ESM (`"type": "module"`). Exact dependency versions; `npm shrinkwrap` committed.
 
-> **Why split?** SWA linked backends route ALL `/api/*` to the Functions app.
-> This would intercept `/api/auth/*` and break NextAuth. The Functions app is
-> standalone (not linked) — frontend calls it directly via CORS.
+## Key docs / paths
 
-### Azure Functions Backend (`api/`)
-- **Runtime**: Azure Functions v4, Flex Consumption (`<function-app>`)
-- **Build**: `cd api && npm run build` (esbuild → `dist/index.js`, ESM, Node 22)
-- **Key Vault**: `<key-vault-name>` — secrets via `@Microsoft.KeyVault()` references
-- **KV secrets**: backend secret names withheld from this public file — see the private runbook / 1Password vault
-- **SWA auth secrets**: additional auth secrets also use KV references on SWA (names withheld — see the private runbook)
-
-### Infrastructure as Code (`infra/`)
-- `main.bicep` — Functions, Storage, App Insights, existing KV RBAC grants
-- Deploy: `az deployment group create --resource-group <resource-group> --template-file infra/main.bicep --parameters infra/parameters.prod.json`
-
-### Operational Scripts
-- `scripts/wire-functions-settings.sh [--seed-kv]` — Seed KV, wire KV references to Functions and SWA
-- `scripts/escrow-kv-to-1p.sh` — Back up KV to 1Password (vault name withheld — see the private runbook)
-
-### Shared Libraries (`lib/`)
-- **`supabase.ts`** — Public Supabase client with graceful fallback to mock client when env vars are missing (enables local dev without Supabase)
-- **`admin-supabase.ts`** — Service-role client for admin operations (higher privilege)
-- **`email.ts`** — Resend wrapper with quota tracking and retry logic, rate-limited
-- **`email-templates.ts` / `feedback-templates/`** — HTML email templates
-- **`csrf.ts`** — CSRF token generation/validation for form submissions
-- **`rate-limit.ts`** — In-memory IP-based rate limiter (resets on restart; production should use Redis)
-- **`validation.ts`** — Zod schemas for all API input validation
-- **`types.ts`** — Shared TypeScript types
-
-### Path Aliases
-`@/*` maps to the project root (configured in `tsconfig.json` and `vitest.config.ts`). Single alias: `@` → project root.
-
-### Testing Structure
-- **`__tests__/`** — Vitest unit tests (mirrors app structure)
-- **`__tests__/utils/test-utils.tsx`** — Shared test utilities (excluded from test runs)
-- **`e2e/`** — Playwright E2E tests (landing, admin dashboard, visual regression)
-- Vitest config: `vitest.config.ts` (happy-dom environment, globals enabled)
-- Setup file: `vitest.setup.tsx` (mocks for next/navigation, next/image, next/link, next-themes)
-
-### Authentication
-Auth.js v5 (next-auth@5.0.0-beta.29) with Microsoft Entra ID (formerly Azure AD). Server-side auth uses the `auth()` function exported from `auth.ts` at project root. Client-side auth uses `useSession`/`SessionProvider` from `next-auth/react`. Admin access is controlled by `ADMIN_EMAILS` env var (comma-separated list). Admin pages live under `app/admin/`.
-
-### Environment Variables
-See `.env.example` for required variables. Secrets are managed via Azure Key Vault (`<key-vault-name>`):
-- **Functions app** (KV refs): backend secrets — names withheld; see the private runbook / 1Password vault
-- **SWA** (KV refs): auth secrets — names withheld; see the private runbook / 1Password vault
-- **SWA** (plain): `AZURE_AD_CLIENT_ID`, `AZURE_AD_TENANT_ID`, `NEXTAUTH_URL`, `ADMIN_EMAILS`, `NEXT_PUBLIC_*`
-- **1Password**: per-project vaults hold the service-account tokens used for deployment/KV escrow (vault and SA-token item names withheld — see the private runbook)
-
-**Important**: `.env.development` and `.env.production` are gitignored. Only `.env.example` is tracked.
-
-### Docker Infrastructure
-Five compose files, each serving a distinct purpose:
-- **`docker-compose.yml`** — Primary. `nextjs` (prod runner, port 3000) and `web` (dev with hot-reload, port 3001)
-- **`docker-compose.prod.yml`** — Production. Adds nginx reverse proxy with SSL and certbot auto-renewal. Resource limits and `no-new-privileges` security
-- **`docker-compose.test.yml`** — Profile-based test runner using YAML anchors. Profiles: `unit`, `e2e`, `a11y`, `visual`, `perf`, `all`
-- **`docker-compose.email-test.yml`** — Lightweight email template testing via `scripts/email-test.js`
-- **`docker-compose.override.yml`** — Dev volume mounts for hot-reload
-
-### CI/CD Model
-CI in GitHub Actions is **deployment-only**. Run `npm run validate` locally before pushing to main. There is no PR validation workflow — all lint, typecheck, and test checks run on the developer's machine.
-
-**Active workflows (`.github/workflows/`):**
-- **`azure-static-web-apps.yml`** — Build + deploy to Azure SWA on push to main. PR preview URLs on pull requests. Deployment-only, no lint/test.
-- **`dependency-checks.yml`** — Weekly + on-change guardrail: exact version enforcement, shrinkwrap presence, audit
-- **`backup-repository.yml`** — Weekly mirror to backup repo
-
-### Service Layer & Data Flow
-Two request paths:
-- **Auth routes**: Client → SWA → Next.js API route → `auth.ts` / `lib/csrf.ts`
-- **Data routes**: Client → CORS → `<function-app>` → `api/src/lib/` → Supabase/Resend (secrets from Key Vault)
-
-API route pipeline (per STANDARDS.md): Zod validation → rate limiting → business logic → JSON response. Public forms use honeypot fields (`_gotcha`).
-
-### Monitoring
-Admin dashboard at `/admin/settings/monitoring` tracks API health, email delivery rates, and CI/CD status. Types defined in `app/types/monitoring.ts`. Azure Application Insights is configured for production (connection string via env var).
-
-## SchedulEd-Specific Notes
-
-- **Node version**: Pinned to 20.19.1 in `.nvmrc` and CI workflows. `package.json` engines requires `>=20.19.1` to allow local dev on newer Node versions. Run `nvm use` to match CI.
-- **Icons**: Font Awesome loaded via CDN (in `app/layout.tsx` `<head>`)
-- **Animation**: `motion` (formerly framer-motion) for animations; lightweight canvas-based particle effects (no external deps)
-- **Charts**: `chart.js` + `react-chartjs-2` (admin dashboard)
-- **Next.js config**: `next.config.mjs` (ESM). `reactStrictMode` is enabled in dev only.
-- **Build behavior**: Both TypeScript and ESLint are enforced during builds (`ignoreBuildErrors: false`, `ignoreDuringBuilds: false`). The build will fail on any type error or lint warning. The build shows a cosmetic "Next.js plugin was not detected in ESLint configuration" warning — this is harmless because lint runs via `eslint` directly, not `next lint`.
-- **npm install**: Use `--legacy-peer-deps` flag when encountering peer dependency conflicts (@types/node version mismatch with vite)
-- **Testing**: Vitest 3.x with happy-dom environment and `@testing-library/react@16` (React 19 compatible). Use `vi.mock()`, `vi.fn()`, `vi.mocked()` for mocks.
-- **ESLint**: Flat config in `eslint.config.mjs` (ESLint 9). NOT `.eslintrc.json`. Uses `typescript-eslint` and `@next/eslint-plugin-next` directly.
-- **Tailwind CSS**: v3 with `tailwind.config.ts`. Do NOT migrate to v4 without reading BTAISite CLAUDE.md "Critical: Tailwind CSS v4 Rules" first.
-- **CSS layers**: All base resets and element selectors in `globals.css` are wrapped in `@layer base` for Tailwind v4 forward-compatibility.
-
-## Cross-Site References
-
-| Topic | Reference |
-|-------|-----------|
-| Shared conventions | `STANDARDS.md` (this repo) |
-| Tailwind v4 migration guide | BTAISite `CLAUDE.md` — "Critical: Tailwind CSS v4 Rules" |
-| Node version standard | `.nvmrc` — pinned to 20.19.1 (aligned with BTAISite) |
-| CODEOWNERS template | `.github/CODEOWNERS` (this repo) |
+- `STANDARDS.md` — shared cross-site conventions (precedence on conflicts)
+- `.env.example` — environment-variable contract
+- `infra/main.bicep` — Azure IaC (Functions, Storage, App Insights, KV RBAC)
+- BTAISite `CLAUDE.md` — "Critical: Tailwind CSS v4 Rules" (read before any v4 migration)
