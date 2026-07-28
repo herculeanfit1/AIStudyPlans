@@ -8,9 +8,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "09:00"
-      timezone: "America/New_York"
+      day: "tuesday"
+      time: "10:00"
+      timezone: "Etc/UTC"
     # Apply our exact versioning strategy
     versioning-strategy: "lockfile-only"
     # Limit the number of open PRs to avoid overwhelming
@@ -61,7 +61,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
+      time: "10:00"
+      timezone: "Etc/UTC"
+      day: "tuesday"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
