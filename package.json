@@ -108,7 +108,7 @@
     "eslint": "9.39.2",
     "globals": "17.3.0",
     "happy-dom": "20.8.9",
-    "postcss": "8.5.22",
+    "postcss": "8.5.26",
     "resend": "4.4.1",
     "tailwindcss": "3.3.5",
     "typescript": "5.4.5",
@@ -122,9 +122,10 @@
     "pytest-xdist": "3.3.1"
   },
   "resolutions": {
-    "postcss": "8.5.22"
+    "postcss": "8.5.26"
   },
   "overrides": {
-    "cookie": "1.0.2"
+    "cookie": "1.0.2",
+    "postcss": "8.5.26"
   }
 }
