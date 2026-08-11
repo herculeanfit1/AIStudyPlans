@@ -32,7 +32,11 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # SECURITY: cancel superseded runs only on PR/feature refs. NEVER cancel a
+  # scan of main — push-to-main and the weekly `schedule` both resolve to
+  # refs/heads/main, so every merged commit and every scheduled re-scan runs to
+  # completion. A supersede must never silently drop CVE coverage of a commit.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   TRIVY_ACTION_VERSION: 'v0.36.0'
@@ -41,9 +45,10 @@ jobs:
   scan-fs:
     name: Trivy filesystem scan
     runs-on: ubuntu-latest  # TODO: switch to [self-hosted, herculean, linux] when runner registered (Phase R2)
+    timeout-minutes: 30  # generous headroom — never kill a real Trivy scan mid-run
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Trivy filesystem scan (SARIF)
         uses: aquasecurity/trivy-action@v0.36.0
@@ -72,7 +77,7 @@ jobs:
 
       - name: Persist SARIF as artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sarif-fs
           path: trivy-fs.sarif
@@ -80,7 +85,7 @@ jobs:
 
       - name: PR comment summary (filesystem)
         if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           SARIF_FILE: trivy-fs.sarif
           MARKER: '<!-- security-scan:trivy-fs -->'
@@ -138,9 +143,10 @@ jobs:
   scan-config:
     name: Trivy IaC config scan
     runs-on: ubuntu-latest  # TODO: switch to [self-hosted, herculean, linux] when runner registered (Phase R2)
+    timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Trivy config scan (SARIF)
         uses: aquasecurity/trivy-action@v0.36.0
@@ -164,7 +170,7 @@ jobs:
 
       - name: Persist SARIF as artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sarif-config
           path: trivy-config.sarif
@@ -172,7 +178,7 @@ jobs:
 
       - name: PR comment summary (config)
         if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           SARIF_FILE: trivy-config.sarif
           MARKER: '<!-- security-scan:trivy-config -->'
@@ -230,9 +236,10 @@ jobs:
   scan-secrets:
     name: Trivy secrets scan
     runs-on: ubuntu-latest  # TODO: switch to [self-hosted, herculean, linux] when runner registered (Phase R2)
+    timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Trivy secrets scan (SARIF)
         uses: aquasecurity/trivy-action@v0.36.0
@@ -257,7 +264,7 @@ jobs:
 
       - name: Persist SARIF as artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sarif-secrets
           path: trivy-secrets.sarif
@@ -265,7 +272,7 @@ jobs:
 
       - name: PR comment summary (secrets)
         if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           SARIF_FILE: trivy-secrets.sarif
           MARKER: '<!-- security-scan:trivy-secrets -->'
@@ -323,11 +330,12 @@ jobs:
   gate:
     name: Gate on HIGH / CRITICAL
     runs-on: ubuntu-latest  # TODO: switch to [self-hosted, herculean, linux] when runner registered (Phase R2)
+    timeout-minutes: 15
     needs: [scan-fs, scan-config, scan-secrets]
     if: always()
     steps:
       - name: Download all SARIF artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts/
 
