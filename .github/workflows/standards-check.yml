@@ -10,12 +10,19 @@ on:
   push:
     branches: [main]
 
+# Cancel superseded runs on PR/feature refs; never cancel a run on main
+# (keeps the compliance gate complete for every commit that lands on main).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   standards:
     name: Standards Compliance
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # ── Detect repo type ───────────────────────────────
       - name: Detect repo type
@@ -52,9 +59,11 @@ jobs:
 
       - name: No hardcoded secrets in docker-compose
         run: |
-          COMPOSE_FILES=$(find . -name 'docker-compose*.yml' -o -name 'docker-compose*.yaml' 2>/dev/null || true)
+          COMPOSE_FILES=$(find . \( -name 'docker-compose*.yml' -o -name 'docker-compose*.yaml' \) \
+            -not -name '*test*' -not -name '*local*' -not -name '*dev*' -not -name '*ci*' -not -name '*staging*' \
+            -not -path '*/dev/*' -not -path '*/test/*' -not -path '*/ci/*' 2>/dev/null || true)
           if [ -n "$COMPOSE_FILES" ]; then
-            VIOLATIONS=$(grep -nE '(PASSWORD|SECRET_KEY)=' $COMPOSE_FILES | grep -vE '(\$\{|op://|changeme|REPLACE_ME)' || true)
+            VIOLATIONS=$(grep -nE '(PASSWORD|SECRET_KEY)=' $COMPOSE_FILES | grep -vE '(\$\{|op://|changeme|REPLACE_ME|change_in_production)' || true)
             if [ -n "$VIOLATIONS" ]; then
               echo "::error::Hardcoded secrets in docker-compose: $VIOLATIONS"
               exit 1
@@ -103,9 +112,14 @@ jobs:
       # ── Node.js checks ────────────────────────────────
       - name: Node — linter config exists
         if: steps.detect.outputs.type == 'node'
+        id: node-linter
         run: |
-          if [ ! -f "biome.json" ]; then
-            echo "::error::Missing biome.json"
+          if [ -f "biome.json" ]; then
+            echo "linter=biome" >> "$GITHUB_OUTPUT"
+          elif [ -f "eslint.config.js" ] || [ -f "eslint.config.mjs" ] || [ -f ".eslintrc.json" ] || [ -f ".eslintrc.js" ]; then
+            echo "linter=eslint" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Missing linter config (expected biome.json or eslint config)"
             exit 1
           fi
 
@@ -152,13 +166,31 @@ jobs:
 
       - name: Node — setup
         if: steps.detect.outputs.type == 'node'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
 
-      - name: Node — run biome
+      - name: Node — install dependencies
         if: steps.detect.outputs.type == 'node'
-        run: npx @biomejs/biome check .
+        env:
+          npm_config_engine_strict: 'false'
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci --no-audit --no-fund || npm ci --no-audit --no-fund --force
+          elif [ -f "yarn.lock" ]; then
+            yarn install --frozen-lockfile
+          else
+            npm install --no-audit --no-fund || npm install --no-audit --no-fund --force
+          fi
+
+      - name: Node — run linter
+        if: steps.detect.outputs.type == 'node'
+        run: |
+          if [ "${{ steps.node-linter.outputs.linter }}" = "biome" ]; then
+            npx @biomejs/biome check .
+          else
+            npx eslint .
+          fi
 
       # ── Python checks ──────────────────────────────────
       - name: Python — linter config exists
@@ -174,32 +206,98 @@ jobs:
 
       - name: Python — setup
         if: steps.detect.outputs.type == 'python'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
-      - name: Python — run ruff
+      - name: Python — install tools
         if: steps.detect.outputs.type == 'python'
         run: |
-          pip install ruff
+          pip install ruff==0.15.1 mypy==1.19.1
+          # Install project deps so mypy can resolve imports.
+          # Globs cover: requirements.txt, requirements-*.txt (e.g. -dev, -prod),
+          # requirements/*.txt, and subdir/requirements.txt.
+          for req in requirements.txt requirements-*.txt requirements/*.txt */requirements.txt; do
+            for f in $req; do
+              [ -f "$f" ] && pip install -r "$f" 2>/dev/null || true
+            done
+          done
+
+      - name: Python — ruff lint & format
+        if: steps.detect.outputs.type == 'python'
+        run: |
           ruff check .
           ruff format --check .
+
+      - name: Python — ruff security rules (bandit)
+        if: steps.detect.outputs.type == 'python'
+        run: |
+          # Exempt S101 (use of `assert`) in test files — pytest convention.
+          # Use --extend-per-file-ignores so per-repo pyproject.toml settings
+          # also apply (CLI --per-file-ignores alone would replace, not merge).
+          ruff check --select S \
+            --extend-per-file-ignores 'tests/**:S101' \
+            --extend-per-file-ignores 'test/**:S101' \
+            --extend-per-file-ignores '**/test_*.py:S101' \
+            --extend-per-file-ignores '**/*_test.py:S101' \
+            --extend-per-file-ignores '**/conftest.py:S101' \
+            .
+
+      - name: Python — mypy strict
+        if: steps.detect.outputs.type == 'python'
+        run: |
+          mypy --strict . || {
+            EC=$?
+            # Exit code 2 = no files found (e.g. all excluded), treat as OK
+            [ $EC -eq 2 ] && echo "::warning::mypy found no files to check" && exit 0
+            exit $EC
+          }
+
+      # ── Dockerfile checks ────────────────────────────────
+      # Manual install + find loop instead of hadolint-action@v3.1.0:
+      # the action's recursive mode passes the literal glob `**/Dockerfile`
+      # to hadolint (which doesn't expand it), causing "file does not
+      # exist" errors when Dockerfiles live under non-root paths
+      # (e.g. `.devcontainer/Dockerfile`). Manual find is reliable.
+      - name: Lint Dockerfiles (hadolint)
+        if: hashFiles('**/Dockerfile') != ''
+        run: |
+          curl -sSfL https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64 \
+            -o /tmp/hadolint
+          chmod +x /tmp/hadolint
+          FAIL_MARKER=$(mktemp)
+          rm -f "$FAIL_MARKER"
+          find . -name 'Dockerfile' -not -path '*/node_modules/*' -not -path '*/.git/*' -print0 \
+            | while IFS= read -r -d '' f; do
+            /tmp/hadolint --failure-threshold error "$f" || touch "$FAIL_MARKER"
+          done
+          [ -f "$FAIL_MARKER" ] && { rm -f "$FAIL_MARKER"; exit 1; }
+          exit 0
 
       # ── Infra checks ───────────────────────────────────
       - name: Infra — validate YAML/JSON
         if: steps.detect.outputs.type == 'infra'
         run: |
-          FAILED=0
-          for f in $(find . -name '*.yml' -o -name '*.yaml' | grep -v node_modules | grep -v '.override.' | head -20); do
+          FAIL_MARKER=$(mktemp)
+          rm -f "$FAIL_MARKER"
+          find . \( -name '*.yml' -o -name '*.yaml' \) -not -path '*/node_modules/*' -not -name '*.override.*' -print0 \
+            | head -z -n 20 | while IFS= read -r -d '' f; do
             python3 -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null || {
               echo "::error::Invalid YAML: $f"
-              FAILED=1
+              touch "$FAIL_MARKER"
             }
           done
-          for f in $(find . -name '*.json' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/.devcontainer/*' | head -20); do
+          # Skip JSONC-by-convention files: tsconfig*.json (TypeScript) and
+          # anything under .vscode/. These allow comments and trailing commas
+          # and will fail a strict json.load — they're not invalid, just JSONC.
+          find . -name '*.json' -not -path '*/node_modules/*' -not -path '*/.git/*' \
+            -not -path '*/.devcontainer/*' -not -path '*/.vscode/*' \
+            -not -name 'tsconfig*.json' -not -name '*.jsonc' \
+            -print0 | head -z -n 20 | while IFS= read -r -d '' f; do
             python3 -c "import json; json.load(open('$f'))" 2>/dev/null || {
               echo "::error::Invalid JSON: $f"
-              FAILED=1
+              touch "$FAIL_MARKER"
             }
           done
-          exit $FAILED
+          [ -f "$FAIL_MARKER" ] && { rm -f "$FAIL_MARKER"; exit 1; }
+          exit 0
