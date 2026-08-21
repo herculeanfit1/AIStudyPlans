@@ -213,7 +213,7 @@ jobs:
       - name: Python — install tools
         if: steps.detect.outputs.type == 'python'
         run: |
-          pip install ruff==0.15.1 mypy==1.19.1
+          pip install ruff==0.16.4 mypy==1.19.1
           # Install project deps so mypy can resolve imports.
           # Globs cover: requirements.txt, requirements-*.txt (e.g. -dev, -prod),
           # requirements/*.txt, and subdir/requirements.txt.
