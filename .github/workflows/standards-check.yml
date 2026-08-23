@@ -226,8 +226,8 @@ jobs:
       - name: Python — ruff lint & format
         if: steps.detect.outputs.type == 'python'
         run: |
-          ruff check .
-          ruff format --check .
+          ruff check --extend-exclude '*.md' .
+          ruff format --check --extend-exclude '*.md' .
 
       - name: Python — ruff security rules (bandit)
         if: steps.detect.outputs.type == 'python'
@@ -235,7 +235,7 @@ jobs:
           # Exempt S101 (use of `assert`) in test files — pytest convention.
           # Use --extend-per-file-ignores so per-repo pyproject.toml settings
           # also apply (CLI --per-file-ignores alone would replace, not merge).
-          ruff check --select S \
+          ruff check --select S --extend-exclude '*.md' \
             --extend-per-file-ignores 'tests/**:S101' \
             --extend-per-file-ignores 'test/**:S101' \
             --extend-per-file-ignores '**/test_*.py:S101' \
