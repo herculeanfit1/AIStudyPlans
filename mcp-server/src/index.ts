@@ -1,7 +1,5 @@
 import { config } from "dotenv";
-import EventEmitter from "events";
 import express from "express";
-import { Server as HttpServer } from "http";
 import { OpenAI } from "openai";
 import { v4 as uuidv4 } from "uuid";
 import { generateCode, generateCodeSchema } from "./tools/generateCode";
@@ -75,6 +73,10 @@ app.get("/mcp/events", (req, res) => {
 });
 
 // MCP tool endpoint - generate_code
+// Express 4 does not await handler promises. Safe here because the entire
+// body is wrapped in try/catch and every path sends a response, so this
+// promise cannot reject. If that try/catch is ever narrowed, remove this.
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 app.post("/mcp/tools/generate_code", async (req, res) => {
   const requestId = (req.headers["x-request-id"] as string) || uuidv4();
 
