@@ -1,5 +1,5 @@
 import cors from "cors";
-import type { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, RequestHandler, Response } from "express";
 import helmet from "helmet";
 import { v4 as uuidv4 } from "uuid";
 import { logger } from "./logger";
@@ -7,7 +7,7 @@ import { logger } from "./logger";
 /**
  * Configure CORS with strict origin controls
  */
-export const configureCors = () => {
+export const configureCors = (): RequestHandler => {
   const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
     .split(",")
     .map((origin) => origin.trim())
@@ -43,7 +43,7 @@ export const configureCors = () => {
 /**
  * Centralized request ID generator and logger
  */
-export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
+export const requestLogger = (req: Request, res: Response, next: NextFunction): void => {
   // Generate or use provided request ID
   const requestId = (req.headers["x-request-id"] as string) || uuidv4();
   res.setHeader("X-Request-ID", requestId);
@@ -83,7 +83,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
 /**
  * Request start time tracker
  */
-export const requestTimer = (req: Request, _res: Response, next: NextFunction) => {
+export const requestTimer = (req: Request, _res: Response, next: NextFunction): void => {
   req.startTime = Date.now();
   next();
 };
@@ -109,7 +109,12 @@ export const secureHeaders = helmet({
 /**
  * Global error handler
  */
-export const errorHandler = (err: Error, req: Request, res: Response, _next: NextFunction) => {
+export const errorHandler = (
+  err: Error,
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+): void => {
   logger.error(
     {
       requestId: req.requestId,
@@ -131,6 +136,9 @@ export const errorHandler = (err: Error, req: Request, res: Response, _next: Nex
 
 // Add request properties to Express Request interface
 declare global {
+  // Module augmentation of Express's Request type REQUIRES a namespace;
+  // there is no ES-module form of this declaration.
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       requestId: string;

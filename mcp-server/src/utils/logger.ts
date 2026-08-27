@@ -39,7 +39,7 @@ export const logger = pino({
  * @param requestId Unique identifier for the request
  * @param userId Optional user identifier
  */
-export function createRequestLogger(requestId: string, userId?: string) {
+export function createRequestLogger(requestId: string, userId?: string): pino.Logger {
   return logger.child({
     requestId,
     userId: userId || "anonymous",
