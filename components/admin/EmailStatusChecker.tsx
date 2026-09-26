@@ -18,16 +18,6 @@ export default function EmailStatusChecker() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [testEmail, setTestEmail] = useState("");
-  const [testResult, setTestResult] = useState<{
-    success?: boolean;
-    error?: string;
-    to?: string;
-    messageId?: string;
-    environment?: string;
-    details?: Record<string, unknown>;
-  } | null>(null);
-  const [testLoading, setTestLoading] = useState(false);
   const [debugEnabled, setDebugEnabled] = useState(false);
 
   // Check email configuration status on mount
@@ -69,52 +59,6 @@ export default function EmailStatusChecker() {
 
     checkEmailConfig();
   }, []);
-
-  // Send a test email
-  const handleSendTestEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!testEmail || !testEmail.includes("@")) {
-      setTestResult({ error: "Please enter a valid email address" });
-      return;
-    }
-
-    try {
-      setTestLoading(true);
-      setTestResult(null);
-
-      const response = await fetch("/api/debug-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ to: testEmail }),
-      });
-
-      const data = await response.json();
-      setTestResult(data);
-
-      // Log the event instead of tracking
-      // eslint-disable-next-line no-console
-      console.log("Admin: Test email sent", {
-        success: data.success,
-        to: testEmail,
-      });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      setTestResult({
-        success: false,
-        error: message || "Failed to send test email",
-      });
-      // eslint-disable-next-line no-console
-      console.log("Admin: Test email error", {
-        error: message,
-        to: testEmail,
-      });
-    } finally {
-      setTestLoading(false);
-    }
-  };
 
   return (
     <div className="bg-white shadow rounded-lg p-6 mb-8">
@@ -196,60 +140,10 @@ export default function EmailStatusChecker() {
             )}
           </div>
 
-          {/* Email Testing Form */}
-          <div className="mt-6 border-t pt-4">
-            <h3 className="font-semibold mb-3">Test Email Delivery</h3>
-            <form onSubmit={handleSendTestEmail} className="space-y-4">
-              <div>
-                <label htmlFor="testEmail" className="block text-sm font-medium text-gray-700 mb-1">
-                  Send Test Email To:
-                </label>
-                <input
-                  type="email"
-                  id="testEmail"
-                  value={testEmail}
-                  onChange={(e) => setTestEmail(e.target.value)}
-                  placeholder="email@example.com"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={testLoading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-              >
-                {testLoading ? "Sending..." : "Send Test Email"}
-              </button>
-            </form>
-
-            {/* Test Results */}
-            {testResult && (
-              <div
-                className={`mt-4 p-4 rounded-md ${testResult.success ? "bg-green-50 border border-green-200 text-green-700" : "bg-red-50 border border-red-200 text-red-700"}`}
-              >
-                <h4 className="font-medium mb-2">
-                  {testResult.success ? "Email Sent Successfully" : "Failed to Send Email"}
-                </h4>
-                {testResult.success ? (
-                  <div>
-                    <p>Sent to: {testResult.to}</p>
-                    <p>Message ID: {testResult.messageId}</p>
-                    <p>Environment: {testResult.environment}</p>
-                  </div>
-                ) : (
-                  <div>
-                    <p>Error: {testResult.error}</p>
-                    {testResult.details && (
-                      <pre className="mt-2 text-xs overflow-x-auto">
-                        {JSON.stringify(testResult.details, null, 2)}
-                      </pre>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          {/* The "Test Email Delivery" form that lived here POSTed to /api/debug-email,
+              which PLAN-002 removed. That route only worked when NODE_ENV=development or
+              DEBUG_EMAIL=true, so in production it answered 403 and the form could not
+              send. PLAN-008 owns a proper email-path test. */}
         </div>
       ) : null}
     </div>
