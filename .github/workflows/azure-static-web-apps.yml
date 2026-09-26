@@ -19,9 +19,21 @@ permissions:
   pull-requests: read
   id-token: write
 
+# Production and PR previews must never share a concurrency group.
+# On a merged PR's `closed` event, github.ref is refs/heads/main -- the same
+# ref as the push that the merge creates. With the old `deploy-${{ github.ref }}`
+# key and cancel-in-progress, the two runs raced and the later one cancelled the
+# earlier: 24 production deploys were cancelled by the merge's own PR-close run,
+# and 6 PR-close cleanups were cancelled by the push (measured 2026-09-26 over
+# all 160 retained runs; every cancelled run carried "Canceling since a higher
+# priority waiting request for deploy-refs/heads/main exists").
+# - Every pull_request event (opened/synchronize/reopened/closed) is keyed by PR
+#   number, so no PR event can enter the production group.
+# - push and workflow_dispatch share `swa-production`, where cancel-in-progress is
+#   false: a newer production run waits, it never cancels a running deploy.
 concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.event_name == 'pull_request' && format('swa-preview-{0}', github.event.pull_request.number) || 'swa-production' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build_and_deploy:
