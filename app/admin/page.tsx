@@ -50,23 +50,10 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Redirect to login if not authenticated
+    // Redirect to login if not authenticated. The server session is the only
+    // authority: a client-settable `isAdmin` cookie or localStorage flag is not
+    // (PLAN-001).
     if (status === "unauthenticated") {
-      // Check for development admin authentication
-      try {
-        const isLocalAdmin =
-          localStorage.getItem("isAdmin") === "true" || document.cookie.includes("isAdmin=true");
-
-        if (isLocalAdmin) {
-          setIsAuthenticated(true);
-          loadStats(); // Load stats when authenticated via localStorage
-          return;
-        }
-      } catch (err) {
-        console.error("Storage error:", err);
-      }
-
-      // Redirect to NextAuth sign-in instead of custom login page
       router.push("/api/auth/signin");
       return;
     }

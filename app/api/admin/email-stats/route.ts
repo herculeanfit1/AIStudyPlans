@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 
 export async function GET() {
+  // Admin only (PLAN-001). Per-route check behind the middleware guard; the
+  // `.catch` turns an auth() failure into a 401 instead of a 500.
+  const session = await auth().catch(() => null);
+  if (!session?.user?.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 401 });
+  }
+
   try {
     // Mock data - in production you would fetch this from your email provider's API
     // (Resend, SendGrid, Mailgun, etc.)

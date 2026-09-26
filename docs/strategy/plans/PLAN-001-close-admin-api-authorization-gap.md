@@ -1,5 +1,5 @@
 # PLAN-001: Close the `/api/admin/*` authorization gap
-**Status**: Ready
+**Status**: ~~Ready~~ Implemented on branch `fix/plan-001-admin-api-auth` (PR opened 2026-09-26). Done when TK merges it and the post-merge check below passes in production.
 **Effort**: S · **Risk**: Low
 
 ## Context
@@ -115,3 +115,75 @@ unauthenticated state-change. Also, the admin *pages* trust a client-settable
 ## Rollback
 `git revert` the commit. The change is additive guards + a matcher edit; reverting
 restores prior behavior with no data or config migration.
+
+## Execution record (2026-09-26)
+
+Run by Claude Code (HerculeanInfra orchestrator on MBP14), PR-only: TK merges.
+
+### Measured before the change
+Production, GET only, ~10:43 AM CDT (no POST was sent to production):
+
+| Route | Status |
+|---|---|
+| `GET /api/admin/ci-status` | 200, mock workflow data |
+| `GET /api/admin/email-stats` | 200, mock email stats |
+| `GET /api/admin/email-usage` | 401 (already guarded) |
+| `GET /api/admin/dev-login`, `GET /api/admin/direct-access` | 403 (`NODE_ENV=production` gate) |
+| `GET /admin` | 307 to `/api/auth/signin`, so **middleware runs in production** and the matcher fix takes effect there |
+| `GET /api/auth/session` | 500 `"There was a problem with the server configuration..."` |
+
+`POST /api/admin/clear-data` was not called in production. Against a local
+production build it returned 200 and cleared the in-memory store unauthenticated.
+
+**Admin sign-in is broken in production today, and the cause is outside this plan.**
+next-auth v5 trusts the request host only when `AUTH_URL`, `AUTH_TRUST_HOST`,
+`VERCEL` or `CF_PAGES` is set, or when `NODE_ENV` is not `production`. `NEXTAUTH_URL`
+does not count. The production SWA app-setting names include `NEXTAUTH_URL` and
+`NEXTAUTH_SECRET` but none of the four, so every `/api/auth/*` action fails with
+`UntrustedHost`. Reproduced locally: a production build with `NEXTAUTH_SECRET` and
+`NEXTAUTH_URL` set gives the same 500 body (same length, 94 chars) and logs
+`UntrustedHost`; adding `AUTH_TRUST_HOST=true` makes `/api/auth/session` answer 200.
+The likely fix is an app-setting change (`AUTH_TRUST_HOST=true`, or `AUTH_URL`),
+which is TK's call. It has not been verified in production.
+
+**The trade this plan accepts:** once `/api/admin/*` is gated, admins cannot use the
+admin API until sign-in works. That locks out nobody who can get in today, since
+nobody can sign in.
+
+### Deviations from the plan
+1. **Per-route guard: `await auth().catch(() => null)` instead of `await auth()`.**
+   If `auth()` throws, the handler now answers 401 instead of 500. A mutation test
+   shows this is load-bearing: with `.catch` removed, the "auth() throws -> 401" case
+   goes red. `email-usage` (the plan's template) is untouched. A throw there still
+   lands in its own `try` as a 500: closed, but not 401.
+2. **Settings page required only *any* session, not an admin one.** Its old comment
+   said Microsoft sign-in doesn't set `isAdmin`. That is false: `auth.ts` sets it
+   for allowlisted emails, and `signIn` rejects everyone else. The access check now
+   requires `session.user.isAdmin`. The cookie/localStorage flag survives on that
+   page only as a UI label ("Development Mode"), as the plan allows.
+3. **An existing test asserted the removed behaviour.** `AdminDashboard.test.tsx`
+   "should render dashboard when authenticated with localStorage" is inverted: a
+   localStorage/cookie flag must now redirect to sign-in and load no stats. The suite
+   is therefore 54 existing tests (one inverted) plus 52 new.
+4. **Validation "with a valid admin session cookie -> 200" was run locally, not in
+   prod.** Production sign-in is broken, so the positive control used a local
+   production build with a throwaway secret and minted session JWTs. Results below.
+5. No component-level test was added for the settings and feedback pages (their
+   render pulls in fetch-driven children). `AdminLayout` and the middleware already
+   gate them server-side.
+
+### Validation results
+| Check | Result |
+|---|---|
+| `npm run lint` | PASS |
+| `npm run typecheck` | FAIL, pre-existing and unchanged: the single error `__tests__/lib/admin-supabase.test.ts(1,1): TS2578` is on `main` too; this change adds none |
+| `npm test` | PASS 106/106 |
+| `__tests__/api/admin-auth.test.ts` against `main` | FAIL as intended: 30 red / 22 green. The 22 are admin pass-through, the page redirect, admin-200s, and the existing `email-usage` and dev-route gates |
+| Inverted `AdminDashboard` test against `main` | FAIL as intended (1 red) |
+| `npm run build` | PASS |
+| Local production build, no session, three auth configs (prod-like `UntrustedHost`, no auth env at all, working auth) | every `/api/admin/*` route and method: **401** (was 200 for `ci-status`, `email-stats`, `clear-data`) |
+| Same, **middleware removed** (per-route layer alone, real next-auth, prod-like config) | `ci-status`, `email-stats`, `clear-data`, `email-usage`: 401; dev routes: 403 |
+| Local, working auth, minted **non-admin** session | admin API 403, `/admin` 403 |
+| Local, working auth, minted **admin** session | admin API 200, `/admin` 200 |
+| `/admin-simple` bypass and matcher entry | removed; 404 |
+| Production after merge | UNMEASURABLE until TK merges; see the PR's post-merge check |

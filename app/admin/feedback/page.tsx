@@ -24,7 +24,6 @@ import {
 export default function FeedbackDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [devAdmin, setDevAdmin] = useState(false);
 
   // State for feedback data
   const [feedback, setFeedback] = useState<FeedbackWithUser[]>([]);
@@ -49,26 +48,14 @@ export default function FeedbackDashboard() {
     searchTerm: "",
   });
 
-  useEffect(() => {
-    // Check for dev admin flag in localStorage or cookies
-    let isDevAdmin = false;
-    try {
-      isDevAdmin = localStorage.getItem("isAdmin") === "true";
-    } catch {
-      // localStorage may throw in SSR or private browsing
-    }
-    if (!isDevAdmin) {
-      isDevAdmin = document.cookie.includes("isAdmin=true");
-    }
-    setDevAdmin(isDevAdmin);
-  }, []);
-
+  // The server session is the only authority; a client-settable `isAdmin`
+  // cookie or localStorage flag is not (PLAN-001).
   useEffect(() => {
     if (status === "loading") return;
-    if (!(session?.user?.isAdmin || devAdmin)) {
+    if (!session?.user?.isAdmin) {
       router.replace("/api/auth/signin?error=AccessDenied");
     }
-  }, [session, status, devAdmin, router]);
+  }, [session, status, router]);
 
   // Load feedback data with current page and filters
   const loadFeedback = useCallback(async () => {

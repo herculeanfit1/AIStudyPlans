@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 
 // This is a simplified mock for the CI/CD status
 // In a production environment, you would integrate with GitHub's API
 // using a service account or personal access token
 
 export async function GET() {
+  // Admin only (PLAN-001). Per-route check behind the middleware guard; the
+  // `.catch` turns an auth() failure into a 401 instead of a 500.
+  const session = await auth().catch(() => null);
+  if (!session?.user?.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 401 });
+  }
+
   try {
     // Mock data for now - in production you would fetch this from GitHub API
     const mockCiStatus = {
