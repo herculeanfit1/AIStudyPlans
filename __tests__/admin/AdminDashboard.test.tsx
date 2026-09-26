@@ -120,9 +120,13 @@ describe("AdminDashboard Component", () => {
     });
   });
 
-  it("should render dashboard when authenticated with localStorage", async () => {
+  // PLAN-001: a client-settable isAdmin flag is not authority. This test used to
+  // assert the opposite ("should render dashboard when authenticated with
+  // localStorage").
+  it("should NOT render dashboard from a localStorage or cookie isAdmin flag", async () => {
+    const pushMock = vi.fn();
     vi.mocked(useRouter).mockReturnValue({
-      push: vi.fn(),
+      push: pushMock,
     } as any);
     vi.mocked(useSession).mockReturnValue({
       data: null,
@@ -130,12 +134,15 @@ describe("AdminDashboard Component", () => {
     } as any);
 
     localStorageMock.setItem("isAdmin", "true");
+    document.cookie = "isAdmin=true";
 
     render(<AdminDashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText("Admin Dashboard")).toBeInTheDocument();
+      expect(pushMock).toHaveBeenCalledWith("/api/auth/signin");
     });
+    expect(screen.queryByText("Admin Dashboard")).not.toBeInTheDocument();
+    expect(getFeedbackStats).not.toHaveBeenCalled();
   });
 
   it("should handle stats loading error gracefully", async () => {

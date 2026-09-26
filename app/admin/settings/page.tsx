@@ -13,11 +13,10 @@ export default function AdminSettings() {
   const [isClearingData, setIsClearingData] = useState(false);
   const [isSubmittingTest, setIsSubmittingTest] = useState(false);
   const [isLocalAuth, setIsLocalAuth] = useState(false);
-  const [devAdmin, setDevAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState("settings");
 
   useEffect(() => {
-    // Check for dev admin flag in localStorage or cookies
+    // Dev-mode flag: a UI hint only (labels the auth panel). It grants nothing.
     let isDevAdmin = false;
     try {
       isDevAdmin = localStorage.getItem("isAdmin") === "true";
@@ -27,7 +26,6 @@ export default function AdminSettings() {
     if (!isDevAdmin) {
       isDevAdmin = document.cookie.includes("isAdmin=true");
     }
-    setDevAdmin(isDevAdmin);
     setIsLocalAuth(isDevAdmin);
   }, []);
 
@@ -35,21 +33,15 @@ export default function AdminSettings() {
     // Don't check while loading
     if (status === "loading") return;
 
-    // For NextAuth users, check isAdmin property
-    if (status === "authenticated") {
-      // Microsoft login doesn't set isAdmin property by default,
-      // so we'll grant access to all authenticated Microsoft users
+    // The server session is the only authority (PLAN-001): an authenticated
+    // session without the isAdmin claim, or a client-settable `isAdmin`
+    // cookie/localStorage flag, does not grant access.
+    if (status === "authenticated" && session?.user?.isAdmin) {
       return;
     }
 
-    // For local auth, check dev admin flag
-    if (devAdmin) {
-      return;
-    }
-
-    // If neither auth method worked, redirect
     router.replace("/api/auth/signin?error=AccessDenied");
-  }, [session, status, devAdmin, router]);
+  }, [session, status, router]);
 
   // Handle clearing all feedback data
   const handleClearData = async () => {
